@@ -476,15 +476,15 @@ export default function AdminPage() {
                       type="file"
                       accept="image/*"
                       onChange={handleBackgroundUpload}
-                      className="hidden"
-                      id="background-upload"
+                      className="text-white"
                     />
-                    <label
-                      htmlFor="background-upload"
-                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
+                    <button
+                      onClick={() => handleLogoUpload('background')}
+                      className="flex items-center space-x-2 px-4 py-2 bg-yellow-400 text-black rounded-lg hover:bg-yellow-300 transition-colors"
                     >
-                      Upload Background
-                    </label>
+                      <FiUpload />
+                      <span>Upload Background</span>
+                    </button>
                   </div>
                   {backgroundImage && (
                     <div className="mt-4">
