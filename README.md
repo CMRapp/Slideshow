@@ -109,18 +109,6 @@ The application will be available at `http://localhost:3000`
 
 ## Development
 
-### Project Structure
-```
-slideshow/
-├── app/
-│   ├── api/           # API routes
-│   ├── components/    # React components
-│   ├── lib/          # Utility functions
-│   └── public/       # Static files
-├── prisma/           # Database schema
-└── types/            # TypeScript types
-```
-
 ### Available Scripts
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
