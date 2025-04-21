@@ -67,7 +67,10 @@ DB_HOST=your_database_host
 DB_USER=your_database_user
 DB_PASSWORD=your_database_password
 DB_NAME=your_database_name
-JWT_SECRET=your_jwt_secret
+ADMIN_PASSWORD=your_admin_password
+NEXT_PUBLIC_MAX_FILE_SIZE=10485760 # 10MB
+NEXT_PUBLIC_ALLOWED_IMAGE_TYPES=image/jpeg,image/png
+NEXT_PUBLIC_ALLOWED_VIDEO_TYPES=video/mp4,video/webm,video/ogg,video/quicktime
 ```
 
 4. Initialize the database:
