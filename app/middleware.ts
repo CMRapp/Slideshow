@@ -11,9 +11,9 @@ export function middleware(request: NextRequest) {
   if (protectedRoutes.some(route => pathname.startsWith(route))) {
     const authToken = request.cookies.get('auth-token');
 
-    // If no auth token, redirect to login
+    // If no auth token, redirect to admin page for authentication
     if (!authToken) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/admin', request.url));
     }
 
     // TODO: Validate the auth token here

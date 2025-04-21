@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2024-04-21
+
+### Added
+- Integrated authentication directly into admin panel
+- Enhanced media upload tracking system
+- Improved photo and video number selection interface
+- Added visual indicators for uploaded items
+
+### Changed
+- Removed separate login page
+- Updated middleware to protect only admin routes
+- Improved database connection handling
+- Enhanced error handling and logging
+
+### Fixed
+- Fixed database connection issues in API routes
+- Corrected table name references in queries
+- Improved response handling for uploaded items
+
 ## [1.4.0] - 2024-03-21
 
 ### Added

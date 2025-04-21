@@ -71,10 +71,14 @@ export default function UploadPage() {
       if (!selectedTeam) return;
       
       try {
-        const response = await fetch(`/api/uploaded-items?teamName=${encodeURIComponent(selectedTeam)}`);
+        console.log('Fetching uploaded items for team:', selectedTeam);
+        const response = await fetch(`/api/uploaded-items?team=${encodeURIComponent(selectedTeam)}`);
         if (response.ok) {
           const data = await response.json();
+          console.log('Received uploaded items:', data.items);
           setUploadedItems(data.items || []);
+        } else {
+          console.error('Failed to fetch uploaded items:', await response.text());
         }
       } catch (error) {
         console.error('Failed to fetch uploaded items:', error);
@@ -133,7 +137,7 @@ export default function UploadPage() {
       }
 
       // Refresh uploaded items after successful upload
-      const itemsResponse = await fetch(`/api/uploaded-items?teamName=${encodeURIComponent(selectedTeam)}`);
+      const itemsResponse = await fetch(`/api/uploaded-items?team=${encodeURIComponent(selectedTeam)}`);
       if (itemsResponse.ok) {
         const itemsData = await itemsResponse.json();
         setUploadedItems(itemsData.items || []);
@@ -195,9 +199,11 @@ export default function UploadPage() {
   };
 
   const isItemUploaded = (type: 'photo' | 'video', number: number) => {
-    return uploadedItems.some(
+    const isUploaded = uploadedItems.some(
       item => item.item_type === type && item.item_number === number
     );
+    console.log(`Checking if ${type} ${number} is uploaded:`, isUploaded, 'Items:', uploadedItems);
+    return isUploaded;
   };
 
   return (
@@ -248,24 +254,20 @@ export default function UploadPage() {
                 id="photoNumberSelect"
                 value={selectedPhotoNumber}
                 onChange={handlePhotoNumberChange}
-                disabled={!!selectedVideoNumber}
-                className={`w-full px-4 py-2 rounded-lg bg-black/85 border border-white/20 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none transition-all duration-200 [&>option]:bg-black [&>option]:text-white [&>option:hover]:bg-yellow-500 [&>option:hover]:text-black [&>option:checked]:bg-black [&>option:checked]:text-yellow-500 ${
-                  !!selectedVideoNumber ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                className="w-full px-4 py-2 rounded-lg bg-black/85 border border-white/20 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none transition-all duration-200 [&>option]:bg-black [&>option]:text-white [&>option:hover]:bg-yellow-500 [&>option:hover]:text-black [&>option:checked]:bg-black [&>option:checked]:text-yellow-500 [&>option:disabled]:text-gray-500 [&>option:disabled]:cursor-not-allowed"
                 required
               >
-                <option value="">Select photo number</option>
-                {Array.from({ length: photoCount }, (_, i) => {
-                  const number = i + 1;
+                <option value="">Select a photo number</option>
+                {Array.from({ length: photoCount }, (_, i) => i + 1).map((number) => {
                   const isUploaded = isItemUploaded('photo', number);
                   return (
-                    <option 
-                      key={number} 
-                      value={number}
+                    <option
+                      key={number}
+                      value={number.toString()}
                       disabled={isUploaded}
-                      className={isUploaded ? 'opacity-50 cursor-not-allowed' : ''}
+                      className={isUploaded ? 'text-gray-500 cursor-not-allowed' : ''}
                     >
-                      Photo #{number} {isUploaded ? '(Uploaded)' : ''}
+                      Photo {number} {isUploaded ? '(Uploaded)' : ''}
                     </option>
                   );
                 })}
@@ -279,24 +281,20 @@ export default function UploadPage() {
                 id="videoNumberSelect"
                 value={selectedVideoNumber}
                 onChange={handleVideoNumberChange}
-                disabled={!!selectedPhotoNumber}
-                className={`w-full px-4 py-2 rounded-lg bg-black/85 border border-white/20 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none transition-all duration-200 [&>option]:bg-black [&>option]:text-white [&>option:hover]:bg-yellow-500 [&>option:hover]:text-black [&>option:checked]:bg-black [&>option:checked]:text-yellow-500 ${
-                  !!selectedPhotoNumber ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                className="w-full px-4 py-2 rounded-lg bg-black/85 border border-white/20 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none transition-all duration-200 [&>option]:bg-black [&>option]:text-white [&>option:hover]:bg-yellow-500 [&>option:hover]:text-black [&>option:checked]:bg-black [&>option:checked]:text-yellow-500 [&>option:disabled]:text-gray-500 [&>option:disabled]:cursor-not-allowed"
                 required
               >
-                <option value="">Select video number</option>
-                {Array.from({ length: videoCount }, (_, i) => {
-                  const number = i + 1;
+                <option value="">Select a video number</option>
+                {Array.from({ length: videoCount }, (_, i) => i + 1).map((number) => {
                   const isUploaded = isItemUploaded('video', number);
                   return (
-                    <option 
-                      key={number} 
-                      value={number}
+                    <option
+                      key={number}
+                      value={number.toString()}
                       disabled={isUploaded}
-                      className={isUploaded ? 'opacity-50 cursor-not-allowed' : ''}
+                      className={isUploaded ? 'text-gray-500 cursor-not-allowed' : ''}
                     >
-                      Video #{number} {isUploaded ? '(Uploaded)' : ''}
+                      Video {number} {isUploaded ? '(Uploaded)' : ''}
                     </option>
                   );
                 })}
