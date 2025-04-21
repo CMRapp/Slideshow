@@ -67,7 +67,10 @@ DB_HOST=your_database_host
 DB_USER=your_database_user
 DB_PASSWORD=your_database_password
 DB_NAME=your_database_name
-JWT_SECRET=your_jwt_secret
+ADMIN_PASSWORD=your_admin_password
+NEXT_PUBLIC_MAX_FILE_SIZE=10485760 # 10MB
+NEXT_PUBLIC_ALLOWED_IMAGE_TYPES=image/jpeg,image/png
+NEXT_PUBLIC_ALLOWED_VIDEO_TYPES=video/mp4,video/webm,video/ogg,video/quicktime
 ```
 
 4. Initialize the database:
@@ -105,18 +108,6 @@ The application will be available at `http://localhost:3000`
 4. Configure media counts
 
 ## Development
-
-### Project Structure
-```
-slideshow/
-├── app/
-│   ├── api/           # API routes
-│   ├── components/    # React components
-│   ├── lib/          # Utility functions
-│   └── public/       # Static files
-├── prisma/           # Database schema
-└── types/            # TypeScript types
-```
 
 ### Available Scripts
 - `npm run dev` - Start development server
