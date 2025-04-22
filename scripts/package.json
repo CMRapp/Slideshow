@@ -1,14 +1,13 @@
 {
   "name": "database-migration",
   "version": "1.0.0",
-  "description": "Migration script from MySQL to Neon PostgreSQL",
+  "description": "Database initialization script for PostgreSQL",
   "main": "dist/migrate.js",
   "scripts": {
     "build": "tsc",
     "migrate": "node dist/migrate.js"
   },
   "dependencies": {
-    "mysql2": "^3.6.0",
     "pg": "^8.11.0",
     "dotenv": "^16.0.3"
   },
