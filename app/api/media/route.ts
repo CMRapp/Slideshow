@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import getPool from '@/lib/db';
+import { pool } from '@/lib/db';
 
 interface MediaItem {
   id: number;
@@ -38,7 +38,6 @@ interface TableInfo {
 }
 
 export async function GET(request: Request) {
-  let connection;
   try {
     console.log('Starting media API request...');
     const { searchParams } = new URL(request.url);
@@ -48,26 +47,9 @@ export async function GET(request: Request) {
     const offset = (page - 1) * limit;
     console.log('Team parameter:', team);
 
-    try {
-      const pool = await getPool();
-      connection = await pool.getConnection();
-      console.log('Database connection established successfully');
-    } catch (error) {
-      console.error('Failed to get database connection:', error);
-      return NextResponse.json(
-        { 
-          error: 'Database connection failed',
-          details: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined
-        },
-        { status: 500 }
-      );
-    }
-
     // First, check if the uploaded_items table exists
-    const [tables] = await connection.query("SHOW TABLES");
-    const tableExists = Array.isArray(tables) && 
-      tables.some((table: TableInfo) => table.Tables_in_slideshow === 'uploaded_items');
+    const result = await pool.query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'uploaded_items')");
+    const tableExists = result.rows[0].exists;
 
     if (!tableExists) {
       console.error('uploaded_items table does not exist');
@@ -79,22 +61,6 @@ export async function GET(request: Request) {
         },
         { status: 500 }
       );
-    }
-
-    // Check table structure
-    try {
-      const [columns] = await connection.query("SHOW COLUMNS FROM uploaded_items");
-      console.log('uploaded_items table structure:', columns);
-    } catch (error) {
-      console.error('Error checking uploaded_items table:', error);
-    }
-
-    // Try to get a sample row to verify the table has data
-    try {
-      const [rows] = await connection.query("SELECT * FROM uploaded_items LIMIT 1");
-      console.log('Sample row from uploaded_items:', rows);
-    } catch (error) {
-      console.error('Error fetching sample row:', error);
     }
 
     // Build the query
@@ -129,62 +95,28 @@ export async function GET(request: Request) {
 
     console.log('Executing main query:', query, 'with params:', queryParams);
 
-    try {
-      const result = await connection.query(query, queryParams);
-      console.log('Main query executed successfully, rows:', result.rows);
+    const mediaResult = await pool.query(query, queryParams);
+    const countResult = await pool.query(
+      'SELECT COUNT(*) FROM media_items' + (team ? ' WHERE team = $1' : ''),
+      team ? [team] : []
+    );
 
-      if (!Array.isArray(result.rows)) {
-        console.error('Query did not return an array:', result.rows);
-        return NextResponse.json(
-          { 
-            error: 'Invalid query result',
-            details: 'Expected an array of media items',
-            received: typeof result.rows
-          },
-          { status: 500 }
-        );
-      }
+    const response: MediaResponse = {
+      media: mediaResult.rows,
+      total: parseInt(countResult.rows[0].count)
+    };
 
-      const countResult = await connection.query(
-        'SELECT COUNT(*) FROM media_items' + (team ? ' WHERE team = $1' : ''),
-        team ? [team] : []
-      );
-
-      const response: MediaResponse = {
-        media: result.rows,
-        total: parseInt(countResult.rows[0].count)
-      };
-
-      return NextResponse.json(response);
-    } catch (error) {
-      console.error('Main query execution failed:', error);
-      const errorDetails = error instanceof Error ? {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-        code: (error as DatabaseError).code,
-        errno: (error as DatabaseError).errno,
-        sqlState: (error as DatabaseError).sqlState,
-        sqlMessage: (error as DatabaseError).sqlMessage
-      } : {
-        message: 'Unknown error',
-        error: error
-      };
-      
-      return NextResponse.json(
-        { 
-          error: 'Query execution failed',
-          details: errorDetails
-        },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Unexpected error in media API:', error);
+    console.error('Error in media API:', error);
     const errorDetails = error instanceof Error ? {
       message: error.message,
       stack: error.stack,
-      name: error.name
+      name: error.name,
+      code: (error as DatabaseError).code,
+      errno: (error as DatabaseError).errno,
+      sqlState: (error as DatabaseError).sqlState,
+      sqlMessage: (error as DatabaseError).sqlMessage
     } : {
       message: 'Unknown error',
       error: error
@@ -197,15 +129,6 @@ export async function GET(request: Request) {
       },
       { status: 500 }
     );
-  } finally {
-    if (connection) {
-      try {
-        connection.release();
-        console.log('Database connection released successfully');
-      } catch (error) {
-        console.error('Error releasing connection:', error);
-      }
-    }
   }
 }
 
@@ -227,7 +150,7 @@ export async function POST(request: Request) {
     const filePath = `/uploads/${team}/${fileName}`;
 
     // Save file to database
-    const result = await getPool().query(
+    const result = await pool.query(
       'INSERT INTO uploaded_items (file_name, file_type, file_path, team) VALUES ($1, $2, $3, $4) RETURNING *',
       [fileName, fileType, filePath, team]
     );

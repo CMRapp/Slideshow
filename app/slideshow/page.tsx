@@ -103,10 +103,6 @@ export default function SlideshowPage() {
     }
   };
 
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying);
-  };
-
   if (error) {
     return (
       <SidebarLayout>
