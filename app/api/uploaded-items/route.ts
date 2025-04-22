@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import getPool from '@/lib/db';
+import { pool } from '@/lib/db';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const team = searchParams.get('team');
-  let connection;
 
   if (!team) {
     return NextResponse.json(
@@ -14,30 +13,23 @@ export async function GET(request: Request) {
   }
 
   try {
-    const pool = await getPool();
-    connection = await pool.getConnection();
-    
-    const [items] = await connection.query(
+    const result = await pool.query(
       `SELECT 
         item_type,
         item_number,
         team
       FROM uploaded_items 
-      WHERE team = ? 
+      WHERE team = $1 
       ORDER BY item_number`,
       [team]
     );
 
-    return NextResponse.json({ items });
+    return NextResponse.json({ items: result.rows });
   } catch (error) {
     console.error('Error fetching uploaded items:', error);
     return NextResponse.json(
       { error: 'Database error occurred' },
       { status: 500 }
     );
-  } finally {
-    if (connection) {
-      connection.release();
-    }
   }
 } 

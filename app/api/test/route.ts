@@ -1,28 +1,28 @@
 import { NextResponse } from 'next/server';
-import getPool from '@/lib/db';
+import { pool } from '@/lib/db';
 
 export async function GET() {
-  const pool = await getPool();
-  let connection;
   try {
-    connection = await pool.getConnection();
-    
     // Get all tables
-    const [tables] = await connection.query('SHOW TABLES');
-    console.log('All tables:', tables);
+    const tables = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+    console.log('All tables:', tables.rows);
     
     // Get uploaded_items table structure
-    const [structure] = await connection.query('DESCRIBE uploaded_items');
-    console.log('uploaded_items structure:', structure);
+    const structure = await pool.query(`
+      SELECT column_name, data_type, is_nullable
+      FROM information_schema.columns
+      WHERE table_name = 'uploaded_items'
+    `);
+    console.log('uploaded_items structure:', structure.rows);
     
     // Get sample data
-    const [rows] = await connection.query('SELECT * FROM uploaded_items LIMIT 5');
-    console.log('Sample data:', rows);
+    const sampleData = await pool.query('SELECT * FROM uploaded_items LIMIT 5');
+    console.log('Sample data:', sampleData.rows);
     
     return NextResponse.json({
-      tables,
-      structure,
-      sampleData: rows
+      tables: tables.rows,
+      structure: structure.rows,
+      sampleData: sampleData.rows
     });
   } catch (error) {
     console.error('Test route error:', error);
@@ -33,9 +33,5 @@ export async function GET() {
       },
       { status: 500 }
     );
-  } finally {
-    if (connection) {
-      connection.release();
-    }
   }
 } 

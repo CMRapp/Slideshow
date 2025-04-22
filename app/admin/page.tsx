@@ -318,221 +318,121 @@ export default function AdminPage() {
           </div>
         )}
 
-        <TabbedContainer
-          tabs={[
-            {
-              id: 'upload',
-              label: 'Upload Media',
-              content: (
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Team Name</label>
-                    <input
-                      type="text"
-                      value={teamName}
-                      onChange={(e) => setTeamName(e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">File</label>
-                    <input
-                      type="file"
-                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    />
-                  </div>
-
-                  <button
-                    onClick={handleFileUpload}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-yellow-400 text-black hover:bg-yellow-300 rounded-lg transition-colors"
-                  >
-                    <FiUpload />
-                    Upload
-                  </button>
-                </div>
-              ),
-            },
-            {
-              id: 'settings',
-              label: 'Settings',
-              content: (
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Photo Count</label>
-                    <input
-                      type="number"
-                      value={photoCount}
-                      onChange={(e) => setPhotoCount(Number(e.target.value))}
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    />
+        <TabbedContainer>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium mb-2">Team Name</label>
+              <input
+                type="text"
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                placeholder="Enter team name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Upload Media</label>
+              <input
+                type="file"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                accept="image/*,video/*"
+              />
+            </div>
+            <button
+              onClick={handleFileUpload}
+              disabled={!teamName || !selectedFile}
+              className="w-full bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Upload
+            </button>
+          </div>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium mb-2">Main Logo</label>
+              <input
+                type="file"
+                onChange={(e) => setMainLogo(e.target.files?.[0] || null)}
+                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                accept="image/*"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Side Logo</label>
+              <input
+                type="file"
+                onChange={(e) => setSideLogo(e.target.files?.[0] || null)}
+                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                accept="image/*"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Horizontal Logo</label>
+              <input
+                type="file"
+                onChange={(e) => setHorizontalLogo(e.target.files?.[0] || null)}
+                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                accept="image/*"
+              />
+            </div>
+          </div>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium mb-2">Photo Count</label>
+              <input
+                type="number"
+                value={photoCount}
+                onChange={(e) => setPhotoCount(parseInt(e.target.value))}
+                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+              />
+              <button
+                onClick={handlePhotoCountSave}
+                className="mt-2 bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500"
+              >
+                Save Photo Count
+              </button>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Video Count</label>
+              <input
+                type="number"
+                value={videoCount}
+                onChange={(e) => setVideoCount(parseInt(e.target.value))}
+                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+              />
+              <button
+                onClick={handleVideoCountSave}
+                className="mt-2 bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500"
+              >
+                Save Video Count
+              </button>
+            </div>
+            <button
+              onClick={handleDeleteAll}
+              className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
+            >
+              Delete All Media
+            </button>
+          </div>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium mb-2">Teams</label>
+              <div className="space-y-2">
+                {teams.map((team) => (
+                  <div key={team} className="flex items-center justify-between">
+                    <span>{team}</span>
                     <button
-                      onClick={handlePhotoCountSave}
-                      className="mt-2 w-full px-4 py-2 bg-yellow-400 text-black hover:bg-yellow-300 rounded-lg transition-colors"
+                      onClick={() => fetchTeamMedia(team)}
+                      className="bg-yellow-400 text-black py-1 px-3 rounded hover:bg-yellow-500"
                     >
-                      Save Photo Count
+                      View Media
                     </button>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Video Count</label>
-                    <input
-                      type="number"
-                      value={videoCount}
-                      onChange={(e) => setVideoCount(Number(e.target.value))}
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    />
-                    <button
-                      onClick={handleVideoCountSave}
-                      className="mt-2 w-full px-4 py-2 bg-yellow-400 text-black hover:bg-yellow-300 rounded-lg transition-colors"
-                    >
-                      Save Video Count
-                    </button>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Main Logo</label>
-                    <input
-                      type="file"
-                      onChange={(e) => setMainLogo(e.target.files?.[0] || null)}
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    />
-                    <button
-                      onClick={() => handleLogoUpload('main')}
-                      className="mt-2 w-full px-4 py-2 bg-yellow-400 text-black hover:bg-yellow-300 rounded-lg transition-colors"
-                    >
-                      Upload Main Logo
-                    </button>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Side Logo</label>
-                    <input
-                      type="file"
-                      onChange={(e) => setSideLogo(e.target.files?.[0] || null)}
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    />
-                    <button
-                      onClick={() => handleLogoUpload('side')}
-                      className="mt-2 w-full px-4 py-2 bg-yellow-400 text-black hover:bg-yellow-300 rounded-lg transition-colors"
-                    >
-                      Upload Side Logo
-                    </button>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Horizontal Logo</label>
-                    <input
-                      type="file"
-                      onChange={(e) => setHorizontalLogo(e.target.files?.[0] || null)}
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    />
-                    <button
-                      onClick={() => handleLogoUpload('horizontal')}
-                      className="mt-2 w-full px-4 py-2 bg-yellow-400 text-black hover:bg-yellow-300 rounded-lg transition-colors"
-                    >
-                      Upload Horizontal Logo
-                    </button>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Background Image</label>
-                    <input
-                      type="file"
-                      onChange={handleBackgroundUpload}
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    />
-                    {backgroundImage && (
-                      <div className="mt-4 relative aspect-video">
-                        <Image
-                          src={backgroundImage}
-                          alt="Background preview"
-                          fill
-                          className="object-cover rounded-lg"
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={handleDeleteAll}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-                  >
-                    <FiTrash2 />
-                    Delete All Media
-                  </button>
-                </div>
-              ),
-            },
-            {
-              id: 'teams',
-              label: 'Teams',
-              content: (
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">New Team</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newTeam}
-                        onChange={(e) => setNewTeam(e.target.value)}
-                        className="flex-1 px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                      />
-                      <button
-                        onClick={handleAddTeam}
-                        className="px-4 py-2 bg-yellow-400 text-black hover:bg-yellow-300 rounded-lg transition-colors"
-                      >
-                        Add Team
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Select Team</label>
-                    <select
-                      value={selectedTeam}
-                      onChange={(e) => setSelectedTeam(e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    >
-                      <option value="">Select a team</option>
-                      {teams.map((team) => (
-                        <option key={team} value={team}>
-                          {team}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {selectedTeam && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {teamMedia.map((item) => (
-                        <div
-                          key={item.id}
-                          className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden cursor-pointer"
-                          onClick={() => handleImageClick(item.file_path)}
-                        >
-                          {item.file_type.startsWith('image/') ? (
-                            <Image
-                              src={item.file_path}
-                              alt={item.file_name}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-4xl">🎥</span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ),
-            },
-          ]}
-        />
+                ))}
+              </div>
+            </div>
+          </div>
+        </TabbedContainer>
 
         {selectedImage && (
           <ImageViewer
