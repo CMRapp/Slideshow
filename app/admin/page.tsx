@@ -464,6 +464,16 @@ export default function AdminPage() {
                       onChange={handleBackgroundUpload}
                       className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     />
+                    {backgroundImage && (
+                      <div className="mt-4 relative aspect-video">
+                        <Image
+                          src={backgroundImage}
+                          alt="Background preview"
+                          fill
+                          className="object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <button

@@ -176,14 +176,16 @@ export default function SlideshowPage() {
     >
       <div className="flex-1 relative flex items-center justify-center overflow-hidden h-full">
         {/* Background with z-index -1 */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('/treasure-hunt.jpg')`,
-            zIndex: -1,
-            filter: 'brightness(0.5)'
-          }}
-        />
+        <div className="absolute inset-0 z-[-1]">
+          <Image
+            src="/treasure-hunt.jpg"
+            alt="Background"
+            fill
+            className="object-cover"
+            style={{ filter: 'brightness(0.5)' }}
+            priority
+          />
+        </div>
         
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative w-full h-full flex items-center justify-center p-4">
