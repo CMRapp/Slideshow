@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import getPool from '@/lib/db';
+import { pool } from '@/lib/db';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -12,13 +12,9 @@ export async function GET(request: Request) {
     );
   }
 
-  const pool = await getPool();
-  let client;
   try {
-    client = await pool.connect();
-
     // Get media items for the team
-    const result = await client.query(
+    const result = await pool.query(
       'SELECT * FROM media_items WHERE team = $1 ORDER BY item_number ASC',
       [team]
     );
@@ -32,9 +28,5 @@ export async function GET(request: Request) {
       { error: 'Failed to fetch team media' },
       { status: 500 }
     );
-  } finally {
-    if (client) {
-      client.release();
-    }
   }
 } 

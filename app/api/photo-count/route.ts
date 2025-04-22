@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server';
-import getPool from '@/lib/db';
+import { pool } from '@/lib/db';
 
 export async function GET() {
-  const pool = await getPool();
-  let client;
   try {
-    client = await pool.connect();
-
     // Get photo count from settings
-    const result = await client.query(
+    const result = await pool.query(
       "SELECT value FROM settings WHERE key = 'photo_count'"
     );
 
@@ -21,10 +17,6 @@ export async function GET() {
       { error: 'Failed to fetch photo count' },
       { status: 500 }
     );
-  } finally {
-    if (client) {
-      client.release();
-    }
   }
 }
 
@@ -38,13 +30,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const pool = await getPool();
-  let client;
   try {
-    client = await pool.connect();
-
     // Update photo count in settings
-    await client.query(
+    await pool.query(
       "INSERT INTO settings (key, value) VALUES ('photo_count', $1) ON CONFLICT (key) DO UPDATE SET value = $1",
       [count.toString()]
     );
@@ -56,9 +44,5 @@ export async function POST(request: Request) {
       { error: 'Failed to update photo count' },
       { status: 500 }
     );
-  } finally {
-    if (client) {
-      client.release();
-    }
   }
 } 
