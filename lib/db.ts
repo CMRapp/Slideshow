@@ -5,7 +5,7 @@ const { serverRuntimeConfig } = getConfig();
 
 // Check for required environment variables
 const requiredEnvVars = ['DATABASE_URL'];
-const missingEnvVars = requiredEnvVars.filter(envVar => !serverRuntimeConfig[envVar]);
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
   throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
@@ -13,15 +13,15 @@ if (missingEnvVars.length > 0) {
 
 // Log database configuration (excluding sensitive data)
 console.log('Database Configuration:', {
-  host: new URL(serverRuntimeConfig.DATABASE_URL).hostname,
-  database: new URL(serverRuntimeConfig.DATABASE_URL).pathname.slice(1),
+  host: new URL(process.env.DATABASE_URL).hostname,
+  database: new URL(process.env.DATABASE_URL).pathname.slice(1),
   ssl: true,
   max: 10
 });
 
 // Create connection pool with Neon configuration
 const pool = new Pool({
-  connectionString: serverRuntimeConfig.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL,
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
@@ -86,6 +86,4 @@ initializeDatabase().catch(error => {
   process.exit(1);
 });
 
-export default async function getPool() {
-  return pool;
-} 
+export default pool; 
