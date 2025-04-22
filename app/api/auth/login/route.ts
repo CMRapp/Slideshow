@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { compare } from 'bcryptjs';
+import { compare, hash } from 'bcryptjs';
 import { pool } from '@/lib/db';
 
-// In a real application, these would be stored securely and not hardcoded
+// Environment variables for admin credentials
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -18,19 +18,24 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check if admin password exists in database
     const result = await pool.query(
       'SELECT value FROM settings WHERE key = $1',
       ['admin_password']
     );
 
     if (result.rows.length === 0) {
-      return NextResponse.json(
-        { error: 'Admin password not set' },
-        { status: 500 }
+      // If no admin password exists, create it using the environment variable
+      const hashedPassword = await hash(ADMIN_PASSWORD, 10);
+      await pool.query(
+        'INSERT INTO settings (key, value) VALUES ($1, $2)',
+        ['admin_password', hashedPassword]
       );
     }
 
-    const isPasswordValid = await compare(password, result.rows[0].value);
+    // Get the stored password (either newly created or existing)
+    const storedPassword = result.rows[0]?.value || ADMIN_PASSWORD;
+    const isPasswordValid = await compare(password, storedPassword);
 
     if (!isPasswordValid) {
       return NextResponse.json(

@@ -264,6 +264,26 @@ export default function AdminPage() {
     await handleLogoUpload('background');
   };
 
+  const fetchTeamMedia = async (team: string) => {
+    try {
+      const response = await fetch(`/api/team-media?team=${encodeURIComponent(team)}`);
+      if (!response.ok) throw new Error('Failed to fetch team media');
+      const data = await response.json();
+      setTeamMedia(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error fetching team media:', error);
+      setTeamMedia([]);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedTeam) {
+      fetchTeamMedia(selectedTeam);
+    } else {
+      setTeamMedia([]);
+    }
+  }, [selectedTeam]);
+
   if (isLoading) {
     return <div className="min-h-screen bg-black flex items-center justify-center">Loading...</div>;
   }
