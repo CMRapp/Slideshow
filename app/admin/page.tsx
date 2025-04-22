@@ -16,9 +16,6 @@ export default function AdminPage() {
   const [photoCount, setPhotoCount] = useState<number>(0);
   const [videoCount, setVideoCount] = useState<number>(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [mainLogo, setMainLogo] = useState<File | null>(null);
-  const [sideLogo, setSideLogo] = useState<File | null>(null);
-  const [horizontalLogo, setHorizontalLogo] = useState<File | null>(null);
   const [teams, setTeams] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -86,40 +83,6 @@ export default function AdminPage() {
       setSelectedFile(null);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Upload failed');
-    }
-  };
-
-  const handleLogoUpload = async (type: 'main' | 'side' | 'horizontal' | 'background') => {
-    setError(null);
-    setSuccess(null);
-
-    const file = type === 'main' ? mainLogo : type === 'side' ? sideLogo : type === 'horizontal' ? horizontalLogo : null;
-    if (!file) {
-      setError(`Please select a ${type} logo file`);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('type', type);
-    formData.append('file', file);
-
-    try {
-      const response = await fetch('/api/upload-logo', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Logo upload failed');
-      }
-
-      setSuccess(`${type} logo uploaded successfully!`);
-      if (type === 'main') setMainLogo(null);
-      else if (type === 'side') setSideLogo(null);
-      else if (type === 'horizontal') setHorizontalLogo(null);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Logo upload failed');
     }
   };
 
@@ -283,35 +246,6 @@ export default function AdminPage() {
             >
               Upload
             </button>
-          </div>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Main Logo</label>
-              <input
-                type="file"
-                onChange={(e) => setMainLogo(e.target.files?.[0] || null)}
-                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
-                accept="image/*"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Side Logo</label>
-              <input
-                type="file"
-                onChange={(e) => setSideLogo(e.target.files?.[0] || null)}
-                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
-                accept="image/*"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Horizontal Logo</label>
-              <input
-                type="file"
-                onChange={(e) => setHorizontalLogo(e.target.files?.[0] || null)}
-                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
-                accept="image/*"
-              />
-            </div>
           </div>
           <div className="space-y-6">
             <div>
