@@ -4,7 +4,6 @@ import { join } from 'path';
 import { mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import getPool from '@/lib/db';
-import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 
@@ -14,7 +13,9 @@ const ALLOWED_FILE_TYPES = {
   'image/png': '.png',
   'image/gif': '.gif',
   'video/mp4': '.mp4',
-  'video/webm': '.webm'
+  'video/webm': '.webm',
+  'video/quicktime': '.mov',
+  'video/hevc': '.hevc'
 };
 
 // Maximum file size (10MB)
@@ -53,141 +54,59 @@ function normalizeTeamName(name: string): string {
 }
 
 export async function POST(request: Request) {
-  let connection;
+  const pool = await getPool();
+  let client;
   try {
+    client = await pool.connect();
+    
     const formData = await request.formData();
-    console.log('Received form data:', {
-      team: formData.get('team'),
-      itemNumber: formData.get('itemNumber'),
-      itemType: formData.get('itemType'),
-      file: formData.get('file')
-    });
-
-    const team = formData.get('team') as string;
-    const itemNumber = formData.get('itemNumber') as string;
-    const itemType = formData.get('itemType') as string;
     const file = formData.get('file') as File;
+    const teamName = formData.get('teamName') as string;
 
-    if (!team || !itemNumber || !itemType || !file) {
-      console.error('Missing required fields:', { team, itemNumber, itemType, file });
+    if (!file || !teamName) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'File and team name are required' },
         { status: 400 }
       );
-    }
-
-    // Validate item number
-    const parsedItemNumber = parseInt(itemNumber, 10);
-    if (isNaN(parsedItemNumber) || parsedItemNumber < 1) {
-      console.error('Invalid item number:', itemNumber);
-      return NextResponse.json(
-        { error: 'Invalid item number' },
-        { status: 400 }
-      );
-    }
-
-    // Validate item type
-    if (!['photo', 'video'].includes(itemType)) {
-      console.error('Invalid item type:', itemType);
-      return NextResponse.json(
-        { error: 'Invalid item type' },
-        { status: 400 }
-      );
-    }
-
-    // Validate file type
-    if (!ALLOWED_FILE_TYPES[file.type as keyof typeof ALLOWED_FILE_TYPES]) {
-      console.error('Invalid file type:', file.type);
-      return NextResponse.json(
-        { error: 'Invalid file type' },
-        { status: 400 }
-      );
-    }
-
-    // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
-      console.error('File too large:', file.size);
-      return NextResponse.json(
-        { error: 'File too large' },
-        { status: 400 }
-      );
-    }
-
-    const pool = await getPool();
-    connection = await pool.getConnection();
-    console.log('Database connection established');
-
-    // Check if this item has already been uploaded
-    const [existingItems] = await connection.query(
-      'SELECT * FROM uploaded_items WHERE team = ? AND item_number = ? AND item_type = ?',
-      [team, parsedItemNumber, itemType]
-    );
-
-    if (Array.isArray(existingItems) && existingItems.length > 0) {
-      console.error('Item already uploaded:', { team, parsedItemNumber, itemType });
-      return NextResponse.json(
-        { error: 'This item has already been uploaded' },
-        { status: 400 }
-      );
-    }
-
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads');
-    if (!existsSync(uploadsDir)) {
-      console.log('Creating uploads directory:', uploadsDir);
-      await mkdir(uploadsDir, { recursive: true });
     }
 
     // Generate unique filename
-    const fileExt = ALLOWED_FILE_TYPES[file.type as keyof typeof ALLOWED_FILE_TYPES];
-    const filename = `${team}_${itemType}_${parsedItemNumber}${fileExt}`;
-    const filePath = join(uploadsDir, filename);
-    console.log('Saving file to:', filePath);
+    const timestamp = Date.now();
+    const filename = `${timestamp}-${file.name}`;
+    const filePath = join(process.cwd(), 'public', 'uploads', filename);
 
-    // Save the file
+    // Save file to disk
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    await writeFile(filePath, buffer);
 
-    // Process image if it's a photo
-    if (itemType === 'photo') {
-      console.log('Processing photo with sharp');
-      const processedBuffer = await sharp(buffer)
-        .resize(1920, 1080, { fit: 'inside', withoutEnlargement: true })
-        .jpeg({ quality: 80 })
-        .toBuffer();
-      await writeFile(filePath, processedBuffer);
-    } else {
-      await writeFile(filePath, buffer);
-    }
-
-    // Record the uploaded item
-    console.log('Recording uploaded item in database');
-    await connection.query(
-      'INSERT INTO uploaded_items (team, item_type, item_number, file_path) VALUES (?, ?, ?, ?)',
-      [team, itemType, parsedItemNumber, `/uploads/${filename}`]
+    // Save to database
+    const result = await client.query(
+      'INSERT INTO uploaded_items (file_name, file_type, file_path, item_number, item_type, team) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [
+        file.name,
+        file.type,
+        `/uploads/${filename}`,
+        1, // Default item number
+        file.type.startsWith('image/') ? 'photo' : 'video',
+        teamName
+      ]
     );
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      message: 'File uploaded successfully',
+      fileId: result.rows[0].id
+    });
   } catch (error) {
     console.error('Upload error:', error);
-    if (error instanceof Error) {
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        code: (error as any).code,
-        errno: (error as any).errno,
-        sqlState: (error as any).sqlState,
-        sqlMessage: (error as any).sqlMessage
-      });
-    }
     return NextResponse.json(
-      { error: 'Failed to upload file', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to upload file' },
       { status: 500 }
     );
   } finally {
-    if (connection) {
-      connection.release();
-      console.log('Database connection released');
+    if (client) {
+      client.release();
     }
   }
 } 

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
-import sharp from 'sharp';
 
 export async function POST(request: Request) {
   try {
@@ -22,40 +21,22 @@ export async function POST(request: Request) {
     if (mainLogo) {
       const bytes = await mainLogo.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      
-      // Process main logo
-      const processedBuffer = await sharp(buffer)
-        .resize(60, null, { withoutEnlargement: true })
-        .toBuffer();
-
       const path = join(process.cwd(), 'public', 'riders-wm.png');
-      uploadPromises.push(writeFile(path, processedBuffer));
+      uploadPromises.push(writeFile(path, buffer));
     }
 
     if (sideLogoVertical) {
       const bytes = await sideLogoVertical.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      
-      // Process vertical side logo
-      const processedBuffer = await sharp(buffer)
-        .resize(60, null, { withoutEnlargement: true })
-        .toBuffer();
-
       const path = join(process.cwd(), 'public', 'side-logo-vertical.png');
-      uploadPromises.push(writeFile(path, processedBuffer));
+      uploadPromises.push(writeFile(path, buffer));
     }
 
     if (sideLogoHorizontal) {
       const bytes = await sideLogoHorizontal.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      
-      // Process horizontal side logo
-      const processedBuffer = await sharp(buffer)
-        .resize(null, 60, { withoutEnlargement: true })
-        .toBuffer();
-
       const path = join(process.cwd(), 'public', 'side-logo-horiz.png');
-      uploadPromises.push(writeFile(path, processedBuffer));
+      uploadPromises.push(writeFile(path, buffer));
     }
 
     await Promise.all(uploadPromises);
@@ -64,7 +45,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error uploading logos:', error);
     return NextResponse.json(
-      { error: 'Error uploading logos' },
+      { error: 'Failed to upload logos' },
       { status: 500 }
     );
   }

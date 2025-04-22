@@ -5,20 +5,20 @@ import getPool from '@/lib/db';
 
 export async function POST() {
   const pool = await getPool();
-  let connection;
+  let client;
   try {
-    connection = await pool.getConnection();
+    client = await pool.connect();
     
     // Get all file paths before deleting
-    const [rows] = await pool.execute('SELECT file_path FROM uploaded_items');
+    const result = await client.query('SELECT file_path FROM uploaded_items');
     
     // Delete all records
-    await pool.execute('DELETE FROM uploaded_items');
+    await client.query('DELETE FROM uploaded_items');
     
     return NextResponse.json({ 
       success: true,
       message: 'All media items deleted successfully',
-      deletedCount: rows.length
+      deletedCount: result.rows.length
     });
   } catch (error) {
     console.error('Error deleting media items:', error);
@@ -30,8 +30,8 @@ export async function POST() {
       { status: 500 }
     );
   } finally {
-    if (connection) {
-      connection.release();
+    if (client) {
+      client.release();
     }
   }
 } 

@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync, mkdir } from 'fs';
-import sharp from 'sharp';
 
 export async function POST(request: Request) {
   try {
@@ -30,20 +29,12 @@ export async function POST(request: Request) {
       await mkdir(backgroundsDir, { recursive: true });
     }
 
-    // Process and save the image
+    // Save the image
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-
-    // Process image with sharp
-    const processedBuffer = await sharp(buffer)
-      .resize(1920, 1080, { fit: 'cover' })
-      .jpeg({ quality: 80 })
-      .toBuffer();
-
-    // Save the processed image
     const filename = 'background.jpg';
     const filePath = join(backgroundsDir, filename);
-    await writeFile(filePath, processedBuffer);
+    await writeFile(filePath, buffer);
 
     return NextResponse.json({
       success: true,

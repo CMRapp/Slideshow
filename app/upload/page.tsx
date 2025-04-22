@@ -106,56 +106,53 @@ export default function UploadPage() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('team', selectedTeam);
-    if (selectedPhotoNumber) {
-      formData.append('itemType', 'photo');
-      formData.append('itemNumber', selectedPhotoNumber);
-    } else if (selectedVideoNumber) {
-      formData.append('itemType', 'video');
-      formData.append('itemNumber', selectedVideoNumber);
-    }
-    Array.from(files).forEach((file) => {
-      formData.append('file', file);
-    });
-
     try {
-      setUploadStatus({ success: true, message: 'Uploading files...' });
+      setUploadStatus({ success: true, message: 'Processing files...' });
+      const formData = new FormData();
+      formData.append('team', selectedTeam);
+      
+      if (selectedPhotoNumber) {
+        formData.append('itemType', 'photo');
+        formData.append('itemNumber', selectedPhotoNumber);
+      } else if (selectedVideoNumber) {
+        formData.append('itemType', 'video');
+        formData.append('itemNumber', selectedVideoNumber);
+      }
+
+      // Process each file
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        formData.append('file', file);
+      }
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Upload failed');
-      }
-
-      const data = await response.json();
-      if (!data || !data.success) {
-        throw new Error('Upload failed');
-      }
-
-      // Refresh uploaded items after successful upload
-      const itemsResponse = await fetch(`/api/uploaded-items?team=${encodeURIComponent(selectedTeam)}`);
-      if (itemsResponse.ok) {
-        const itemsData = await itemsResponse.json();
-        setUploadedItems(itemsData.items || []);
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
       }
 
       setUploadStatus({ 
         success: true, 
-        message: `Successfully uploaded file for Team ${selectedTeam}` 
+        message: 'Files uploaded successfully!' 
       });
-      
-      // Clear selections
-      setSelectedPhotoNumber('');
-      setSelectedVideoNumber('');
+
+      // Refresh uploaded items list
+      if (selectedTeam) {
+        const response = await fetch(`/api/uploaded-items?team=${encodeURIComponent(selectedTeam)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setUploadedItems(data.items || []);
+        }
+      }
     } catch (error) {
       console.error('Upload error:', error);
       setUploadStatus({ 
         success: false, 
-        message: error instanceof Error ? error.message : 'Upload failed' 
+        message: error instanceof Error ? error.message : 'Failed to upload files. Please try again.' 
       });
     }
   }, [selectedTeam, selectedPhotoNumber, selectedVideoNumber]);
@@ -254,7 +251,8 @@ export default function UploadPage() {
                 id="photoNumberSelect"
                 value={selectedPhotoNumber}
                 onChange={handlePhotoNumberChange}
-                className="w-full px-4 py-2 rounded-lg bg-black/85 border border-white/20 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none transition-all duration-200 [&>option]:bg-black [&>option]:text-white [&>option:hover]:bg-yellow-500 [&>option:hover]:text-black [&>option:checked]:bg-black [&>option:checked]:text-yellow-500 [&>option:disabled]:text-gray-500 [&>option:disabled]:cursor-not-allowed"
+                disabled={!!selectedVideoNumber}
+                className="w-full px-4 py-2 rounded-lg bg-black/85 border border-white/20 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none transition-all duration-200 [&>option]:bg-black [&>option]:text-white [&>option:hover]:bg-yellow-500 [&>option:hover]:text-black [&>option:checked]:bg-black [&>option:checked]:text-yellow-500 [&>option:disabled]:text-gray-500 [&>option:disabled]:cursor-not-allowed disabled:opacity-50 disabled:cursor-not-allowed"
                 required
               >
                 <option value="">Select a photo number</option>
@@ -281,7 +279,8 @@ export default function UploadPage() {
                 id="videoNumberSelect"
                 value={selectedVideoNumber}
                 onChange={handleVideoNumberChange}
-                className="w-full px-4 py-2 rounded-lg bg-black/85 border border-white/20 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none transition-all duration-200 [&>option]:bg-black [&>option]:text-white [&>option:hover]:bg-yellow-500 [&>option:hover]:text-black [&>option:checked]:bg-black [&>option:checked]:text-yellow-500 [&>option:disabled]:text-gray-500 [&>option:disabled]:cursor-not-allowed"
+                disabled={!!selectedPhotoNumber}
+                className="w-full px-4 py-2 rounded-lg bg-black/85 border border-white/20 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none transition-all duration-200 [&>option]:bg-black [&>option]:text-white [&>option:hover]:bg-yellow-500 [&>option:hover]:text-black [&>option:checked]:bg-black [&>option:checked]:text-yellow-500 [&>option:disabled]:text-gray-500 [&>option:disabled]:cursor-not-allowed disabled:opacity-50 disabled:cursor-not-allowed"
                 required
               >
                 <option value="">Select a video number</option>
@@ -325,7 +324,7 @@ export default function UploadPage() {
                 />
               </label>
               <p className="text-sm text-gray-400">
-                Supported formats: Images (JPEG, PNG, GIF) and Videos (MP4, WebM)
+                Supported formats: Images (JPEG, PNG, GIF) and Videos (MP4, WebM, MOV, HEVC)
               </p>
             </div>
           </div>

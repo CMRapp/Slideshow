@@ -8,12 +8,12 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if the route is protected
-  if (protectedRoutes.some(route => pathname.startsWith(route))) {
+  if (protectedRoutes.some(route => pathname.startsWith(route)) && !pathname.includes('/login')) {
     const authToken = request.cookies.get('auth-token');
 
-    // If no auth token, redirect to admin page for authentication
+    // If no auth token, redirect to login page
     if (!authToken) {
-      return NextResponse.redirect(new URL('/admin', request.url));
+      return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
     // TODO: Validate the auth token here

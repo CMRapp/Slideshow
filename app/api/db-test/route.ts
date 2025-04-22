@@ -1,28 +1,40 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import getPool from '@/lib/db';
 
 export async function GET() {
   try {
+    const pool = await getPool();
+    
     // Test basic connection
-    const [connection] = await pool.query('SELECT 1 as test');
+    const connection = await pool.query('SELECT 1 as test');
     
     // Get database information
-    const [dbInfo] = await pool.query(`
+    const dbInfo = await pool.query(`
       SELECT 
-        DATABASE() as current_database,
-        VERSION() as mysql_version,
-        CURRENT_USER() as current_user_name
+        current_database() as current_database,
+        version() as postgres_version,
+        current_user as current_user_name
     `);
 
     // Check if media_items table exists and get its structure
-    const [tables] = await pool.query(`
-      SHOW TABLES LIKE 'media_items'
+    const tables = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'media_items'
+      ) as exists
     `);
 
     let tableStructure = [];
-    if (tables.length > 0) {
-      const [structure] = await pool.query('DESCRIBE media_items');
-      tableStructure = structure;
+    if (tables.rows[0].exists) {
+      const structure = await pool.query(`
+        SELECT 
+          column_name, 
+          data_type, 
+          is_nullable
+        FROM information_schema.columns
+        WHERE table_name = 'media_items'
+      `);
+      tableStructure = structure.rows;
     }
 
     // Get environment variables (without sensitive data)
@@ -37,11 +49,11 @@ export async function GET() {
     return NextResponse.json({
       status: 'success',
       connection: {
-        test: connection[0].test === 1 ? 'success' : 'failed',
-        details: dbInfo[0]
+        test: connection.rows[0].test === 1 ? 'success' : 'failed',
+        details: dbInfo.rows[0]
       },
       tables: {
-        media_items: tables.length > 0 ? 'exists' : 'not found',
+        media_items: tables.rows[0].exists ? 'exists' : 'not found',
         structure: tableStructure
       },
       environment: envInfo
@@ -49,18 +61,7 @@ export async function GET() {
   } catch (error) {
     console.error('Database test error:', error);
     return NextResponse.json(
-      { 
-        status: 'error',
-        message: 'Failed to connect to database',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        // Include environment info for debugging (without sensitive data)
-        environment: {
-          dbHost: process.env.DB_HOST,
-          dbName: process.env.DB_NAME,
-          dbUser: process.env.DB_USER,
-          hasDbPassword: !!process.env.DB_PASSWORD,
-        }
-      },
+      { status: 'error', message: 'Database test failed' },
       { status: 500 }
     );
   }
