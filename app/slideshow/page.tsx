@@ -163,82 +163,46 @@ export default function SlideshowPage() {
   console.log('Current media item:', currentItem);
 
   return (
-    <SidebarLayout 
-      isPlaying={isPlaying}
-      onPlayPause={togglePlay}
-      onVolumeChange={(volume) => {
-        // Update video volume if there's a video element
-        const videoElement = document.querySelector('video');
-        if (videoElement) {
-          videoElement.volume = volume / 100;
-        }
-      }}
-    >
-      <div className="flex-1 relative flex items-center justify-center overflow-hidden h-full">
-        {/* Background with z-index -1 */}
-        <div className="absolute inset-0 z-[-1]">
-          <Image
-            src="/treasure-hunt.jpg"
-            alt="Background"
-            fill
-            className="object-cover"
-            style={{ filter: 'brightness(0.5)' }}
-            priority
-          />
-        </div>
-        
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative w-full h-full flex items-center justify-center p-4">
-            {currentItem.file_type.startsWith('image/') ? (
+    <SidebarLayout>
+      <div className="relative w-full h-full">
+        {mediaItems.length > 0 ? (
+          <>
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={() => setIsPlaying(!isPlaying)}
+                className="p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
+                aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
+              >
+                {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
+              </button>
+            </div>
+            {mediaItems[currentIndex].file_type.startsWith('image/') ? (
               <Image
-                src={currentItem.file_path}
-                alt={currentItem.team_name}
-                width={1920}
-                height={1080}
-                className="max-w-full max-h-[calc(100vh-8rem)] w-auto h-auto object-contain rounded-[3px] border-2 border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.3)] drop-shadow-[0_0_10px_rgba(0,0,0,0.5)]"
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: 'calc(100vh - 8rem)',
-                  width: 'auto',
-                  height: 'auto'
-                }}
-                onError={(e) => {
-                  console.error('Error loading image:', e);
-                  const target = e.target as HTMLImageElement;
-                  console.error('Failed to load image:', target.src);
-                }}
+                src={mediaItems[currentIndex].file_path}
+                alt={`Slide ${currentIndex + 1}`}
+                fill
+                className="object-contain"
+                priority
               />
             ) : (
               <video
-                src={currentItem.file_path}
-                className="max-w-full max-h-[calc(100vh-8rem)] w-auto h-auto object-contain rounded-[3px] border-2 border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.3)] drop-shadow-[0_0_10px_rgba(0,0,0,0.5)]"
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: 'calc(100vh - 8rem)',
-                  width: 'auto',
-                  height: 'auto'
-                }}
-                autoPlay={isPlaying}
+                src={mediaItems[currentIndex].file_path}
+                className="w-full h-full object-contain"
+                autoPlay
                 loop
-                muted={false}
-                onError={(e) => {
-                  console.error('Error loading video:', e);
-                  const target = e.target as HTMLVideoElement;
-                  console.error('Failed to load video:', target.src);
-                }}
+                muted
+                playsInline
               />
             )}
+          </>
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <FiImage size={48} className="mx-auto text-gray-400" />
+              <p className="mt-4 text-gray-400">No media items available</p>
+            </div>
           </div>
-        </div>
-        
-        {/* Team Info Overlay */}
-        <div className="absolute bottom-4 left-4 right-4 bg-black/70 p-4 rounded-lg">
-          <div className="flex flex-col items-center">
-            <h2 className="text-xl font-bold text-white">
-              Team {currentItem.team_name}{currentItem.file_type.startsWith('image/') ? ` Photo #${currentItem.item_number}` : ` Video #${currentItem.item_number}`}
-            </h2>
-          </div>
-        </div>
+        )}
       </div>
     </SidebarLayout>
   );

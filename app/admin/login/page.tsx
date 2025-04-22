@@ -18,7 +18,7 @@ export default function LoginPage() {
         if (response.ok) {
           router.push('/admin');
         }
-      } catch {
+      } catch { // eslint-disable-line @typescript-eslint/no-unused-vars
         console.error('Auth check failed');
       }
     };
