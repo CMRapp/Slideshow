@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { FiLogOut, FiUpload, FiTrash2 } from 'react-icons/fi';
+import { FiLogOut } from 'react-icons/fi';
 import TabbedContainer from '../components/admin/TabbedContainer';
 import ImageViewer from '../components/ImageViewer';
 
@@ -34,9 +33,6 @@ export default function AdminPage() {
   const [horizontalLogo, setHorizontalLogo] = useState<File | null>(null);
   const [backgroundImage, setBackgroundImage] = useState<string | null>('');
   const [teams, setTeams] = useState<string[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState<string>('');
-  const [teamMedia, setTeamMedia] = useState<MediaItem[]>([]);
-  const [newTeam, setNewTeam] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const checkAuth = useCallback(async () => {
@@ -110,7 +106,7 @@ export default function AdminPage() {
     setError(null);
     setSuccess(null);
 
-    const file = type === 'main' ? mainLogo : type === 'side' ? sideLogo : type === 'horizontal' ? horizontalLogo : backgroundImage;
+    const file = type === 'main' ? mainLogo : type === 'side' ? sideLogo : type === 'horizontal' ? horizontalLogo : null;
     if (!file) {
       setError(`Please select a ${type} logo file`);
       return;
@@ -135,7 +131,6 @@ export default function AdminPage() {
       if (type === 'main') setMainLogo(null);
       else if (type === 'side') setSideLogo(null);
       else if (type === 'horizontal') setHorizontalLogo(null);
-      else setBackgroundImage(null);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Logo upload failed');
     }
@@ -220,48 +215,8 @@ export default function AdminPage() {
     }
   };
 
-  const handleAddTeam = async () => {
-    if (!newTeam.trim()) {
-      setError('Please enter a team name');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/teams', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: newTeam.trim() }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add team');
-      }
-
-      setSuccess('Team added successfully!');
-      setNewTeam('');
-      fetchTeams();
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to add team');
-    }
-  };
-
-  const handleImageClick = (filePath: string) => {
-    setSelectedImage(filePath);
-  };
-
   const handleCloseViewer = () => {
     setSelectedImage(null);
-  };
-
-  const handleBackgroundUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setBackgroundImage(URL.createObjectURL(file));
-    await handleLogoUpload('background');
   };
 
   const fetchTeamMedia = async (team: string) => {
@@ -269,20 +224,15 @@ export default function AdminPage() {
       const response = await fetch(`/api/team-media?team=${encodeURIComponent(team)}`);
       if (!response.ok) throw new Error('Failed to fetch team media');
       const data = await response.json();
-      setTeamMedia(Array.isArray(data) ? data : []);
+      setSelectedImage(data[0]?.file_path || null);
     } catch (error) {
       console.error('Error fetching team media:', error);
-      setTeamMedia([]);
     }
   };
 
   useEffect(() => {
-    if (selectedTeam) {
-      fetchTeamMedia(selectedTeam);
-    } else {
-      setTeamMedia([]);
-    }
-  }, [selectedTeam]);
+    fetchTeams();
+  }, []);
 
   if (isLoading) {
     return <div className="min-h-screen bg-black flex items-center justify-center">Loading...</div>;
