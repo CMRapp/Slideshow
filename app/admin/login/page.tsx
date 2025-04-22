@@ -18,8 +18,8 @@ export default function LoginPage() {
         if (response.ok) {
           router.push('/admin');
         }
-      } catch (error) {
-        console.error('Auth check failed:', error);
+      } catch {
+        console.error('Auth check failed');
       }
     };
     checkAuth();

@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 import getPool from '@/lib/db';
-import { join } from 'path';
-import { existsSync } from 'fs';
 
 interface MediaItem {
   id: number;
@@ -26,6 +24,17 @@ interface UploadedItem {
 interface MediaResponse {
   media: MediaItem[];
   total: number;
+}
+
+interface DatabaseError extends Error {
+  code?: string;
+  errno?: number;
+  sqlState?: string;
+  sqlMessage?: string;
+}
+
+interface TableInfo {
+  Tables_in_slideshow: string;
 }
 
 export async function GET(request: Request) {
@@ -58,7 +67,7 @@ export async function GET(request: Request) {
     // First, check if the uploaded_items table exists
     const [tables] = await connection.query("SHOW TABLES");
     const tableExists = Array.isArray(tables) && 
-      tables.some((table: any) => table.Tables_in_slideshow === 'uploaded_items');
+      tables.some((table: TableInfo) => table.Tables_in_slideshow === 'uploaded_items');
 
     if (!tableExists) {
       console.error('uploaded_items table does not exist');
@@ -153,10 +162,10 @@ export async function GET(request: Request) {
         message: error.message,
         stack: error.stack,
         name: error.name,
-        code: (error as any).code,
-        errno: (error as any).errno,
-        sqlState: (error as any).sqlState,
-        sqlMessage: (error as any).sqlMessage
+        code: (error as DatabaseError).code,
+        errno: (error as DatabaseError).errno,
+        sqlState: (error as DatabaseError).sqlState,
+        sqlMessage: (error as DatabaseError).sqlMessage
       } : {
         message: 'Unknown error',
         error: error
