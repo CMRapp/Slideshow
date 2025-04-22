@@ -33,10 +33,6 @@ interface DatabaseError extends Error {
   sqlMessage?: string;
 }
 
-interface TableInfo {
-  Tables_in_slideshow: string;
-}
-
 export async function GET(request: Request) {
   try {
     console.log('Starting media API request...');
