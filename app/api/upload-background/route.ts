@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
-import { mkdirSync } from 'fs';
+import { mkdir } from 'fs';
 import path from 'path';
 
 export async function POST(request: Request) {
@@ -17,7 +17,12 @@ export async function POST(request: Request) {
 
     // Create uploads directory if it doesn't exist
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    mkdirSync(uploadDir, { recursive: true });
+    await new Promise<void>((resolve, reject) => {
+      mkdir(uploadDir, { recursive: true }, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
 
     // Save the file
     const bytes = await file.arrayBuffer();
