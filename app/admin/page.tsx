@@ -6,18 +6,6 @@ import { FiLogOut } from 'react-icons/fi';
 import TabbedContainer from '../components/admin/TabbedContainer';
 import ImageViewer from '../components/ImageViewer';
 
-interface MediaItem {
-  id: number;
-  file_name: string;
-  file_type: string;
-  file_path: string;
-  item_number: number;
-  item_type: string;
-  exists: boolean;
-  team: string;
-  created_at: string;
-}
-
 export default function AdminPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -31,7 +19,6 @@ export default function AdminPage() {
   const [mainLogo, setMainLogo] = useState<File | null>(null);
   const [sideLogo, setSideLogo] = useState<File | null>(null);
   const [horizontalLogo, setHorizontalLogo] = useState<File | null>(null);
-  const [backgroundImage, setBackgroundImage] = useState<string | null>('');
   const [teams, setTeams] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
