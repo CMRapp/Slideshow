@@ -3,9 +3,7 @@ import { compare, hash } from 'bcryptjs';
 import { pool } from '@/lib/db';
 
 // Environment variables for admin credentials
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(request: Request) {
   try {
