@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { FiLogOut, FiUpload, FiTrash2 } from 'react-icons/fi';
@@ -39,7 +39,7 @@ export default function AdminPage() {
   const [newTeam, setNewTeam] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const response = await fetch('/api/check-auth');
       if (response.ok) {
@@ -47,13 +47,13 @@ export default function AdminPage() {
       } else {
         router.push('/admin/login');
       }
-    } catch (error) {
-      console.error('Auth check failed:', error);
+    } catch (err) {
+      console.error('Auth check failed:', err);
       router.push('/admin/login');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     checkAuth();
@@ -209,36 +209,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleTeamNameSave = async () => {
-    setError(null);
-    setSuccess(null);
-
-    if (!teamName.trim()) {
-      setError('Please enter a team name');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/save-team-name', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ teamName: teamName.trim() }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save team name');
-      }
-
-      setSuccess('Team name saved successfully!');
-      setTeamName('');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to save team name');
-    }
-  };
-
   const fetchTeams = async () => {
     try {
       const response = await fetch('/api/teams');
@@ -247,17 +217,6 @@ export default function AdminPage() {
       setTeams(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching teams:', error);
-    }
-  };
-
-  const fetchTeamMedia = async (team: string) => {
-    try {
-      const response = await fetch(`/api/team-media?team=${encodeURIComponent(team)}`);
-      if (!response.ok) throw new Error('Failed to fetch team media');
-      const data = await response.json();
-      setTeamMedia(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Error fetching team media:', error);
     }
   };
 

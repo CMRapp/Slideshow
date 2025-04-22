@@ -9,7 +9,7 @@ if (missingEnvVars.length > 0) {
 }
 
 // Create connection pool with Neon configuration
-const pool = new Pool({
+export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: true
 });
@@ -96,6 +96,4 @@ async function initializeDatabase() {
 initializeDatabase().catch(error => {
   console.error('Failed to initialize database:', error);
   process.exit(1);
-});
-
-export default pool; 
+}); 
