@@ -1,58 +1,91 @@
 import { NextResponse } from 'next/server';
-import getPool from '@/lib/db';
+import { pool } from '@/lib/db';
+
+interface Team {
+  id: number;
+  name: string;
+  created_at: string;
+}
+
+interface ErrorDetails {
+  message: string;
+  stack?: string;
+  name?: string;
+  code?: string;
+  errno?: number;
+  sqlState?: string;
+  sqlMessage?: string;
+}
 
 export async function GET() {
-  let connection;
   try {
-    const pool = await getPool();
-    connection = await pool.getConnection();
-    console.log('Connected to database for teams query');
+    const result = await pool.query('SELECT * FROM teams ORDER BY name');
+    const teams: Team[] = result.rows;
 
-    // Check if teams table exists
-    const [tables] = await connection.query(
-      "SHOW TABLES LIKE 'teams'"
-    );
-    
-    if (!Array.isArray(tables) || tables.length === 0) {
-      console.log('Teams table does not exist');
-      return NextResponse.json({ error: 'Teams table does not exist' }, { status: 500 });
-    }
-
-    // Get all teams
-    const [teams] = await connection.query(
-      'SELECT name FROM teams ORDER BY name ASC'
-    );
-
-    // If no teams exist, insert default teams
-    if (!Array.isArray(teams) || teams.length === 0) {
-      console.log('No teams found, inserting default teams');
-      const defaultTeams = ['Team A', 'Team B', 'Team C'];
-      await connection.query(
-        'INSERT IGNORE INTO teams (name) VALUES ?',
-        [defaultTeams.map(name => [name])]
-      );
-      
-      // Fetch teams again after inserting defaults
-      const [updatedTeams] = await connection.query(
-        'SELECT name FROM teams ORDER BY name ASC'
-      );
-      
-      return NextResponse.json(updatedTeams.map((team: any) => team.name));
-    }
-
-    return NextResponse.json(teams.map((team: any) => team.name));
+    return NextResponse.json(teams);
   } catch (error) {
-    console.error('Error in teams API:', error);
+    console.error('Error fetching teams:', error);
+    const errorDetails: ErrorDetails = error instanceof Error ? {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: (error as NodeJS.ErrnoException).code,
+      errno: (error as NodeJS.ErrnoException).errno,
+      sqlState: (error as { sqlState?: string }).sqlState,
+      sqlMessage: (error as { sqlMessage?: string }).sqlMessage
+    } : {
+      message: 'Unknown error'
+    };
+    
     return NextResponse.json(
       { 
         error: 'Failed to fetch teams',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: errorDetails
       },
       { status: 500 }
     );
-  } finally {
-    if (connection) {
-      connection.release();
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const { name } = await request.json();
+
+    if (!name) {
+      return NextResponse.json(
+        { error: 'Team name is required' },
+        { status: 400 }
+      );
     }
+
+    const result = await pool.query(
+      'INSERT INTO teams (name) VALUES ($1) RETURNING *',
+      [name]
+    );
+
+    const team: Team = result.rows[0];
+
+    return NextResponse.json(team);
+  } catch (error) {
+    console.error('Error creating team:', error);
+    const errorDetails: ErrorDetails = error instanceof Error ? {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: (error as NodeJS.ErrnoException).code,
+      errno: (error as NodeJS.ErrnoException).errno,
+      sqlState: (error as { sqlState?: string }).sqlState,
+      sqlMessage: (error as { sqlMessage?: string }).sqlMessage
+    } : {
+      message: 'Unknown error'
+    };
+    
+    return NextResponse.json(
+      { 
+        error: 'Failed to create team',
+        details: errorDetails
+      },
+      { status: 500 }
+    );
   }
 } 

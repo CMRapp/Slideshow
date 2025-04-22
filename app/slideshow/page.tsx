@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FiPlay, FiPause, FiImage } from 'react-icons/fi';
+import Image from 'next/image';
 import SidebarLayout from '@/app/components/SidebarLayout';
 
 interface MediaItem {
@@ -187,9 +188,11 @@ export default function SlideshowPage() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative w-full h-full flex items-center justify-center p-4">
             {currentItem.file_type.startsWith('image/') ? (
-              <img
+              <Image
                 src={currentItem.file_path}
                 alt={currentItem.team_name}
+                width={1920}
+                height={1080}
                 className="max-w-full max-h-[calc(100vh-8rem)] w-auto h-auto object-contain rounded-[3px] border-2 border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.3)] drop-shadow-[0_0_10px_rgba(0,0,0,0.5)]"
                 style={{
                   maxWidth: '100%',

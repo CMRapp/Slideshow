@@ -7,6 +7,7 @@ import Link from 'next/link';
 export default function LoginPage() {
   const router = useRouter();
   const [password, setPassword] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 

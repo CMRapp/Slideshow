@@ -5,7 +5,7 @@ export function getGlobalGradient(): string {
   return DEFAULT_GRADIENT;
 }
 
-export function createGradientFromColors(colors: string[]): string {
+export function createGradientFromColors(): string {
   return DEFAULT_GRADIENT;
 }
 
@@ -14,6 +14,6 @@ export async function initializeGlobalGradient() {
   return DEFAULT_GRADIENT;
 }
 
-export async function extractColorsFromImage(imagePath: string): Promise<string[]> {
+export async function extractColorsFromImage(): Promise<string[]> {
   return ['rgb(255, 215, 0)', 'rgb(255, 69, 0)'];
 } 

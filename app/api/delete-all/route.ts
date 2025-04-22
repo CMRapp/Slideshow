@@ -1,37 +1,20 @@
 import { NextResponse } from 'next/server';
-import { unlink } from 'fs/promises';
-import { join } from 'path';
-import getPool from '@/lib/db';
+import { pool } from '@/lib/db';
 
-export async function POST() {
-  const pool = await getPool();
-  let client;
+export async function DELETE() {
   try {
-    client = await pool.connect();
-    
-    // Get all file paths before deleting
-    const result = await client.query('SELECT file_path FROM uploaded_items');
-    
-    // Delete all records
-    await client.query('DELETE FROM uploaded_items');
-    
-    return NextResponse.json({ 
-      success: true,
-      message: 'All media items deleted successfully',
-      deletedCount: result.rows.length
-    });
+    // Delete all media items from the database
+    await pool.query('DELETE FROM media_items');
+    await pool.query('DELETE FROM uploaded_items');
+    await pool.query('DELETE FROM photos');
+    await pool.query('DELETE FROM videos');
+
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting media items:', error);
+    console.error('Error deleting all media:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to delete media items',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Failed to delete media' },
       { status: 500 }
     );
-  } finally {
-    if (client) {
-      client.release();
-    }
   }
 } 

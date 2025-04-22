@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { useEffect } from 'react';
+import Image from 'next/image';
 
 interface ImageViewerProps {
   imageUrl: string;
@@ -7,65 +7,47 @@ interface ImageViewerProps {
 }
 
 export default function ImageViewer({ imageUrl, onClose }: ImageViewerProps) {
-  const [isOpen, setIsOpen] = useState(true);
-  const [imageError, setImageError] = useState(false);
-
   useEffect(() => {
-    console.log('ImageViewer mounted with URL:', imageUrl);
-    // Prevent scrolling when modal is open
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
     };
-  }, [isOpen, imageUrl]);
 
-  const handleClose = () => {
-    console.log('Closing image viewer');
-    setIsOpen(false);
-    onClose();
-  };
-
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    console.error('Image failed to load:', e);
-    setImageError(true);
-  };
-
-  if (!isOpen) return null;
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
-      onClick={handleClose}
-    >
-      <div 
-        className="relative max-w-4xl w-full mx-4"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75">
+      <div className="relative max-w-4xl w-full h-full max-h-[90vh]">
         <button
-          onClick={handleClose}
-          className="absolute -top-12 right-0 text-white hover:text-yellow-400 transition-colors"
+          onClick={onClose}
+          className="absolute top-4 right-4 text-white hover:text-gray-300"
         >
-          <X size={32} />
-        </button>
-        <div className="relative aspect-video w-full">
-          {imageError ? (
-            <div className="w-full h-full flex items-center justify-center bg-gray-800 text-white">
-              Failed to load image
-            </div>
-          ) : (
-            <img
-              src={imageUrl}
-              alt="Full size view"
-              className="w-full h-full object-contain"
-              onError={handleImageError}
-              onLoad={() => console.log('Image loaded successfully')}
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
             />
-          )}
+          </svg>
+        </button>
+        <div className="relative w-full h-full">
+          <Image
+            src={imageUrl}
+            alt="Full size image"
+            fill
+            className="object-contain"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 60vw"
+            priority
+          />
         </div>
       </div>
     </div>

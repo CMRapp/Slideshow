@@ -3,12 +3,40 @@ import getPool from '@/lib/db';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
+interface MediaItem {
+  id: number;
+  file_name: string;
+  file_type: string;
+  file_path: string;
+  item_number: number;
+  item_type: string;
+  team: string;
+  created_at: string;
+}
+
+interface UploadedItem {
+  id: number;
+  file_name: string;
+  file_type: string;
+  file_path: string;
+  team: string;
+  created_at: string;
+}
+
+interface MediaResponse {
+  media: MediaItem[];
+  total: number;
+}
+
 export async function GET(request: Request) {
   let connection;
   try {
     console.log('Starting media API request...');
     const { searchParams } = new URL(request.url);
     const team = searchParams.get('team');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const offset = (page - 1) * limit;
     console.log('Team parameter:', team);
 
     try {
@@ -63,65 +91,62 @@ export async function GET(request: Request) {
     // Build the query
     let query = `
       SELECT 
-        id,
-        team as team_name,
-        item_type,
-        item_number,
-        file_path,
-        created_at,
+        m.id,
+        m.file_name,
+        m.file_type,
+        m.file_path,
+        m.item_number,
+        m.item_type,
+        m.team,
+        m.created_at,
         CASE 
-          WHEN item_type = 'photo' THEN 'image/jpeg'
-          WHEN item_type = 'video' THEN 'video/mp4'
-          ELSE 'application/octet-stream'
-        END as file_type,
-        NULL as thumbnail_path
-      FROM uploaded_items
+          WHEN u.file_path IS NOT NULL THEN true
+          ELSE false
+        END as exists
+      FROM media_items m
+      LEFT JOIN uploaded_items u ON m.file_path = u.file_path
     `;
-    const params = [];
+    const queryParams: string[] = [];
+    let paramCount = 1;
 
     if (team) {
-      query += ' WHERE team = ?';
-      params.push(team);
+      query += ` WHERE m.team = $${paramCount}`;
+      queryParams.push(team);
+      paramCount++;
     }
 
-    query += ' ORDER BY team, item_type, item_number';
-    console.log('Executing main query:', query, 'with params:', params);
+    query += ` ORDER BY m.created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
+    queryParams.push(limit.toString(), offset.toString());
+
+    console.log('Executing main query:', query, 'with params:', queryParams);
 
     try {
-      const [rows] = await connection.query(query, params);
-      console.log('Main query executed successfully, rows:', rows);
+      const result = await connection.query(query, queryParams);
+      console.log('Main query executed successfully, rows:', result.rows);
 
-      if (!Array.isArray(rows)) {
-        console.error('Query did not return an array:', rows);
+      if (!Array.isArray(result.rows)) {
+        console.error('Query did not return an array:', result.rows);
         return NextResponse.json(
           { 
             error: 'Invalid query result',
             details: 'Expected an array of media items',
-            received: typeof rows
+            received: typeof result.rows
           },
           { status: 500 }
         );
       }
 
-      // Process the media items to ensure proper file paths
-      const mediaItems = rows.map(item => {
-        // Ensure the file path is properly formatted for web access
-        const filePath = item.file_path.startsWith('/') ? item.file_path : `/${item.file_path}`;
-        
-        // Verify the file exists
-        const fullPath = join(process.cwd(), 'public', item.file_path);
-        const exists = existsSync(fullPath);
-        console.log(`File ${item.file_path} exists:`, exists);
-        
-        return {
-          ...item,
-          file_path: filePath,
-          exists: exists
-        };
-      });
+      const countResult = await connection.query(
+        'SELECT COUNT(*) FROM media_items' + (team ? ' WHERE team = $1' : ''),
+        team ? [team] : []
+      );
 
-      console.log('Processed media items:', mediaItems);
-      return NextResponse.json({ mediaItems });
+      const response: MediaResponse = {
+        media: result.rows,
+        total: parseInt(countResult.rows[0].count)
+      };
+
+      return NextResponse.json(response);
     } catch (error) {
       console.error('Main query execution failed:', error);
       const errorDetails = error instanceof Error ? {
@@ -172,5 +197,40 @@ export async function GET(request: Request) {
         console.error('Error releasing connection:', error);
       }
     }
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const formData = await request.formData();
+    const team = formData.get('teamName') as string;
+    const file = formData.get('file') as File;
+
+    if (!team || !file) {
+      return NextResponse.json(
+        { error: 'Team name and file are required' },
+        { status: 400 }
+      );
+    }
+
+    const fileName = file.name;
+    const fileType = file.type;
+    const filePath = `/uploads/${team}/${fileName}`;
+
+    // Save file to database
+    const result = await getPool().query(
+      'INSERT INTO uploaded_items (file_name, file_type, file_path, team) VALUES ($1, $2, $3, $4) RETURNING *',
+      [fileName, fileType, filePath, team]
+    );
+
+    const uploadedItem: UploadedItem = result.rows[0];
+
+    return NextResponse.json({ success: true, item: uploadedItem });
+  } catch (error) {
+    console.error('Error uploading media:', error);
+    return NextResponse.json(
+      { error: 'Failed to upload media' },
+      { status: 500 }
+    );
   }
 } 

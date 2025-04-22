@@ -2,6 +2,7 @@
 
 import { FiFilm, FiUpload, FiPlay, FiPause, FiVolume2, FiVolumeX, FiSettings } from 'react-icons/fi';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -76,11 +77,14 @@ export default function SidebarLayout({
           <div className="flex lg:flex-col items-center justify-between w-full lg:w-auto">
             {/* Logo */}
             <div className="lg:mb-8">
-              <img 
+              <Image 
                 src="/riders-wm.png" 
                 alt="Riders Logo" 
-                className="w-10 h-10 object-contain"
+                width={40}
+                height={40}
+                className="object-contain"
                 id="logo"
+                priority
               />
             </div>
 
@@ -155,17 +159,23 @@ export default function SidebarLayout({
             {/* Sidebar Branding Container */}
             <div id="sidebar-branding" className="mt-auto flex flex-col lg:flex-col items-center space-y-4 lg:space-y-4">
               <div className="flex flex-row lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-4">
-                <img 
+                <Image 
                   id="side-logo"
                   src="/side-logo-vertical.png" 
                   alt="Side Logo" 
-                  className="hidden lg:block max-w-[60px] h-auto object-contain"
+                  width={60}
+                  height={60}
+                  className="hidden lg:block object-contain"
+                  priority
                 />
-                <img 
+                <Image 
                   id="side-logo"
                   src="/side-logo-horiz.png" 
                   alt="Side Logo" 
-                  className="block lg:hidden h-[60px] w-auto object-contain"
+                  width={60}
+                  height={60}
+                  className="block lg:hidden object-contain"
+                  priority
                 />
                 <div className="group relative p-3 text-yellow-400">
                   <span className="text-sm font-mono">v{version || 'unknown'}</span>

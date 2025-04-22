@@ -1,34 +1,26 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verify } from 'jsonwebtoken';
-import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
+import { pool } from '@/lib/db';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const token = cookieStore.get('auth-token');
 
     if (!token) {
-      return NextResponse.json(
-        { authenticated: false },
-        { status: 401 }
-      );
+      return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
     try {
-      verify(token.value, process.env.JWT_SECRET || 'your-secret-key');
+      verify(token.value, JWT_SECRET);
       return NextResponse.json({ authenticated: true });
-    } catch (error) {
-      return NextResponse.json(
-        { authenticated: false },
-        { status: 401 }
-      );
+    } catch {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
     }
-  } catch (error) {
-    console.error('Auth check error:', error);
-    return NextResponse.json(
-      { authenticated: false },
-      { status: 500 }
-    );
+  } catch {
+    return NextResponse.json({ authenticated: false }, { status: 401 });
   }
 } 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import getPool from '@/lib/db';
+import { pool } from '@/lib/db';
 
 // Sanitize team name
 function sanitizeTeamName(name: string): string {
@@ -24,8 +24,23 @@ function normalizeTeamName(name: string): string {
   return normalized;
 }
 
+interface Team {
+  id: number;
+  name: string;
+  created_at: string;
+}
+
+interface ErrorDetails {
+  message: string;
+  stack?: string;
+  name?: string;
+  code?: string;
+  errno?: number;
+  sqlState?: string;
+  sqlMessage?: string;
+}
+
 export async function POST(request: Request) {
-  let connection;
   try {
     const { teamName } = await request.json();
 
@@ -46,78 +61,33 @@ export async function POST(request: Request) {
       normalized: normalizedTeamName
     });
 
-    const pool = await getPool();
-    connection = await pool.getConnection();
-    console.log('Database connection established');
-    
-    try {
-      // Start transaction
-      await connection.beginTransaction();
-      console.log('Transaction started');
+    const result = await pool.query(
+      'INSERT INTO teams (name) VALUES ($1) RETURNING *',
+      [normalizedTeamName]
+    );
 
-      // Check if team already exists
-      const [existingTeams] = await connection.query(
-        'SELECT id FROM teams WHERE name = ?',
-        [normalizedTeamName]
-      );
+    const team: Team = result.rows[0];
 
-      console.log('Existing teams check:', existingTeams);
-
-      if (Array.isArray(existingTeams) && existingTeams.length > 0) {
-        await connection.rollback();
-        return NextResponse.json(
-          { error: 'Team name already exists' },
-          { status: 409 }
-        );
-      }
-
-      // Insert the team name into the teams table
-      const [result] = await connection.query(
-        'INSERT INTO teams (name) VALUES (?)',
-        [normalizedTeamName]
-      );
-      
-      console.log('Team insert result:', result);
-
-      // Commit transaction
-      await connection.commit();
-      console.log('Transaction committed');
-
-      return NextResponse.json({ 
-        success: true,
-        teamName: normalizedTeamName
-      });
-    } catch (error) {
-      // Rollback transaction on error
-      await connection.rollback();
-      console.error('Database error:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        code: (error as any).code,
-        sqlState: (error as any).sqlState,
-        sqlMessage: (error as any).sqlMessage,
-        stack: error instanceof Error ? error.stack : undefined
-      });
-
-      if ((error as any).code === 'ER_DUP_ENTRY') {
-        return NextResponse.json(
-          { error: 'Team name already exists' },
-          { status: 409 }
-        );
-      }
-      return NextResponse.json(
-        { error: 'Database error occurred', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
-    } finally {
-      if (connection) {
-        connection.release();
-        console.log('Database connection released');
-      }
-    }
+    return NextResponse.json({ success: true, team });
   } catch (error) {
     console.error('Error saving team name:', error);
+    const errorDetails: ErrorDetails = error instanceof Error ? {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: (error as NodeJS.ErrnoException).code,
+      errno: (error as NodeJS.ErrnoException).errno,
+      sqlState: (error as { sqlState?: string }).sqlState,
+      sqlMessage: (error as { sqlMessage?: string }).sqlMessage
+    } : {
+      message: 'Unknown error'
+    };
+    
     return NextResponse.json(
-      { error: 'Failed to save team name', details: error instanceof Error ? error.message : 'Unknown error' },
+      { 
+        error: 'Failed to save team name',
+        details: errorDetails
+      },
       { status: 500 }
     );
   }
