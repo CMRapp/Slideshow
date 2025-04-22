@@ -1,9 +1,4 @@
 import { Pool } from '@neondatabase/serverless';
-import getConfig from 'next/config';
-import fs from 'fs';
-import path from 'path';
-
-const { serverRuntimeConfig } = getConfig();
 
 // Check for required environment variables
 const requiredEnvVars = ['DATABASE_URL'];
@@ -13,20 +8,9 @@ if (missingEnvVars.length > 0) {
   throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
 }
 
-// Log database configuration (excluding sensitive data)
-console.log('Database Configuration:', {
-  host: new URL(process.env.DATABASE_URL).hostname,
-  database: new URL(process.env.DATABASE_URL).pathname.slice(1),
-  ssl: true,
-  max: 10
-});
-
 // Create connection pool with Neon configuration
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
   ssl: true
 });
 
@@ -51,74 +35,55 @@ async function initializeDatabase() {
   try {
     console.log('Starting database initialization...');
     
-    // Check if tables exist
-    const tablesResult = await client.query(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_name = 'media_items'
-      ) as media_items_exists,
-      EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_name = 'uploaded_items'
-      ) as uploaded_items_exists
-    `);
+    // Define schema directly in the code
+    const schema = `
+      CREATE TABLE IF NOT EXISTS photos (
+        id SERIAL PRIMARY KEY,
+        filename VARCHAR(255) NOT NULL,
+        team VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
 
-    const { media_items_exists, uploaded_items_exists } = tablesResult.rows[0];
+      CREATE TABLE IF NOT EXISTS videos (
+        id SERIAL PRIMARY KEY,
+        filename VARCHAR(255) NOT NULL,
+        team VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
 
-    if (!media_items_exists || !uploaded_items_exists) {
-      console.log('Creating database tables...');
-      
-      // Define schema directly in the code
-      const schema = `
-        CREATE TABLE IF NOT EXISTS photos (
-          id SERIAL PRIMARY KEY,
-          filename VARCHAR(255) NOT NULL,
-          team VARCHAR(255) NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+      CREATE TABLE IF NOT EXISTS settings (
+        id SERIAL PRIMARY KEY,
+        key VARCHAR(255) NOT NULL UNIQUE,
+        value TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
 
-        CREATE TABLE IF NOT EXISTS videos (
-          id SERIAL PRIMARY KEY,
-          filename VARCHAR(255) NOT NULL,
-          team VARCHAR(255) NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+      CREATE TABLE IF NOT EXISTS media_items (
+        id SERIAL PRIMARY KEY,
+        team VARCHAR(255) NOT NULL,
+        item_number INT NOT NULL,
+        type VARCHAR(10) NOT NULL CHECK (type IN ('photo', 'video')),
+        filename VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
 
-        CREATE TABLE IF NOT EXISTS settings (
-          id SERIAL PRIMARY KEY,
-          key VARCHAR(255) NOT NULL UNIQUE,
-          value TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+      CREATE TABLE IF NOT EXISTS uploaded_items (
+        id SERIAL PRIMARY KEY,
+        filename VARCHAR(255) NOT NULL,
+        team VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
 
-        CREATE TABLE IF NOT EXISTS media_items (
-          id SERIAL PRIMARY KEY,
-          team VARCHAR(255) NOT NULL,
-          item_number INT NOT NULL,
-          type VARCHAR(10) NOT NULL CHECK (type IN ('photo', 'video')),
-          filename VARCHAR(255) NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+      CREATE TABLE IF NOT EXISTS teams (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
 
-        CREATE TABLE IF NOT EXISTS uploaded_items (
-          id SERIAL PRIMARY KEY,
-          filename VARCHAR(255) NOT NULL,
-          team VARCHAR(255) NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-
-        CREATE TABLE IF NOT EXISTS teams (
-          id SERIAL PRIMARY KEY,
-          name VARCHAR(255) NOT NULL UNIQUE,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `;
-
-      await client.query(schema);
-      console.log('Database tables created successfully');
-    } else {
-      console.log('Database tables already exist');
-    }
+    // Execute schema
+    await client.query(schema);
+    console.log('Database tables created successfully');
   } catch (error) {
     console.error('Database initialization error:', error);
     throw error;

@@ -19,19 +19,21 @@ const nextConfig = {
     DATABASE_URL: process.env.DATABASE_URL,
   },
   webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        path: false,
-      };
-    }
-
     // Handle SQL files
     config.module.rules.push({
       test: /\.sql$/,
       use: 'raw-loader',
     });
+
+    // Handle fs and path modules
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        crypto: false,
+      };
+    }
 
     return config;
   },
