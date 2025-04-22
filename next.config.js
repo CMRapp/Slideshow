@@ -26,6 +26,13 @@ const nextConfig = {
         path: false,
       };
     }
+
+    // Handle SQL files
+    config.module.rules.push({
+      test: /\.sql$/,
+      use: 'raw-loader',
+    });
+
     return config;
   },
   async headers() {
