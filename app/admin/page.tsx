@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { FiLogOut, FiTrash2 } from 'react-icons/fi';
 import TabbedContainer from '../components/admin/TabbedContainer';
 import ImageViewer from '../components/ImageViewer';
-import { pool } from '@/lib/db';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -126,12 +125,12 @@ export default function AdminPage() {
     }
 
     try {
-      const response = await fetch('/api/teams', {
+      const response = await fetch('/api/save-team-name', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name: teamName.trim() }),
+        body: JSON.stringify({ teamName: teamName.trim() }),
       });
 
       if (!response.ok) {
@@ -179,25 +178,16 @@ export default function AdminPage() {
     }
 
     try {
-      const client = await pool.connect();
-      try {
-        await client.query('BEGIN');
+      const response = await fetch(`/api/teams/${encodeURIComponent(teamName)}`, {
+        method: 'DELETE',
+      });
 
-        // Delete team and all associated items (cascade delete)
-        await client.query(
-          'DELETE FROM teams WHERE name = $1',
-          [teamName]
-        );
-
-        await client.query('COMMIT');
-        setSuccess('Team deleted successfully');
-        fetchTeams(); // Refresh the teams list
-      } catch (error) {
-        await client.query('ROLLBACK');
-        throw error;
-      } finally {
-        client.release();
+      if (!response.ok) {
+        throw new Error('Failed to delete team');
       }
+
+      setSuccess('Team deleted successfully');
+      fetchTeams(); // Refresh the teams list
     } catch (error) {
       console.error('Error deleting team:', error);
       setError('Failed to delete team');
