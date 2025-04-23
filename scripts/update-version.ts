@@ -9,13 +9,26 @@ const currentVersion = packageJson.version;
 
 // Get the number of commits since the last version tag
 const commitCount = execSync('git rev-list --count HEAD').toString().trim();
-const lastTag = execSync('git describe --tags --abbrev=0 2>/dev/null || echo v0.0.0').toString().trim();
+let lastTag = 'v0.0.0';
+
+try {
+  lastTag = execSync('git describe --tags --abbrev=0 2>/dev/null || echo v0.0.0').toString().trim();
+} catch (error) {
+  console.log('No tags found, using default version');
+}
 
 // Parse the current version
 const [major, minor, patch] = currentVersion.split('.').map(Number);
 
 // Update version based on commit messages since last tag
-const commitMessages = execSync('git log --pretty=format:"%s" HEAD...' + lastTag).toString();
+let commitMessages = '';
+try {
+  commitMessages = execSync(`git log --pretty=format:"%s" HEAD...${lastTag}`).toString();
+} catch (error) {
+  console.log('No previous commits found, using current version');
+  commitMessages = '';
+}
+
 const hasBreakingChange = commitMessages.includes('BREAKING CHANGE');
 const hasFeature = commitMessages.match(/feat\(|feat:/i);
 
