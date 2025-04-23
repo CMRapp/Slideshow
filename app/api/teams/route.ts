@@ -19,29 +19,15 @@ interface ErrorDetails {
 
 export async function GET() {
   try {
-    const result = await pool.query('SELECT * FROM teams ORDER BY name');
-    const teams: Team[] = result.rows;
+    const result = await pool.query(
+      'SELECT name FROM teams ORDER BY name ASC'
+    );
 
-    return NextResponse.json(teams);
+    return NextResponse.json(result.rows.map(row => row.name));
   } catch (error) {
     console.error('Error fetching teams:', error);
-    const errorDetails: ErrorDetails = error instanceof Error ? {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-      code: (error as NodeJS.ErrnoException).code,
-      errno: (error as NodeJS.ErrnoException).errno,
-      sqlState: (error as { sqlState?: string }).sqlState,
-      sqlMessage: (error as { sqlMessage?: string }).sqlMessage
-    } : {
-      message: 'Unknown error'
-    };
-    
     return NextResponse.json(
-      { 
-        error: 'Failed to fetch teams',
-        details: errorDetails
-      },
+      { error: 'Failed to fetch teams' },
       { status: 500 }
     );
   }
@@ -58,33 +44,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await pool.query(
-      'INSERT INTO teams (name) VALUES ($1) RETURNING *',
+    await pool.query(
+      'INSERT INTO teams (name) VALUES ($1) ON CONFLICT (name) DO NOTHING',
       [name]
     );
 
-    const team: Team = result.rows[0];
-
-    return NextResponse.json(team);
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error creating team:', error);
-    const errorDetails: ErrorDetails = error instanceof Error ? {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-      code: (error as NodeJS.ErrnoException).code,
-      errno: (error as NodeJS.ErrnoException).errno,
-      sqlState: (error as { sqlState?: string }).sqlState,
-      sqlMessage: (error as { sqlMessage?: string }).sqlMessage
-    } : {
-      message: 'Unknown error'
-    };
-    
+    console.error('Error saving team:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to create team',
-        details: errorDetails
-      },
+      { error: 'Failed to save team' },
       { status: 500 }
     );
   }
