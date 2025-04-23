@@ -10,27 +10,6 @@ interface MediaItem {
   created_at: string;
 }
 
-interface UploadedItem {
-  id: number;
-  file_name: string;
-  file_type: string;
-  file_path: string;
-  team: string;
-  created_at: string;
-}
-
-interface MediaResponse {
-  media: MediaItem[];
-  total: number;
-}
-
-interface DatabaseError extends Error {
-  code?: string;
-  errno?: number;
-  sqlState?: string;
-  sqlMessage?: string;
-}
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const team = searchParams.get('team');

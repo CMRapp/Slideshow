@@ -295,7 +295,7 @@ export default function AdminPage() {
                 onClick={handleDeleteAll}
                 className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
               >
-                Delete All Media
+                Reset Database
               </button>
             </div>
           </div>
