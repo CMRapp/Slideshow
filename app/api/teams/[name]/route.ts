@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
+type Props = {
+  params: {
+    name: string;
+  };
+};
+
 export async function DELETE(
   request: Request,
-  context: { params: { name: string } }
+  { params }: Props
 ) {
   try {
-    const { name } = context.params;
+    const { name } = params;
     const client = await pool.connect();
 
     try {
