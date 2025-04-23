@@ -178,7 +178,7 @@ export default function AdminPage() {
     }
 
     try {
-      const response = await fetch(`/api/teams?name=${encodeURIComponent(teamName)}`, {
+      const response = await fetch(`/api/teams/${encodeURIComponent(teamName)}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -246,7 +246,7 @@ export default function AdminPage() {
           <div className="space-y-6" id="team-info">
             <div className="flex gap-2">
               <div className="flex-1">
-                <label className="block text-sm font-medium mb-2">Team Name</label>
+                <h3 className="text-sm font-medium mb-2">Team Name Entry</h3>
                 <input
                   type="text"
                   value={teamName}
@@ -272,7 +272,7 @@ export default function AdminPage() {
               {teams.length === 0 ? (
                 <p className="text-gray-400">No teams found</p>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {teams.map((team) => (
                     <div
                       key={team}
