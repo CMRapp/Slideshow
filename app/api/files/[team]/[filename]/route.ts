@@ -5,11 +5,11 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { team: string; filename: string } }
-) {
-  try {
-    const { team, filename } = params;
+  context: { params: { team: string; filename: string } }
+): Promise<NextResponse> {
+  const { team, filename } = context.params;
 
+  try {
     // First check if the team exists
     const teamResult = await pool.query(
       'SELECT id FROM teams WHERE name = $1',
