@@ -176,21 +176,22 @@ export default function AdminPage() {
     if (!window.confirm(`Are you sure you want to delete the team "${teamName}" and all its associated items? This action cannot be undone.`)) {
       return;
     }
-
+  
     try {
-      const response = await fetch(`/api/teams?name=${encodeURIComponent(teamName)}`, {
+      const response = await fetch(`/api/teams/${encodeURIComponent(teamName)}`, {
         method: 'DELETE',
       });
-
+  
       if (!response.ok) {
-        throw new Error('Failed to delete team');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete team');
       }
-
+  
       setSuccess('Team deleted successfully');
       fetchTeams(); // Refresh the teams list
     } catch (error) {
       console.error('Error deleting team:', error);
-      setError('Failed to delete team');
+      setError(error instanceof Error ? error.message : 'Failed to delete team');
     }
   };
 
