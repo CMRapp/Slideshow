@@ -60,7 +60,7 @@ async function initializeDatabase() {
       -- Media items table
       CREATE TABLE IF NOT EXISTS media_items (
         id SERIAL PRIMARY KEY,
-        team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+        team_id INTEGER,
         item_number INT NOT NULL,
         item_type VARCHAR(10) NOT NULL CHECK (item_type IN ('photo', 'video')),
         file_name VARCHAR(255) NOT NULL,
@@ -77,7 +77,7 @@ async function initializeDatabase() {
       -- Uploaded items table
       CREATE TABLE IF NOT EXISTS uploaded_items (
         id SERIAL PRIMARY KEY,
-        team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+        team_id INTEGER,
         item_type VARCHAR(10) NOT NULL CHECK (item_type IN ('photo', 'video')),
         item_number INTEGER NOT NULL,
         file_name VARCHAR(255) NOT NULL,
@@ -101,6 +101,37 @@ async function initializeDatabase() {
     `;
 
     await client.query(schema);
+
+    // Add foreign key constraints after table creation
+    await client.query(`
+      DO $$ 
+      BEGIN
+        -- Add foreign key constraint for media_items if it doesn't exist
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints 
+          WHERE constraint_name = 'fk_media_items_team'
+        ) THEN
+          ALTER TABLE media_items
+          ADD CONSTRAINT fk_media_items_team
+          FOREIGN KEY (team_id)
+          REFERENCES teams(id)
+          ON DELETE CASCADE;
+        END IF;
+
+        -- Add foreign key constraint for uploaded_items if it doesn't exist
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints 
+          WHERE constraint_name = 'fk_uploaded_items_team'
+        ) THEN
+          ALTER TABLE uploaded_items
+          ADD CONSTRAINT fk_uploaded_items_team
+          FOREIGN KEY (team_id)
+          REFERENCES teams(id)
+          ON DELETE CASCADE;
+        END IF;
+      END $$;
+    `);
+
     console.log('Database initialization completed successfully');
   } catch (error) {
     console.error('Database initialization failed:', error);
