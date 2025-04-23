@@ -288,6 +288,7 @@ export default function AdminPage() {
               )}
             </div>
 
+            <h3 className="text-sm font-medium mb-2">Existing Teams</h3>
             <div id="slideshow-options" className="grid grid-cols-2 gap-6">
               <div className="flex gap-2">
                 <div className="flex-1">
