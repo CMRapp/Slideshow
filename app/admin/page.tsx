@@ -288,8 +288,7 @@ export default function AdminPage() {
               )}
             </div>
 
-            <div id="slideshow-options" className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <h3 className="text-sm font-medium mb-2">Slideshow Options</h3>
+            <div id="slideshow-options" className="grid grid-cols-2 gap-6">
               <div className="flex gap-2">
                 <div className="flex-1">
                   <label className="block text-sm font-medium mb-2">Photo Count</label>
