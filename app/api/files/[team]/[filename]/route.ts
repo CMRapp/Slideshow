@@ -3,11 +3,18 @@ import { pool } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+type Props = {
+  params: {
+    team: string;
+    filename: string;
+  };
+};
+
 export async function GET(
   request: NextRequest,
-  context: { params: { team: string; filename: string } }
+  { params }: Props
 ): Promise<NextResponse> {
-  const { team, filename } = context.params;
+  const { team, filename } = params;
 
   try {
     // Check if uploaded_items table has any entries
