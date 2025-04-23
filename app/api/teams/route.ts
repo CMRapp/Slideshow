@@ -18,12 +18,11 @@ export async function GET() {
   }
 }
 
-export async function DELETE(request: Request) {
+export async function POST(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const name = searchParams.get('name');
+    const { teamName } = await request.json();
 
-    if (!name) {
+    if (!teamName) {
       return NextResponse.json(
         { error: 'Team name is required' },
         { status: 400 }
@@ -38,7 +37,7 @@ export async function DELETE(request: Request) {
       // Delete team and all associated items (cascade delete)
       await client.query(
         'DELETE FROM teams WHERE name = $1',
-        [name]
+        [teamName]
       );
 
       await client.query('COMMIT');
