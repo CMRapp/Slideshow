@@ -70,25 +70,6 @@ export async function POST(request: Request) {
       );
       console.log('Saved to uploaded_items successfully');
 
-      // Update media_items table
-      console.log('Saving to media_items table');
-      await client.query(
-        `INSERT INTO media_items (
-          team_id, item_type, item_number, file_name, 
-          file_path, file_size, mime_type
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [
-          teamId,
-          itemType,
-          parseInt(itemNumber),
-          file.name,
-          `/api/files/${team}/${file.name}`,
-          file.size,
-          file.type
-        ]
-      );
-      console.log('Saved to media_items successfully');
-
       // Update upload status to completed
       await client.query(
         'UPDATE uploaded_items SET upload_status = $1 WHERE id = $2',

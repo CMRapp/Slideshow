@@ -90,7 +90,7 @@ export async function DELETE(request: Request) {
 
       const teamId = teamResult.rows[0].id;
 
-      // Delete all associated items (this will cascade delete from uploaded_items and media_items)
+      // Delete all associated items (this will cascade delete from uploaded_items)
       await client.query(
         'DELETE FROM teams WHERE id = $1',
         [teamId]

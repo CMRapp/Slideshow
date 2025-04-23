@@ -29,8 +29,7 @@ export async function DELETE() {
       console.error('Error deleting uploads directory:', error);
     }
 
-    // Clear all tables
-    await client.query('TRUNCATE TABLE media_items CASCADE');
+    // Delete all data from tables
     await client.query('TRUNCATE TABLE uploaded_items CASCADE');
     await client.query('TRUNCATE TABLE teams CASCADE');
     await client.query('TRUNCATE TABLE settings CASCADE');
@@ -40,9 +39,9 @@ export async function DELETE() {
     return NextResponse.json({ success: true });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error deleting all media:', error);
+    console.error('Error deleting all data:', error);
     return NextResponse.json(
-      { error: 'Failed to delete all media' },
+      { error: 'Failed to delete all data' },
       { status: 500 }
     );
   } finally {

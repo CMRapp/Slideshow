@@ -90,25 +90,6 @@ async function initializeDatabase() {
       );
     `);
 
-    // Create media_items table
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS media_items (
-        id SERIAL PRIMARY KEY,
-        team_id INTEGER,
-        item_type VARCHAR(10) NOT NULL CHECK (item_type IN ('photo', 'video')),
-        item_number INTEGER NOT NULL,
-        file_name VARCHAR(255) NOT NULL,
-        file_path VARCHAR(255) NOT NULL,
-        file_size BIGINT NOT NULL,
-        mime_type VARCHAR(255) NOT NULL,
-        metadata JSONB,
-        is_processed BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE (team_id, item_type, item_number)
-      );
-    `);
-
     // Create uploaded_items table
     await client.query(`
       CREATE TABLE IF NOT EXISTS uploaded_items (
@@ -131,20 +112,6 @@ async function initializeDatabase() {
     // Add foreign key constraints after ensuring columns exist
     console.log('Adding foreign key constraints...');
 
-    // Add media_items foreign key
-    if (await columnExists(client, 'media_items', 'team_id') && 
-        await columnExists(client, 'teams', 'id') && 
-        !(await constraintExists(client, 'fk_media_items_team'))) {
-      console.log('Adding foreign key constraint for media_items...');
-      await client.query(`
-        ALTER TABLE media_items
-        ADD CONSTRAINT fk_media_items_team
-        FOREIGN KEY (team_id)
-        REFERENCES teams(id)
-        ON DELETE CASCADE;
-      `);
-    }
-
     // Add uploaded_items foreign key
     if (await columnExists(client, 'uploaded_items', 'team_id') && 
         await columnExists(client, 'teams', 'id') && 
@@ -159,12 +126,8 @@ async function initializeDatabase() {
       `);
     }
 
-    // Create indexes after ensuring columns exist
-    console.log('Creating indexes...');
+    // Create indexes
     const indexDefinitions = [
-      { name: 'idx_media_items_team_id', table: 'media_items', column: 'team_id' },
-      { name: 'idx_media_items_item_type', table: 'media_items', column: 'item_type' },
-      { name: 'idx_media_items_is_processed', table: 'media_items', column: 'is_processed' },
       { name: 'idx_uploaded_items_team_id', table: 'uploaded_items', column: 'team_id' },
       { name: 'idx_uploaded_items_item_type', table: 'uploaded_items', column: 'item_type' },
       { name: 'idx_uploaded_items_upload_status', table: 'uploaded_items', column: 'upload_status' }
