@@ -182,10 +182,13 @@ export default function SlideshowPage() {
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
               {currentItem.file_type.startsWith('image/') ? (
-                <img
+                <Image
                   src={currentItem.file_path}
                   alt={`Slide ${currentIndex + 1}`}
+                  width={1920}
+                  height={1080}
                   className="max-w-full max-h-full object-contain"
+                  priority
                 />
               ) : (
                 <video
