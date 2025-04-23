@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
 export async function GET(
-  request: Request,
-  context: { params: { team: string; filename: string } }
+  request: NextRequest,
+  { params }: { params: { team: string; filename: string } }
 ) {
   try {
-    const { team, filename } = context.params;
+    const { team, filename } = params;
 
     // Get the file from the database
     const result = await pool.query(
