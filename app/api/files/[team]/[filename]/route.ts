@@ -3,27 +3,39 @@ import { pool } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-type RouteContext = {
-  params: {
-    team: string;
-    filename: string;
-  };
-};
-
 export async function GET(
   request: NextRequest,
-  context: RouteContext
-): Promise<NextResponse> {
+  { params }: { params: { team: string; filename: string } }
+) {
   try {
-    const { team, filename } = context.params;
+    const { team, filename } = params;
+
+    // First check if the team exists
+    const teamResult = await pool.query(
+      'SELECT id FROM teams WHERE name = $1',
+      [team]
+    );
+
+    if (teamResult.rows.length === 0) {
+      console.error(`Team not found: ${team}`);
+      return new NextResponse('Team not found', { 
+        status: 404,
+        headers: {
+          'Content-Type': 'text/plain',
+        }
+      });
+    }
+
+    const teamId = teamResult.rows[0].id;
 
     // Get the file from the database
     const result = await pool.query(
-      'SELECT file_data, mime_type FROM media_items WHERE team_id = (SELECT id FROM teams WHERE name = $1) AND file_name = $2',
-      [team, filename]
+      'SELECT file_data, mime_type FROM media_items WHERE team_id = $1 AND file_name = $2',
+      [teamId, filename]
     );
 
     if (result.rows.length === 0) {
+      console.error(`File not found: ${filename} for team: ${team}`);
       return new NextResponse('File not found', { 
         status: 404,
         headers: {
@@ -35,6 +47,7 @@ export async function GET(
     const { file_data, mime_type } = result.rows[0];
 
     if (!file_data || !mime_type) {
+      console.error(`Invalid file data for: ${filename} in team: ${team}`);
       return new NextResponse('Invalid file data', { 
         status: 500,
         headers: {
@@ -58,7 +71,7 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error serving file:', error);
-    return new NextResponse('Error serving file', { 
+    return new NextResponse('Internal server error', { 
       status: 500,
       headers: {
         'Content-Type': 'text/plain',
