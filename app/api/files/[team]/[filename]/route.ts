@@ -1,18 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-type Props = {
-  params: {
-    team: string;
-    filename: string;
-  };
-};
-
 export async function GET(
-  request: NextRequest,
-  { params }: Props
+  request: Request,
+  { params }: { params: { team: string; filename: string } }
 ): Promise<NextResponse> {
   const { team, filename } = params;
 
@@ -102,4 +95,4 @@ export async function GET(
       }
     });
   }
-} 
+}
