@@ -17,86 +17,117 @@ const pool = new Pool({
   ssl: true
 });
 
+async function tableExists(client: any, tableName: string): Promise<boolean> {
+  const result = await client.query(
+    `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = $1)`,
+    [tableName]
+  );
+  return result.rows[0].exists;
+}
+
 async function migrate() {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    // Create teams table first in all environments
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS teams (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL UNIQUE,
-        description TEXT,
-        is_active BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
     // Check if we're in production (Vercel)
     if (isVercel) {
       console.log('Running in Vercel environment');
-      
-      // Create settings table
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS settings (
-          id SERIAL PRIMARY KEY,
-          key VARCHAR(255) NOT NULL UNIQUE,
-          value TEXT NOT NULL,
-          description TEXT,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
 
-      // Create media_items table
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS media_items (
-          id SERIAL PRIMARY KEY,
-          team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-          item_type VARCHAR(10) CHECK (item_type IN ('photo', 'video')) NOT NULL,
-          item_number INTEGER NOT NULL,
-          file_name VARCHAR(255) NOT NULL,
-          file_path VARCHAR(255) NOT NULL,
-          file_size BIGINT NOT NULL,
-          mime_type VARCHAR(255) NOT NULL,
-          metadata JSONB,
-          is_processed BOOLEAN DEFAULT FALSE,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE (team_id, item_type, item_number)
-        );
-      `);
+      // Create teams table if it doesn't exist
+      if (!(await tableExists(client, 'teams'))) {
+        console.log('Creating teams table...');
+        await client.query(`
+          CREATE TABLE teams (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE,
+            description TEXT,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+      }
 
-      // Create uploaded_items table
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS uploaded_items (
-          id SERIAL PRIMARY KEY,
-          team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-          item_type VARCHAR(10) CHECK (item_type IN ('photo', 'video')) NOT NULL,
-          item_number INTEGER NOT NULL,
-          file_name VARCHAR(255) NOT NULL,
-          file_path VARCHAR(255) NOT NULL,
-          file_size BIGINT NOT NULL,
-          mime_type VARCHAR(255) NOT NULL,
-          upload_status VARCHAR(20) CHECK (upload_status IN ('pending', 'processing', 'completed', 'failed')) DEFAULT 'pending',
-          error_message TEXT,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE (team_id, item_type, item_number)
-        );
-      `);
+      // Create settings table if it doesn't exist
+      if (!(await tableExists(client, 'settings'))) {
+        console.log('Creating settings table...');
+        await client.query(`
+          CREATE TABLE settings (
+            id SERIAL PRIMARY KEY,
+            key VARCHAR(255) NOT NULL UNIQUE,
+            value TEXT NOT NULL,
+            description TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+      }
+
+      // Create media_items table if it doesn't exist
+      if (!(await tableExists(client, 'media_items'))) {
+        console.log('Creating media_items table...');
+        await client.query(`
+          CREATE TABLE media_items (
+            id SERIAL PRIMARY KEY,
+            team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+            item_type VARCHAR(10) CHECK (item_type IN ('photo', 'video')) NOT NULL,
+            item_number INTEGER NOT NULL,
+            file_name VARCHAR(255) NOT NULL,
+            file_path VARCHAR(255) NOT NULL,
+            file_size BIGINT NOT NULL,
+            mime_type VARCHAR(255) NOT NULL,
+            metadata JSONB,
+            is_processed BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (team_id, item_type, item_number)
+          );
+        `);
+      }
+
+      // Create uploaded_items table if it doesn't exist
+      if (!(await tableExists(client, 'uploaded_items'))) {
+        console.log('Creating uploaded_items table...');
+        await client.query(`
+          CREATE TABLE uploaded_items (
+            id SERIAL PRIMARY KEY,
+            team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+            item_type VARCHAR(10) CHECK (item_type IN ('photo', 'video')) NOT NULL,
+            item_number INTEGER NOT NULL,
+            file_name VARCHAR(255) NOT NULL,
+            file_path VARCHAR(255) NOT NULL,
+            file_size BIGINT NOT NULL,
+            mime_type VARCHAR(255) NOT NULL,
+            upload_status VARCHAR(20) CHECK (upload_status IN ('pending', 'processing', 'completed', 'failed')) DEFAULT 'pending',
+            error_message TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (team_id, item_type, item_number)
+          );
+        `);
+      }
 
       // Create indexes if they don't exist
-      await client.query(`
-        CREATE INDEX IF NOT EXISTS idx_media_items_team_id ON media_items(team_id);
-        CREATE INDEX IF NOT EXISTS idx_media_items_item_type ON media_items(item_type);
-        CREATE INDEX IF NOT EXISTS idx_media_items_is_processed ON media_items(is_processed);
-        CREATE INDEX IF NOT EXISTS idx_uploaded_items_team_id ON uploaded_items(team_id);
-        CREATE INDEX IF NOT EXISTS idx_uploaded_items_item_type ON uploaded_items(item_type);
-        CREATE INDEX IF NOT EXISTS idx_uploaded_items_upload_status ON uploaded_items(upload_status);
-      `);
+      const indexes = [
+        'idx_media_items_team_id',
+        'idx_media_items_item_type',
+        'idx_media_items_is_processed',
+        'idx_uploaded_items_team_id',
+        'idx_uploaded_items_item_type',
+        'idx_uploaded_items_upload_status'
+      ];
+
+      for (const index of indexes) {
+        const result = await client.query(
+          `SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = $1)`,
+          [index]
+        );
+        if (!result.rows[0].exists) {
+          console.log(`Creating index ${index}...`);
+          await client.query(`CREATE INDEX ${index} ON ${index.replace('idx_', '').replace('_', '.')}`);
+        }
+      }
 
       // Insert default settings if they don't exist
       await client.query(`
@@ -122,8 +153,18 @@ async function migrate() {
         DROP TABLE IF EXISTS teams CASCADE;
       `);
 
-      // Create teams table first (already created above)
-      
+      // Create teams table
+      await client.query(`
+        CREATE TABLE teams (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL UNIQUE,
+          description TEXT,
+          is_active BOOLEAN DEFAULT TRUE,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
       // Create settings table
       await client.query(`
         CREATE TABLE settings (
