@@ -3,10 +3,10 @@ import { pool } from '@/lib/db';
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { name: string } }
+  context: { params: { name: string } }
 ) {
   try {
-    const { name } = params;
+    const { name } = context.params;
     const client = await pool.connect();
 
     try {
