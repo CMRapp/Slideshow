@@ -37,12 +37,22 @@ async function initializeDatabase() {
     
     // Define schema directly in the code
     const schema = `
-      -- Teams table
+      -- Teams table (must be created first)
       CREATE TABLE IF NOT EXISTS teams (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL UNIQUE,
         description TEXT,
         is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Settings table (no foreign keys)
+      CREATE TABLE IF NOT EXISTS settings (
+        id SERIAL PRIMARY KEY,
+        key VARCHAR(255) NOT NULL UNIQUE,
+        value TEXT,
+        description TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
@@ -61,16 +71,6 @@ async function initializeDatabase() {
         team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
         filename VARCHAR(255) NOT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-
-      -- Settings table
-      CREATE TABLE IF NOT EXISTS settings (
-        id SERIAL PRIMARY KEY,
-        key VARCHAR(255) NOT NULL UNIQUE,
-        value TEXT,
-        description TEXT,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
       -- Media items table
@@ -107,7 +107,7 @@ async function initializeDatabase() {
         UNIQUE (team_id, item_type, item_number)
       );
 
-      -- Create indexes
+      -- Create indexes after all tables are created
       CREATE INDEX IF NOT EXISTS idx_media_items_team_id ON media_items(team_id);
       CREATE INDEX IF NOT EXISTS idx_media_items_item_type ON media_items(item_type);
       CREATE INDEX IF NOT EXISTS idx_media_items_is_processed ON media_items(is_processed);
