@@ -1,36 +1,48 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
+import type { NextRequest } from 'next/server';
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { name: string } }
+  request: NextRequest,
+  context: { params: { name: string } }
 ) {
+  const { name } = context.params;
+
+  if (!name) {
+    return NextResponse.json(
+      { error: 'Team name is required' },
+      { status: 400 }
+    );
+  }
+
+  const client = await pool.connect();
+
   try {
-    const { name } = params;
-    const client = await pool.connect();
+    await client.query('BEGIN');
 
-    try {
-      await client.query('BEGIN');
+    const result = await client.query(
+      'DELETE FROM teams WHERE name = $1 RETURNING *',
+      [name]
+    );
 
-      // Delete team and all associated items (cascade delete)
-      await client.query(
-        'DELETE FROM teams WHERE name = $1',
-        [name]
+    await client.query('COMMIT');
+
+    if (result.rowCount === 0) {
+      return NextResponse.json(
+        { error: `Team "${name}" not found` },
+        { status: 404 }
       );
-
-      await client.query('COMMIT');
-      return NextResponse.json({ success: true });
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
     }
+
+    return NextResponse.json({ success: true, deletedTeam: result.rows[0] });
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Error deleting team:', error);
     return NextResponse.json(
       { error: 'Failed to delete team' },
       { status: 500 }
     );
+  } finally {
+    client.release();
   }
 }
