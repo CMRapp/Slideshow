@@ -15,7 +15,6 @@ export default function AdminPage() {
   const [teamName, setTeamName] = useState('');
   const [photoCount, setPhotoCount] = useState<number>(0);
   const [videoCount, setVideoCount] = useState<number>(0);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [teams, setTeams] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
