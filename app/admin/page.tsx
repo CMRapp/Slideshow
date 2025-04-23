@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiLogOut } from 'react-icons/fi';
+import { FiLogOut, FiTrash2 } from 'react-icons/fi';
 import TabbedContainer from '../components/admin/TabbedContainer';
 import ImageViewer from '../components/ImageViewer';
 
@@ -172,6 +172,27 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteTeam = async (teamName: string) => {
+    if (!window.confirm(`Are you sure you want to delete the team "${teamName}" and all its associated items? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/teams/${encodeURIComponent(teamName)}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete team');
+      }
+
+      setSuccess('Team deleted successfully');
+      fetchTeams(); // Refresh the teams list
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to delete team');
+    }
+  };
+
   useEffect(() => {
     fetchTeams();
   }, []);
@@ -233,6 +254,32 @@ export default function AdminPage() {
                   Save
                 </button>
               </div>
+            </div>
+
+            {/* Team Listing */}
+            <div className="mt-4">
+              <h3 className="text-sm font-medium mb-2">Existing Teams</h3>
+              {teams.length === 0 ? (
+                <p className="text-gray-400">No teams found</p>
+              ) : (
+                <div className="space-y-2">
+                  {teams.map((team) => (
+                    <div
+                      key={team}
+                      className="flex items-center justify-between p-2 bg-gray-800 rounded"
+                    >
+                      <span>{team}</span>
+                      <button
+                        onClick={() => handleDeleteTeam(team)}
+                        className="p-2 text-red-400 hover:text-red-300 transition-colors"
+                        title="Delete team"
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div id="slideshow-options" className="grid grid-cols-1 md:grid-cols-2 gap-6">
