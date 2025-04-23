@@ -15,14 +15,21 @@ export async function GET() {
       FROM teams t
       LEFT JOIN uploaded_items ui ON t.id = ui.team_id
       WHERE ui.upload_status = 'completed'
+      AND ui.file_path IS NOT NULL
       ORDER BY t.name, ui.item_type, ui.item_number`
     );
 
-    return NextResponse.json({ mediaItems: result.rows });
+    // Process the file paths to ensure they're absolute
+    const processedItems = result.rows.map(item => ({
+      ...item,
+      file_path: item.file_path.startsWith('/') ? item.file_path : `/${item.file_path}`
+    }));
+
+    return NextResponse.json({ mediaItems: processedItems });
   } catch (error) {
-    console.error('Error fetching media statistics:', error);
+    console.error('Error fetching media items:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch media statistics' },
+      { error: 'Failed to fetch media items' },
       { status: 500 }
     );
   }

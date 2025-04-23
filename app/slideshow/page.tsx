@@ -156,11 +156,19 @@ export default function SlideshowPage() {
   }
 
   const currentItem = mediaItems[currentIndex];
-  console.log('Current media item:', currentItem);
 
   return (
     <SidebarLayout>
-      <div className="relative w-full h-full">
+      <div 
+        className="relative w-full h-full"
+        style={{
+          backgroundImage: 'url(/treasure-hunt.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        }}
+      >
         {mediaItems.length > 0 ? (
           <>
             <div className="absolute top-4 right-4">
@@ -172,24 +180,24 @@ export default function SlideshowPage() {
                 {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
               </button>
             </div>
-            {mediaItems[currentIndex].file_type.startsWith('image/') ? (
-              <Image
-                src={mediaItems[currentIndex].file_path}
-                alt={`Slide ${currentIndex + 1}`}
-                fill
-                className="object-contain"
-                priority
-              />
-            ) : (
-              <video
-                src={mediaItems[currentIndex].file_path}
-                className="w-full h-full object-contain"
-                autoPlay
-                loop
-                muted
-                playsInline
-              />
-            )}
+            <div className="absolute inset-0 flex items-center justify-center">
+              {currentItem.file_type.startsWith('image/') ? (
+                <img
+                  src={currentItem.file_path}
+                  alt={`Slide ${currentIndex + 1}`}
+                  className="max-w-full max-h-full object-contain"
+                />
+              ) : (
+                <video
+                  src={currentItem.file_path}
+                  className="max-w-full max-h-full object-contain"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+              )}
+            </div>
           </>
         ) : (
           <div className="flex items-center justify-center h-full">
