@@ -10,15 +10,17 @@ export async function GET(
   const { team, filename } = context.params;
 
   try {
-    // First check if there are any files in the uploaded_files table
-    const filesCheck = await pool.query(
-      'SELECT COUNT(*) FROM uploaded_files'
+    // Check if uploaded_items table has any entries
+    const itemsCheck = await pool.query(
+      'SELECT COUNT(*) FROM uploaded_items'
     );
 
-    if (filesCheck.rows[0].count === '0') {
-      console.error('No files found in uploaded_files table');
-      return new NextResponse('No files available', { 
-        status: 404,
+    const itemCount = parseInt(itemsCheck.rows[0].count);
+    
+    if (itemCount === 0) {
+      console.log('uploaded_items table is empty - continuing execution');
+      return new NextResponse('No items available', { 
+        status: 200,
         headers: {
           'Content-Type': 'text/plain',
         }
