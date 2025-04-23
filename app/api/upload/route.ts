@@ -58,9 +58,8 @@ export async function POST(request: Request) {
       const uploadedItemsResult = await client.query(
         `INSERT INTO uploaded_items (
           team_id, item_type, item_number, file_name, 
-          file_path, file_size, mime_type, upload_status,
-          file_data
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          file_path, file_size, mime_type, upload_status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING id`,
         [
           teamId,
@@ -70,8 +69,7 @@ export async function POST(request: Request) {
           `/api/files/${team}/${file.name}`,
           file.size,
           file.type,
-          'pending',
-          buffer
+          'pending'
         ]
       );
       console.log('Saved to uploaded_items successfully');
@@ -81,9 +79,8 @@ export async function POST(request: Request) {
       await client.query(
         `INSERT INTO media_items (
           team_id, item_type, item_number, file_name, 
-          file_path, file_size, mime_type,
-          file_data
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          file_path, file_size, mime_type
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [
           teamId,
           itemType,
@@ -91,8 +88,7 @@ export async function POST(request: Request) {
           file.name,
           `/api/files/${team}/${file.name}`,
           file.size,
-          file.type,
-          buffer
+          file.type
         ]
       );
       console.log('Saved to media_items successfully');
