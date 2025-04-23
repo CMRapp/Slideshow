@@ -1,4 +1,4 @@
-import { Pool } from '@neondatabase/serverless';
+import { Pool, PoolClient } from '@neondatabase/serverless';
 
 // Check for required environment variables
 const requiredEnvVars = ['DATABASE_URL'];
@@ -29,7 +29,7 @@ pool.connect()
     throw error;
   });
 
-async function columnExists(client: any, tableName: string, columnName: string): Promise<boolean> {
+async function columnExists(client: PoolClient, tableName: string, columnName: string): Promise<boolean> {
   const result = await client.query(
     `SELECT EXISTS (
       SELECT 1 
@@ -41,7 +41,7 @@ async function columnExists(client: any, tableName: string, columnName: string):
   return result.rows[0].exists;
 }
 
-async function indexExists(client: any, indexName: string): Promise<boolean> {
+async function indexExists(client: PoolClient, indexName: string): Promise<boolean> {
   const result = await client.query(
     `SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = $1)`,
     [indexName]
