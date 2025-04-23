@@ -5,16 +5,20 @@ export async function GET() {
   try {
     const result = await pool.query(
       `SELECT 
+        ui.id,
         t.name as team_name,
-        COUNT(CASE WHEN ui.item_type = 'photo' THEN 1 END) as photo_count,
-        COUNT(CASE WHEN ui.item_type = 'video' THEN 1 END) as video_count,
-        MAX(ui.created_at) as last_upload
+        ui.mime_type as file_type,
+        ui.file_path,
+        ui.file_name,
+        ui.item_type,
+        ui.item_number
       FROM teams t
       LEFT JOIN uploaded_items ui ON t.id = ui.team_id
-      GROUP BY t.id, t.name`
+      WHERE ui.upload_status = 'completed'
+      ORDER BY t.name, ui.item_type, ui.item_number`
     );
 
-    return NextResponse.json(result.rows);
+    return NextResponse.json({ mediaItems: result.rows });
   } catch (error) {
     console.error('Error fetching media statistics:', error);
     return NextResponse.json(
