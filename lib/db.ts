@@ -37,20 +37,30 @@ async function initializeDatabase() {
     
     // Define schema directly in the code
     const schema = `
+      -- Teams table
+      CREATE TABLE IF NOT EXISTS teams (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        description TEXT,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
       -- Photos table
       CREATE TABLE IF NOT EXISTS photos (
         id SERIAL PRIMARY KEY,
+        team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
         filename VARCHAR(255) NOT NULL,
-        team VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
       -- Videos table
       CREATE TABLE IF NOT EXISTS videos (
         id SERIAL PRIMARY KEY,
+        team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
         filename VARCHAR(255) NOT NULL,
-        team VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
       -- Settings table
@@ -58,42 +68,52 @@ async function initializeDatabase() {
         id SERIAL PRIMARY KEY,
         key VARCHAR(255) NOT NULL UNIQUE,
         value TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        description TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
       -- Media items table
       CREATE TABLE IF NOT EXISTS media_items (
         id SERIAL PRIMARY KEY,
-        team VARCHAR(255) NOT NULL,
+        team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
         item_number INT NOT NULL,
-        type VARCHAR(10) NOT NULL CHECK (type IN ('photo', 'video')),
-        filename VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        item_type VARCHAR(10) NOT NULL CHECK (item_type IN ('photo', 'video')),
+        file_name VARCHAR(255) NOT NULL,
+        file_path VARCHAR(255) NOT NULL,
+        file_size BIGINT NOT NULL,
+        mime_type VARCHAR(255) NOT NULL,
+        metadata JSONB,
+        is_processed BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (team_id, item_type, item_number)
       );
 
       -- Uploaded items table
       CREATE TABLE IF NOT EXISTS uploaded_items (
         id SERIAL PRIMARY KEY,
-        team VARCHAR(255) NOT NULL,
-        item_type VARCHAR(50) NOT NULL,
+        team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+        item_type VARCHAR(10) NOT NULL CHECK (item_type IN ('photo', 'video')),
         item_number INTEGER NOT NULL,
+        file_name VARCHAR(255) NOT NULL,
         file_path VARCHAR(255) NOT NULL,
+        file_size BIGINT NOT NULL,
+        mime_type VARCHAR(255) NOT NULL,
+        upload_status VARCHAR(20) CHECK (upload_status IN ('pending', 'processing', 'completed', 'failed')) DEFAULT 'pending',
+        error_message TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(team, item_type, item_number)
-      );
-
-      -- Teams table
-      CREATE TABLE IF NOT EXISTS teams (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL UNIQUE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (team_id, item_type, item_number)
       );
 
       -- Create indexes
-      CREATE INDEX IF NOT EXISTS idx_uploaded_items_team ON uploaded_items(team);
-      CREATE INDEX IF NOT EXISTS idx_media_items_team ON media_items(team);
-      CREATE INDEX IF NOT EXISTS idx_photos_team ON photos(team);
-      CREATE INDEX IF NOT EXISTS idx_videos_team ON videos(team);
+      CREATE INDEX IF NOT EXISTS idx_media_items_team_id ON media_items(team_id);
+      CREATE INDEX IF NOT EXISTS idx_media_items_item_type ON media_items(item_type);
+      CREATE INDEX IF NOT EXISTS idx_media_items_is_processed ON media_items(is_processed);
+      CREATE INDEX IF NOT EXISTS idx_uploaded_items_team_id ON uploaded_items(team_id);
+      CREATE INDEX IF NOT EXISTS idx_uploaded_items_item_type ON uploaded_items(item_type);
+      CREATE INDEX IF NOT EXISTS idx_uploaded_items_upload_status ON uploaded_items(upload_status);
     `;
 
     await client.query(schema);
