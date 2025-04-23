@@ -10,7 +10,22 @@ export async function GET(
   const { team, filename } = context.params;
 
   try {
-    // First check if the team exists
+    // First check if there are any files in the uploaded_files table
+    const filesCheck = await pool.query(
+      'SELECT COUNT(*) FROM uploaded_files'
+    );
+
+    if (filesCheck.rows[0].count === '0') {
+      console.error('No files found in uploaded_files table');
+      return new NextResponse('No files available', { 
+        status: 404,
+        headers: {
+          'Content-Type': 'text/plain',
+        }
+      });
+    }
+
+    // Check if the team exists
     const teamResult = await pool.query(
       'SELECT id FROM teams WHERE name = $1',
       [team]
