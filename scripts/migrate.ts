@@ -70,7 +70,7 @@ async function migrate() {
         await client.query(`
           CREATE TABLE media_items (
             id SERIAL PRIMARY KEY,
-            team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+            team_id INTEGER,
             item_type VARCHAR(10) CHECK (item_type IN ('photo', 'video')) NOT NULL,
             item_number INTEGER NOT NULL,
             file_name VARCHAR(255) NOT NULL,
@@ -84,6 +84,15 @@ async function migrate() {
             UNIQUE (team_id, item_type, item_number)
           );
         `);
+
+        // Add foreign key constraint after table creation
+        await client.query(`
+          ALTER TABLE media_items
+          ADD CONSTRAINT fk_media_items_team
+          FOREIGN KEY (team_id)
+          REFERENCES teams(id)
+          ON DELETE CASCADE;
+        `);
       }
 
       // Create uploaded_items table if it doesn't exist
@@ -92,7 +101,7 @@ async function migrate() {
         await client.query(`
           CREATE TABLE uploaded_items (
             id SERIAL PRIMARY KEY,
-            team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+            team_id INTEGER,
             item_type VARCHAR(10) CHECK (item_type IN ('photo', 'video')) NOT NULL,
             item_number INTEGER NOT NULL,
             file_name VARCHAR(255) NOT NULL,
@@ -105,6 +114,15 @@ async function migrate() {
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             UNIQUE (team_id, item_type, item_number)
           );
+        `);
+
+        // Add foreign key constraint after table creation
+        await client.query(`
+          ALTER TABLE uploaded_items
+          ADD CONSTRAINT fk_uploaded_items_team
+          FOREIGN KEY (team_id)
+          REFERENCES teams(id)
+          ON DELETE CASCADE;
         `);
       }
 
@@ -181,7 +199,7 @@ async function migrate() {
       await client.query(`
         CREATE TABLE media_items (
           id SERIAL PRIMARY KEY,
-          team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+          team_id INTEGER,
           item_type VARCHAR(10) CHECK (item_type IN ('photo', 'video')) NOT NULL,
           item_number INTEGER NOT NULL,
           file_name VARCHAR(255) NOT NULL,
@@ -196,11 +214,20 @@ async function migrate() {
         );
       `);
 
+      // Add foreign key constraint
+      await client.query(`
+        ALTER TABLE media_items
+        ADD CONSTRAINT fk_media_items_team
+        FOREIGN KEY (team_id)
+        REFERENCES teams(id)
+        ON DELETE CASCADE;
+      `);
+
       // Create uploaded_items table
       await client.query(`
         CREATE TABLE uploaded_items (
           id SERIAL PRIMARY KEY,
-          team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+          team_id INTEGER,
           item_type VARCHAR(10) CHECK (item_type IN ('photo', 'video')) NOT NULL,
           item_number INTEGER NOT NULL,
           file_name VARCHAR(255) NOT NULL,
@@ -213,6 +240,15 @@ async function migrate() {
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           UNIQUE (team_id, item_type, item_number)
         );
+      `);
+
+      // Add foreign key constraint
+      await client.query(`
+        ALTER TABLE uploaded_items
+        ADD CONSTRAINT fk_uploaded_items_team
+        FOREIGN KEY (team_id)
+        REFERENCES teams(id)
+        ON DELETE CASCADE;
       `);
 
       // Create indexes
