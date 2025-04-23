@@ -48,44 +48,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleFileUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
-
-    if (!teamName.trim()) {
-      setError('Please enter a team name');
-      return;
-    }
-
-    if (!selectedFile) {
-      setError('Please select a file to upload');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('teamName', teamName.trim());
-    formData.append('file', selectedFile);
-
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
-      }
-
-      setSuccess('File uploaded successfully!');
-      setTeamName('');
-      setSelectedFile(null);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Upload failed');
-    }
-  };
-
   const handleDeleteAll = async () => {
     if (!window.confirm('Are you sure you want to delete all media? This action cannot be undone.')) {
       return;
