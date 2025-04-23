@@ -154,6 +154,37 @@ export default function AdminPage() {
     }
   };
 
+  const handleTeamNameSave = async () => {
+    setError(null);
+    setSuccess(null);
+
+    if (!teamName.trim()) {
+      setError('Please enter a team name');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/teams', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: teamName.trim() }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save team name');
+      }
+
+      setSuccess('Team name saved successfully!');
+      setTeamName('');
+      fetchTeams(); // Refresh the teams list
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to save team name');
+    }
+  };
+
   const fetchTeams = async () => {
     try {
       const response = await fetch('/api/teams');
@@ -219,98 +250,114 @@ export default function AdminPage() {
         )}
 
         <TabbedContainer>
+          {/* Slideshow Config Tab */}
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Team Name</label>
-              <input
-                type="text"
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
-                placeholder="Enter team name"
-              />
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-2">Team Name</label>
+                <input
+                  type="text"
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                  className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                  placeholder="Enter team name"
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={handleTeamNameSave}
+                  disabled={!teamName.trim()}
+                  className="h-[42px] bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Save
+                </button>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Upload Media</label>
-              <input
-                type="file"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
-                accept="image/*,video/*"
-              />
-            </div>
-            <button
-              onClick={handleFileUpload}
-              disabled={!teamName || !selectedFile}
-              className="w-full bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Upload
-            </button>
-          </div>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Photo Count</label>
-              <input
-                type="number"
-                value={photoCount}
-                onChange={(e) => setPhotoCount(parseInt(e.target.value))}
-                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
-              />
-              <button
-                onClick={handlePhotoCountSave}
-                className="mt-2 bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500"
-              >
-                Save Photo Count
-              </button>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Video Count</label>
-              <input
-                type="number"
-                value={videoCount}
-                onChange={(e) => setVideoCount(parseInt(e.target.value))}
-                className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
-              />
-              <button
-                onClick={handleVideoCountSave}
-                className="mt-2 bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500"
-              >
-                Save Video Count
-              </button>
-            </div>
-            <button
-              onClick={handleDeleteAll}
-              className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
-            >
-              Delete All Media
-            </button>
-          </div>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Teams</label>
-              <div className="space-y-2">
-                {teams.map((team) => (
-                  <div key={team} className="flex items-center justify-between">
-                    <span>{team}</span>
-                    <button
-                      onClick={() => fetchTeamMedia(team)}
-                      className="bg-yellow-400 text-black py-1 px-3 rounded hover:bg-yellow-500"
-                    >
-                      View Media
-                    </button>
-                  </div>
-                ))}
+
+            <div id="slideshow-options" className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium mb-2">Photo Count</label>
+                  <input
+                    type="number"
+                    value={photoCount}
+                    onChange={(e) => setPhotoCount(Number(e.target.value))}
+                    className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                    placeholder="Enter photo count"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={handlePhotoCountSave}
+                    className="h-[42px] bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium mb-2">Video Count</label>
+                  <input
+                    type="number"
+                    value={videoCount}
+                    onChange={(e) => setVideoCount(Number(e.target.value))}
+                    className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                    placeholder="Enter video count"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={handleVideoCountSave}
+                    className="h-[42px] bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500"
+                  >
+                    Save
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </TabbedContainer>
 
-        {selectedImage && (
-          <ImageViewer
-            imageUrl={selectedImage}
-            onClose={handleCloseViewer}
-          />
-        )}
+          {/* Branding Tab */}
+          <div className="space-y-6">
+          </div>
+
+          <div className="space-y-6">
+            <div className="p-4 bg-red-900/50 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4">Danger Zone</h3>
+              <p className="text-sm text-gray-300 mb-4">
+                This action will permanently delete all media files and database records.
+                This action cannot be undone.
+              </p>
+              <button
+                onClick={handleDeleteAll}
+                className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
+              >
+                Delete All Media
+              </button>
+            </div>
+          </div>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {teams.map((team) => (
+                <div
+                  key={team}
+                  className="p-4 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700"
+                  onClick={() => fetchTeamMedia(team)}
+                >
+                  <h3 className="font-semibold">{team}</h3>
+                </div>
+              ))}
+            </div>
+            {selectedImage && (
+              <ImageViewer
+                imageUrl={selectedImage}
+                onClose={handleCloseViewer}
+              />
+            )}
+          </div>
+        </TabbedContainer>
       </div>
     </div>
   );
