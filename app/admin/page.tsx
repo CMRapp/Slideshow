@@ -178,7 +178,7 @@ export default function AdminPage() {
     }
 
     try {
-      const response = await fetch(`/api/teams/${encodeURIComponent(teamName)}`, {
+      const response = await fetch(`/api/teams?name=${encodeURIComponent(teamName)}`, {
         method: 'DELETE',
       });
 
