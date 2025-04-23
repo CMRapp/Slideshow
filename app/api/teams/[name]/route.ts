@@ -30,12 +30,16 @@ export async function DELETE(request: Request) {
 
     if (result.rows.length === 0) {
       return NextResponse.json(
-        { error: 'Team not found' },
+        { error: 'Team not found', success: false },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true,
+      message: 'Team deleted successfully',
+      team: result.rows[0]
+    });
   } catch (error) {
     console.error('Error deleting team:', error);
     const errorDetails: ErrorDetails = error instanceof Error ? {
@@ -53,6 +57,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json(
       { 
         error: 'Failed to delete team',
+        success: false,
         details: errorDetails
       },
       { status: 500 }

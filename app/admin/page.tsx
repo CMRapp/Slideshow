@@ -180,14 +180,22 @@ export default function AdminPage() {
     try {
       const response = await fetch(`/api/teams?name=${encodeURIComponent(teamName)}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete team');
+        throw new Error(data.error || 'Failed to delete team');
       }
 
-      setSuccess('Team deleted successfully');
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to delete team');
+      }
+
+      setSuccess(data.message || 'Team deleted successfully');
       fetchTeams(); // Refresh the teams list
     } catch (error) {
       console.error('Error deleting team:', error);
@@ -244,7 +252,7 @@ export default function AdminPage() {
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
                   className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
-                  placeholder="Enter team name"
+                  placeholder="Enter A New Team Name"
                 />
               </div>
               <div className="flex items-end">
@@ -259,18 +267,18 @@ export default function AdminPage() {
             </div>
 
             {/* Team Listing */}
-            <div className="mt-4">
+            <div className="mt-4" id="team-listing">
               <h3 className="text-sm font-medium mb-2">Existing Teams</h3>
               {teams.length === 0 ? (
                 <p className="text-gray-400">No teams found</p>
               ) : (
-                <div className="space-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {teams.map((team) => (
                     <div
                       key={team}
-                      className="flex items-center justify-between p-2 bg-gray-800 rounded"
+                      className="flex items-center justify-between p-4 bg-gray-800 rounded-lg"
                     >
-                      <span>{team}</span>
+                      <span className="text-white">{team}</span>
                       <button
                         onClick={() => handleDeleteTeam(team)}
                         className="p-2 text-red-400 hover:text-red-300 transition-colors"
@@ -285,6 +293,7 @@ export default function AdminPage() {
             </div>
 
             <div id="slideshow-options" className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <h3 className="text-sm font-medium mb-2">Slideshow Options</h3>
               <div className="flex gap-2">
                 <div className="flex-1">
                   <label className="block text-sm font-medium mb-2">Photo Count</label>
