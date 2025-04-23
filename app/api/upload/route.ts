@@ -44,10 +44,6 @@ export async function POST(request: Request) {
     const teamId = teamResult.rows[0].id;
     console.log('Found team ID:', teamId);
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
     // Start a transaction
     const client = await pool.connect();
     try {
