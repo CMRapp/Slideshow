@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
+interface ColumnInfo {
+  column_name: string;
+  data_type: string;
+  is_nullable: string;
+  column_default: string | null;
+}
+
+interface Schema {
+  [tableName: string]: ColumnInfo[];
+}
+
 export async function GET() {
   try {
     const client = await pool.connect();
@@ -16,7 +27,7 @@ export async function GET() {
       const tables = tablesResult.rows.map(row => row.table_name);
       
       // Get columns for each table
-      const schema = {};
+      const schema: Schema = {};
       for (const table of tables) {
         const columnsResult = await client.query(`
           SELECT column_name, data_type, is_nullable, column_default
