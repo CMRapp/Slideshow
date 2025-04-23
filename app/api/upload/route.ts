@@ -7,12 +7,14 @@ import { pool } from '@/lib/db';
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const team = formData.get('teamName') as string;
+    const team = formData.get('team') as string;
     const file = formData.get('file') as File;
+    const itemType = formData.get('itemType') as string;
+    const itemNumber = formData.get('itemNumber') as string;
 
-    if (!team || !file) {
+    if (!team || !file || !itemType || !itemNumber) {
       return NextResponse.json(
-        { error: 'Team name and file are required' },
+        { error: 'Team name, file, item type, and item number are required' },
         { status: 400 }
       );
     }
@@ -35,20 +37,14 @@ export async function POST(request: Request) {
 
     // Save file info to database
     await pool.query(
-      'INSERT INTO uploaded_items (filename, team) VALUES ($1, $2)',
-      [fileName, team]
+      'INSERT INTO uploaded_items (team_id, item_type, item_number, file_name, file_path, file_size, mime_type, upload_status) VALUES ((SELECT id FROM teams WHERE name = $1), $2, $3, $4, $5, $6, $7, $8)',
+      [team, itemType, parseInt(itemNumber), fileName, `/uploads/${team}/${fileName}`, buffer.length, file.type, 'pending']
     );
 
     // Update media_items table
-    const mediaType = file.type.startsWith('image/') ? 'photo' : 'video';
-    const itemNumber = await pool.query(
-      'SELECT COALESCE(MAX(item_number), 0) + 1 as next_number FROM media_items WHERE team = $1',
-      [team]
-    );
-    
     await pool.query(
-      'INSERT INTO media_items (team, item_number, type, filename) VALUES ($1, $2, $3, $4)',
-      [team, itemNumber.rows[0].next_number, mediaType, fileName]
+      'INSERT INTO media_items (team_id, item_type, item_number, file_name, file_path, file_size, mime_type) VALUES ((SELECT id FROM teams WHERE name = $1), $2, $3, $4, $5, $6, $7)',
+      [team, itemType, parseInt(itemNumber), fileName, `/uploads/${team}/${fileName}`, buffer.length, file.type]
     );
 
     return NextResponse.json({ 
@@ -56,14 +52,14 @@ export async function POST(request: Request) {
       item: {
         filename: fileName,
         team: team,
-        type: mediaType,
+        type: itemType,
         path: `/uploads/${team}/${fileName}`
       }
     });
   } catch (error) {
-    console.error('Error uploading file:', error);
+    console.error('Upload error:', error);
     return NextResponse.json(
-      { error: 'Failed to upload file' },
+      { error: 'Failed to upload file. Please try again.' },
       { status: 500 }
     );
   }
