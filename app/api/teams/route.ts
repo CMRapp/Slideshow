@@ -55,4 +55,66 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const teamName = searchParams.get('name');
+
+    if (!teamName) {
+      return NextResponse.json(
+        { error: 'Team name is required' },
+        { status: 400 }
+      );
+    }
+
+    const client = await pool.connect();
+    try {
+      // Start a transaction
+      await client.query('BEGIN');
+
+      // First, get the team_id
+      const teamResult = await client.query(
+        'SELECT id FROM teams WHERE name = $1',
+        [teamName]
+      );
+
+      if (teamResult.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return NextResponse.json(
+          { error: 'Team not found' },
+          { status: 404 }
+        );
+      }
+
+      const teamId = teamResult.rows[0].id;
+
+      // Delete all associated items (this will cascade delete from uploaded_items and media_items)
+      await client.query(
+        'DELETE FROM teams WHERE id = $1',
+        [teamId]
+      );
+
+      // Commit the transaction
+      await client.query('COMMIT');
+
+      return NextResponse.json(
+        { message: 'Team and all associated items deleted successfully' },
+        { status: 200 }
+      );
+    } catch (error) {
+      // Rollback the transaction on error
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error deleting team:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete team' },
+      { status: 500 }
+    );
+  }
 } 
