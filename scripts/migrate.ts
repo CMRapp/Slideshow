@@ -25,6 +25,18 @@ async function tableExists(client: any, tableName: string): Promise<boolean> {
   return result.rows[0].exists;
 }
 
+async function columnExists(client: any, tableName: string, columnName: string): Promise<boolean> {
+  const result = await client.query(
+    `SELECT EXISTS (
+      SELECT 1 
+      FROM information_schema.columns 
+      WHERE table_name = $1 AND column_name = $2
+    )`,
+    [tableName, columnName]
+  );
+  return result.rows[0].exists;
+}
+
 async function migrate() {
   const client = await pool.connect();
   try {
@@ -84,15 +96,6 @@ async function migrate() {
             UNIQUE (team_id, item_type, item_number)
           );
         `);
-
-        // Add foreign key constraint after table creation
-        await client.query(`
-          ALTER TABLE media_items
-          ADD CONSTRAINT fk_media_items_team
-          FOREIGN KEY (team_id)
-          REFERENCES teams(id)
-          ON DELETE CASCADE;
-        `);
       }
 
       // Create uploaded_items table if it doesn't exist
@@ -115,14 +118,46 @@ async function migrate() {
             UNIQUE (team_id, item_type, item_number)
           );
         `);
+      }
 
-        // Add foreign key constraint after table creation
+      // Add foreign key constraints if they don't exist
+      console.log('Adding foreign key constraints...');
+      
+      // Check and add media_items foreign key
+      if (await columnExists(client, 'media_items', 'team_id')) {
         await client.query(`
-          ALTER TABLE uploaded_items
-          ADD CONSTRAINT fk_uploaded_items_team
-          FOREIGN KEY (team_id)
-          REFERENCES teams(id)
-          ON DELETE CASCADE;
+          DO $$ 
+          BEGIN
+            IF NOT EXISTS (
+              SELECT 1 FROM information_schema.table_constraints 
+              WHERE constraint_name = 'fk_media_items_team'
+            ) THEN
+              ALTER TABLE media_items
+              ADD CONSTRAINT fk_media_items_team
+              FOREIGN KEY (team_id)
+              REFERENCES teams(id)
+              ON DELETE CASCADE;
+            END IF;
+          END $$;
+        `);
+      }
+
+      // Check and add uploaded_items foreign key
+      if (await columnExists(client, 'uploaded_items', 'team_id')) {
+        await client.query(`
+          DO $$ 
+          BEGIN
+            IF NOT EXISTS (
+              SELECT 1 FROM information_schema.table_constraints 
+              WHERE constraint_name = 'fk_uploaded_items_team'
+            ) THEN
+              ALTER TABLE uploaded_items
+              ADD CONSTRAINT fk_uploaded_items_team
+              FOREIGN KEY (team_id)
+              REFERENCES teams(id)
+              ON DELETE CASCADE;
+            END IF;
+          END $$;
         `);
       }
 
@@ -137,13 +172,15 @@ async function migrate() {
       ];
 
       for (const index of indexDefinitions) {
-        const result = await client.query(
-          `SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = $1)`,
-          [index.name]
-        );
-        if (!result.rows[0].exists) {
-          console.log(`Creating index ${index.name}...`);
-          await client.query(`CREATE INDEX ${index.name} ON ${index.table}(${index.column})`);
+        if (await columnExists(client, index.table, index.column)) {
+          const result = await client.query(
+            `SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = $1)`,
+            [index.name]
+          );
+          if (!result.rows[0].exists) {
+            console.log(`Creating index ${index.name}...`);
+            await client.query(`CREATE INDEX ${index.name} ON ${index.table}(${index.column})`);
+          }
         }
       }
 
@@ -212,15 +249,6 @@ async function migrate() {
         );
       `);
 
-      // Add foreign key constraint
-      await client.query(`
-        ALTER TABLE media_items
-        ADD CONSTRAINT fk_media_items_team
-        FOREIGN KEY (team_id)
-        REFERENCES teams(id)
-        ON DELETE CASCADE;
-      `);
-
       // Create uploaded_items table
       await client.query(`
         CREATE TABLE uploaded_items (
@@ -240,8 +268,14 @@ async function migrate() {
         );
       `);
 
-      // Add foreign key constraint
+      // Add foreign key constraints
       await client.query(`
+        ALTER TABLE media_items
+        ADD CONSTRAINT fk_media_items_team
+        FOREIGN KEY (team_id)
+        REFERENCES teams(id)
+        ON DELETE CASCADE;
+
         ALTER TABLE uploaded_items
         ADD CONSTRAINT fk_uploaded_items_team
         FOREIGN KEY (team_id)
