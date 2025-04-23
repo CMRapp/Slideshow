@@ -3,12 +3,10 @@ import { pool } from '@/lib/db';
 
 interface MediaItem {
   id: number;
-  file_name: string;
-  file_type: string;
-  file_path: string;
-  item_number: number;
-  item_type: string;
   team: string;
+  item_number: number;
+  type: string;
+  filename: string;
   created_at: string;
 }
 
@@ -88,7 +86,7 @@ export async function GET(request: Request) {
     ]);
 
     return NextResponse.json({
-      items: mediaResult.rows,
+      items: mediaResult.rows as MediaItem[],
       total: parseInt(countResult.rows[0].total),
       page,
       limit
@@ -134,7 +132,7 @@ export async function POST(request: Request) {
       [team, itemNumber, type, file.name]
     );
 
-    return NextResponse.json(result.rows[0]);
+    return NextResponse.json(result.rows[0] as MediaItem);
   } catch (error) {
     console.error('Error uploading media:', error);
     return NextResponse.json(
