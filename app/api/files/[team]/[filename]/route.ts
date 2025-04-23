@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
+type RouteParams = {
+  team: string;
+  filename: string;
+};
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { team: string; filename: string } }
-) {
+  { params }: { params: RouteParams }
+): Promise<NextResponse> {
   try {
     const { team, filename } = params;
 
