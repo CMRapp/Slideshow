@@ -57,22 +57,6 @@ async function initializeDatabase() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
-      -- Photos table
-      CREATE TABLE IF NOT EXISTS photos (
-        id SERIAL PRIMARY KEY,
-        team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-        filename VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-
-      -- Videos table
-      CREATE TABLE IF NOT EXISTS videos (
-        id SERIAL PRIMARY KEY,
-        team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-        filename VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-
       -- Media items table
       CREATE TABLE IF NOT EXISTS media_items (
         id SERIAL PRIMARY KEY,
@@ -125,6 +109,9 @@ async function initializeDatabase() {
     client.release();
   }
 }
+
+// Export the initialization function
+export { initializeDatabase };
 
 // Call initializeDatabase when the module is imported
 initializeDatabase().catch(console.error);

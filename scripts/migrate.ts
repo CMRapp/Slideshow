@@ -165,8 +165,6 @@ async function migrate() {
       await client.query(`
         DROP TABLE IF EXISTS uploaded_items CASCADE;
         DROP TABLE IF EXISTS media_items CASCADE;
-        DROP TABLE IF EXISTS photos CASCADE;
-        DROP TABLE IF EXISTS videos CASCADE;
         DROP TABLE IF EXISTS settings CASCADE;
         DROP TABLE IF EXISTS teams CASCADE;
       `);
