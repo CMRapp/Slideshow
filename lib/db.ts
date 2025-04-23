@@ -49,15 +49,25 @@ async function indexExists(client: PoolClient, indexName: string): Promise<boole
   return result.rows[0].exists;
 }
 
+async function constraintExists(client: PoolClient, constraintName: string): Promise<boolean> {
+  const result = await client.query(
+    `SELECT EXISTS (
+      SELECT 1 FROM information_schema.table_constraints 
+      WHERE constraint_name = $1
+    )`,
+    [constraintName]
+  );
+  return result.rows[0].exists;
+}
+
 // Initialize database tables if they don't exist
 async function initializeDatabase() {
   const client = await pool.connect();
   try {
     console.log('Starting database initialization...');
     
-    // Define schema directly in the code
-    const schema = `
-      -- Teams table (must be created first)
+    // Create teams table first
+    await client.query(`
       CREATE TABLE IF NOT EXISTS teams (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL UNIQUE,
@@ -66,8 +76,10 @@ async function initializeDatabase() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+    `);
 
-      -- Settings table (no foreign keys)
+    // Create settings table
+    await client.query(`
       CREATE TABLE IF NOT EXISTS settings (
         id SERIAL PRIMARY KEY,
         key VARCHAR(255) NOT NULL UNIQUE,
@@ -76,8 +88,10 @@ async function initializeDatabase() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+    `);
 
-      -- Media items table
+    // Create media_items table
+    await client.query(`
       CREATE TABLE IF NOT EXISTS media_items (
         id SERIAL PRIMARY KEY,
         team_id INTEGER,
@@ -93,8 +107,10 @@ async function initializeDatabase() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         UNIQUE (team_id, item_type, item_number)
       );
+    `);
 
-      -- Uploaded items table
+    // Create uploaded_items table
+    await client.query(`
       CREATE TABLE IF NOT EXISTS uploaded_items (
         id SERIAL PRIMARY KEY,
         team_id INTEGER,
@@ -110,41 +126,41 @@ async function initializeDatabase() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         UNIQUE (team_id, item_type, item_number)
       );
-    `;
-
-    await client.query(schema);
-
-    // Add foreign key constraints after table creation
-    await client.query(`
-      DO $$ 
-      BEGIN
-        -- Add foreign key constraint for media_items if it doesn't exist
-        IF NOT EXISTS (
-          SELECT 1 FROM information_schema.table_constraints 
-          WHERE constraint_name = 'fk_media_items_team'
-        ) THEN
-          ALTER TABLE media_items
-          ADD CONSTRAINT fk_media_items_team
-          FOREIGN KEY (team_id)
-          REFERENCES teams(id)
-          ON DELETE CASCADE;
-        END IF;
-
-        -- Add foreign key constraint for uploaded_items if it doesn't exist
-        IF NOT EXISTS (
-          SELECT 1 FROM information_schema.table_constraints 
-          WHERE constraint_name = 'fk_uploaded_items_team'
-        ) THEN
-          ALTER TABLE uploaded_items
-          ADD CONSTRAINT fk_uploaded_items_team
-          FOREIGN KEY (team_id)
-          REFERENCES teams(id)
-          ON DELETE CASCADE;
-        END IF;
-      END $$;
     `);
 
+    // Add foreign key constraints after ensuring columns exist
+    console.log('Adding foreign key constraints...');
+
+    // Add media_items foreign key
+    if (await columnExists(client, 'media_items', 'team_id') && 
+        await columnExists(client, 'teams', 'id') && 
+        !(await constraintExists(client, 'fk_media_items_team'))) {
+      console.log('Adding foreign key constraint for media_items...');
+      await client.query(`
+        ALTER TABLE media_items
+        ADD CONSTRAINT fk_media_items_team
+        FOREIGN KEY (team_id)
+        REFERENCES teams(id)
+        ON DELETE CASCADE;
+      `);
+    }
+
+    // Add uploaded_items foreign key
+    if (await columnExists(client, 'uploaded_items', 'team_id') && 
+        await columnExists(client, 'teams', 'id') && 
+        !(await constraintExists(client, 'fk_uploaded_items_team'))) {
+      console.log('Adding foreign key constraint for uploaded_items...');
+      await client.query(`
+        ALTER TABLE uploaded_items
+        ADD CONSTRAINT fk_uploaded_items_team
+        FOREIGN KEY (team_id)
+        REFERENCES teams(id)
+        ON DELETE CASCADE;
+      `);
+    }
+
     // Create indexes after ensuring columns exist
+    console.log('Creating indexes...');
     const indexDefinitions = [
       { name: 'idx_media_items_team_id', table: 'media_items', column: 'team_id' },
       { name: 'idx_media_items_item_type', table: 'media_items', column: 'item_type' },
@@ -162,6 +178,7 @@ async function initializeDatabase() {
     }
 
     // Insert default settings if they don't exist
+    console.log('Inserting default settings...');
     await client.query(`
       INSERT INTO settings (key, value, description) VALUES 
         ('photo_count', '0', 'Total number of photos allowed per team'),
