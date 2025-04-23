@@ -1,22 +1,6 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
-interface Team {
-  id: number;
-  name: string;
-  created_at: string;
-}
-
-interface ErrorDetails {
-  message: string;
-  stack?: string;
-  name?: string;
-  code?: string;
-  errno?: number;
-  sqlState?: string;
-  sqlMessage?: string;
-}
-
 export async function GET() {
   try {
     const result = await pool.query(

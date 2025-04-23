@@ -34,8 +34,8 @@ export async function POST(request: Request) {
     await writeFile(filePath, buffer);
 
     // Save file info to database
-    const result = await pool.query(
-      'INSERT INTO uploaded_items (filename, team) VALUES ($1, $2) RETURNING *',
+    await pool.query(
+      'INSERT INTO uploaded_items (filename, team) VALUES ($1, $2)',
       [fileName, team]
     );
 
