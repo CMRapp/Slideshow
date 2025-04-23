@@ -109,23 +109,23 @@ async function migrate() {
       }
 
       // Create indexes if they don't exist
-      const indexes = [
-        'idx_media_items_team_id',
-        'idx_media_items_item_type',
-        'idx_media_items_is_processed',
-        'idx_uploaded_items_team_id',
-        'idx_uploaded_items_item_type',
-        'idx_uploaded_items_upload_status'
+      const indexDefinitions = [
+        { name: 'idx_media_items_team_id', table: 'media_items', column: 'team_id' },
+        { name: 'idx_media_items_item_type', table: 'media_items', column: 'item_type' },
+        { name: 'idx_media_items_is_processed', table: 'media_items', column: 'is_processed' },
+        { name: 'idx_uploaded_items_team_id', table: 'uploaded_items', column: 'team_id' },
+        { name: 'idx_uploaded_items_item_type', table: 'uploaded_items', column: 'item_type' },
+        { name: 'idx_uploaded_items_upload_status', table: 'uploaded_items', column: 'upload_status' }
       ];
 
-      for (const index of indexes) {
+      for (const index of indexDefinitions) {
         const result = await client.query(
           `SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = $1)`,
-          [index]
+          [index.name]
         );
         if (!result.rows[0].exists) {
-          console.log(`Creating index ${index}...`);
-          await client.query(`CREATE INDEX ${index} ON ${index.replace('idx_', '').replace('_', '.')}`);
+          console.log(`Creating index ${index.name}...`);
+          await client.query(`CREATE INDEX ${index.name} ON ${index.table}(${index.column})`);
         }
       }
 
