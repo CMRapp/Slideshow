@@ -3,12 +3,19 @@ import { pool } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+type RouteContext = {
+  params: {
+    team: string;
+    filename: string;
+  };
+};
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { team: string; filename: string } }
+  context: RouteContext
 ): Promise<NextResponse> {
   try {
-    const { team, filename } = params;
+    const { team, filename } = context.params;
 
     // Get the file from the database
     const result = await pool.query(
