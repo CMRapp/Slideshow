@@ -22,6 +22,18 @@ async function migrate() {
   try {
     await client.query('BEGIN');
 
+    // Create teams table first in all environments
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS teams (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        description TEXT,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     // Check if we're in production (Vercel)
     if (isVercel) {
       console.log('Running in Vercel environment');
@@ -29,15 +41,6 @@ async function migrate() {
       // In production, we don't want to drop tables
       // Instead, we'll create them if they don't exist
       await client.query(`
-        CREATE TABLE IF NOT EXISTS teams (
-          id SERIAL PRIMARY KEY,
-          name VARCHAR(255) NOT NULL UNIQUE,
-          description TEXT,
-          is_active BOOLEAN DEFAULT TRUE,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        );
-
         CREATE TABLE IF NOT EXISTS settings (
           id SERIAL PRIMARY KEY,
           key VARCHAR(255) NOT NULL UNIQUE,
@@ -114,18 +117,8 @@ async function migrate() {
         DROP TABLE IF EXISTS teams CASCADE;
       `);
 
-      // Create teams table first
-      await client.query(`
-        CREATE TABLE teams (
-          id SERIAL PRIMARY KEY,
-          name VARCHAR(255) NOT NULL UNIQUE,
-          description TEXT,
-          is_active BOOLEAN DEFAULT TRUE,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-
+      // Create teams table first (already created above)
+      
       // Create settings table
       await client.query(`
         CREATE TABLE settings (
