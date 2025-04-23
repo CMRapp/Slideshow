@@ -38,8 +38,7 @@ async function migrate() {
     if (isVercel) {
       console.log('Running in Vercel environment');
       
-      // In production, we don't want to drop tables
-      // Instead, we'll create them if they don't exist
+      // Create settings table
       await client.query(`
         CREATE TABLE IF NOT EXISTS settings (
           id SERIAL PRIMARY KEY,
@@ -49,7 +48,10 @@ async function migrate() {
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
+      `);
 
+      // Create media_items table
+      await client.query(`
         CREATE TABLE IF NOT EXISTS media_items (
           id SERIAL PRIMARY KEY,
           team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
@@ -65,7 +67,10 @@ async function migrate() {
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           UNIQUE (team_id, item_type, item_number)
         );
+      `);
 
+      // Create uploaded_items table
+      await client.query(`
         CREATE TABLE IF NOT EXISTS uploaded_items (
           id SERIAL PRIMARY KEY,
           team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
