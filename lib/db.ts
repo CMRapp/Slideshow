@@ -29,6 +29,26 @@ pool.connect()
     throw error;
   });
 
+async function columnExists(client: any, tableName: string, columnName: string): Promise<boolean> {
+  const result = await client.query(
+    `SELECT EXISTS (
+      SELECT 1 
+      FROM information_schema.columns 
+      WHERE table_name = $1 AND column_name = $2
+    )`,
+    [tableName, columnName]
+  );
+  return result.rows[0].exists;
+}
+
+async function indexExists(client: any, indexName: string): Promise<boolean> {
+  const result = await client.query(
+    `SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = $1)`,
+    [indexName]
+  );
+  return result.rows[0].exists;
+}
+
 // Initialize database tables if they don't exist
 async function initializeDatabase() {
   const client = await pool.connect();
@@ -61,8 +81,8 @@ async function initializeDatabase() {
       CREATE TABLE IF NOT EXISTS media_items (
         id SERIAL PRIMARY KEY,
         team_id INTEGER,
-        item_number INT NOT NULL,
         item_type VARCHAR(10) NOT NULL CHECK (item_type IN ('photo', 'video')),
+        item_number INTEGER NOT NULL,
         file_name VARCHAR(255) NOT NULL,
         file_path VARCHAR(255) NOT NULL,
         file_size BIGINT NOT NULL,
@@ -90,14 +110,6 @@ async function initializeDatabase() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         UNIQUE (team_id, item_type, item_number)
       );
-
-      -- Create indexes after all tables are created
-      CREATE INDEX IF NOT EXISTS idx_media_items_team_id ON media_items(team_id);
-      CREATE INDEX IF NOT EXISTS idx_media_items_item_type ON media_items(item_type);
-      CREATE INDEX IF NOT EXISTS idx_media_items_is_processed ON media_items(is_processed);
-      CREATE INDEX IF NOT EXISTS idx_uploaded_items_team_id ON uploaded_items(team_id);
-      CREATE INDEX IF NOT EXISTS idx_uploaded_items_item_type ON uploaded_items(item_type);
-      CREATE INDEX IF NOT EXISTS idx_uploaded_items_upload_status ON uploaded_items(upload_status);
     `;
 
     await client.query(schema);
@@ -130,6 +142,34 @@ async function initializeDatabase() {
           ON DELETE CASCADE;
         END IF;
       END $$;
+    `);
+
+    // Create indexes after ensuring columns exist
+    const indexDefinitions = [
+      { name: 'idx_media_items_team_id', table: 'media_items', column: 'team_id' },
+      { name: 'idx_media_items_item_type', table: 'media_items', column: 'item_type' },
+      { name: 'idx_media_items_is_processed', table: 'media_items', column: 'is_processed' },
+      { name: 'idx_uploaded_items_team_id', table: 'uploaded_items', column: 'team_id' },
+      { name: 'idx_uploaded_items_item_type', table: 'uploaded_items', column: 'item_type' },
+      { name: 'idx_uploaded_items_upload_status', table: 'uploaded_items', column: 'upload_status' }
+    ];
+
+    for (const index of indexDefinitions) {
+      if (await columnExists(client, index.table, index.column) && !(await indexExists(client, index.name))) {
+        console.log(`Creating index ${index.name}...`);
+        await client.query(`CREATE INDEX ${index.name} ON ${index.table}(${index.column})`);
+      }
+    }
+
+    // Insert default settings if they don't exist
+    await client.query(`
+      INSERT INTO settings (key, value, description) VALUES 
+        ('photo_count', '0', 'Total number of photos allowed per team'),
+        ('video_count', '0', 'Total number of videos allowed per team'),
+        ('max_file_size', '10485760', 'Maximum file size in bytes (10MB)'),
+        ('allowed_image_types', 'image/jpeg,image/png,image/gif', 'Allowed image MIME types'),
+        ('allowed_video_types', 'video/mp4,video/webm,video/quicktime,video/hevc', 'Allowed video MIME types')
+      ON CONFLICT (key) DO NOTHING;
     `);
 
     console.log('Database initialization completed successfully');
