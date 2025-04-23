@@ -212,7 +212,7 @@ export default function AdminPage() {
 
         <TabbedContainer>
           {/* Slideshow Config Tab */}
-          <div className="space-y-6">
+          <div className="space-y-6" id="team-info">
             <div className="flex gap-2">
               <div className="flex-1">
                 <label className="block text-sm font-medium mb-2">Team Name</label>
