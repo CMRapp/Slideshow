@@ -5,47 +5,78 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.6.0] - 2024-04-22
+## [1.6.1] - 2024-03-21
 
 ### Added
-- Next.js Image component integration for optimized image loading
-- Automatic image optimization and responsive sizing
-- Improved LCP (Largest Contentful Paint) performance
-- Enhanced image loading with priority loading for above-the-fold content
-- Better image error handling and fallbacks
+- Automatic version management system
+  - Version updates based on commit messages
+  - Version information display in application
+  - Build-time version generation
+- Database migration system
+  - Production-safe migration script
+  - Vercel deployment support
+  - Environment-aware table creation
 
 ### Changed
-- Replaced all `<img>` tags with Next.js `<Image>` components
-- Updated background image handling to use Next.js Image component
-- Improved image preview in admin panel
-- Enhanced image loading performance across all pages
-- Updated version number to follow semantic versioning standards
+- Database schema consolidation
+  - Moved schema initialization to migration script
+  - Improved table creation order
+  - Added proper foreign key constraints
+- Build process updates
+  - Added version update step to build process
+  - Integrated database migration into build
+  - Added Vercel configuration
 
 ### Fixed
-- Resolved LCP warnings for image loading
-- Fixed image sizing issues in slideshow
-- Improved image aspect ratio handling
-- Enhanced responsive image behavior
-- Fixed background image loading performance
+- Database initialization issues
+  - Fixed team_id column references
+  - Corrected table creation order
+  - Resolved schema conflicts
+- Version management
+  - Added proper version tracking
+  - Improved build information display
+  - Enhanced error handling
 
-## [1.5.0] - 2024-04-21
+## [1.6.0] - 2024-03-20
 
 ### Added
-- Integrated authentication directly into admin panel
-- Enhanced media upload tracking system
-- Improved photo and video number selection interface
-- Added visual indicators for uploaded items
+- Team-based functionality
+  - Team creation and management
+  - Team-specific media items
+  - Team settings and preferences
+- Enhanced media management
+  - Improved upload handling
+  - Better file type validation
+  - Progress tracking
 
 ### Changed
-- Removed separate login page
-- Updated middleware to protect only admin routes
-- Improved database connection handling
-- Enhanced error handling and logging
+- UI improvements
+  - Modern gradient-based design
+  - Enhanced navigation
+  - Better mobile responsiveness
+- Database structure
+  - Added teams table
+  - Updated media items schema
+  - Improved settings management
 
 ### Fixed
-- Fixed database connection issues in API routes
-- Corrected table name references in queries
-- Improved response handling for uploaded items
+- Authentication issues
+- Media upload errors
+- Database connection problems
+
+## [1.5.0] - 2024-03-19
+
+### Added
+- Initial release
+  - Basic slideshow functionality
+  - Media upload support
+  - User authentication
+  - Admin panel
+  - Settings management
+
+[1.6.1]: https://github.com/yourusername/slideshow/compare/v1.6.0...v1.6.1
+[1.6.0]: https://github.com/yourusername/slideshow/compare/v1.5.0...v1.6.0
+[1.5.0]: https://github.com/yourusername/slideshow/releases/tag/v1.5.0
 
 ## [1.4.0] - 2024-03-21
 
