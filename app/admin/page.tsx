@@ -178,7 +178,7 @@ export default function AdminPage() {
     }
 
     try {
-      const response = await fetch(`/api/teams/${encodeURIComponent(teamName)}`, {
+      const response = await fetch(`/api/teams?name=${encodeURIComponent(teamName)}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -191,11 +191,7 @@ export default function AdminPage() {
         throw new Error(data.error || 'Failed to delete team');
       }
 
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to delete team');
-      }
-
-      setSuccess(data.message || 'Team deleted successfully');
+      setSuccess('Team deleted successfully');
       fetchTeams(); // Refresh the teams list
     } catch (error) {
       console.error('Error deleting team:', error);

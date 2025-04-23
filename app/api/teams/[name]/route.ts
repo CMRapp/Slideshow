@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
+interface Team {
+  id: number;
+  name: string;
+  created_at: string;
+}
+
 interface ErrorDetails {
   message: string;
   stack?: string;
@@ -11,51 +17,32 @@ interface ErrorDetails {
   sqlMessage?: string;
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { name: string } }
-) {
+export async function DELETE(request: Request) {
   try {
-    const { name } = params;
+    const { searchParams } = new URL(request.url);
+    const name = searchParams.get('name');
 
     if (!name) {
       return NextResponse.json(
-        { error: 'Team name is required', success: false },
+        { error: 'Team name is required' },
         { status: 400 }
       );
     }
 
-    const client = await pool.connect();
+    const result = await pool.query(
+      'DELETE FROM teams WHERE name = $1 RETURNING *',
+      [name]
+    );
 
-    try {
-      await client.query('BEGIN');
-
-      // Delete team and all associated items (cascade delete)
-      const result = await client.query(
-        'DELETE FROM teams WHERE name = $1 RETURNING *',
-        [name]
+    if (result.rows.length === 0) {
+      return NextResponse.json(
+        { error: 'Team not found' },
+        { status: 404 }
       );
-
-      if (result.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return NextResponse.json(
-          { error: 'Team not found', success: false },
-          { status: 404 }
-        );
-      }
-
-      await client.query('COMMIT');
-      return NextResponse.json({ 
-        success: true,
-        message: 'Team deleted successfully',
-        team: result.rows[0]
-      });
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
     }
+
+    const team: Team = result.rows[0];
+    return NextResponse.json({ success: true, team });
   } catch (error) {
     console.error('Error deleting team:', error);
     const errorDetails: ErrorDetails = error instanceof Error ? {
@@ -73,7 +60,6 @@ export async function DELETE(
     return NextResponse.json(
       { 
         error: 'Failed to delete team',
-        success: false,
         details: errorDetails
       },
       { status: 500 }
