@@ -19,10 +19,10 @@ export async function GET() {
       ORDER BY t.name, ui.item_type, ui.item_number`
     );
 
-    // Process the file paths to ensure they're absolute
+    // Process the file paths to ensure they're valid URLs
     const processedItems = result.rows.map(item => ({
       ...item,
-      file_path: item.file_path.startsWith('/') ? item.file_path : `/${item.file_path}`
+      file_path: item.file_path // Vercel Blob URLs are already absolute
     }));
 
     return NextResponse.json({ mediaItems: processedItems });
