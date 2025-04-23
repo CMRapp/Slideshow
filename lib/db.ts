@@ -37,6 +37,7 @@ async function initializeDatabase() {
     
     // Define schema directly in the code
     const schema = `
+      -- Photos table
       CREATE TABLE IF NOT EXISTS photos (
         id SERIAL PRIMARY KEY,
         filename VARCHAR(255) NOT NULL,
@@ -44,6 +45,7 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- Videos table
       CREATE TABLE IF NOT EXISTS videos (
         id SERIAL PRIMARY KEY,
         filename VARCHAR(255) NOT NULL,
@@ -51,6 +53,7 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- Settings table
       CREATE TABLE IF NOT EXISTS settings (
         id SERIAL PRIMARY KEY,
         key VARCHAR(255) NOT NULL UNIQUE,
@@ -58,6 +61,7 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- Media items table
       CREATE TABLE IF NOT EXISTS media_items (
         id SERIAL PRIMARY KEY,
         team VARCHAR(255) NOT NULL,
@@ -67,6 +71,7 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- Uploaded items table
       CREATE TABLE IF NOT EXISTS uploaded_items (
         id SERIAL PRIMARY KEY,
         team VARCHAR(255) NOT NULL,
@@ -77,13 +82,18 @@ async function initializeDatabase() {
         UNIQUE(team, item_type, item_number)
       );
 
+      -- Teams table
       CREATE TABLE IF NOT EXISTS teams (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- Create indexes
       CREATE INDEX IF NOT EXISTS idx_uploaded_items_team ON uploaded_items(team);
+      CREATE INDEX IF NOT EXISTS idx_media_items_team ON media_items(team);
+      CREATE INDEX IF NOT EXISTS idx_photos_team ON photos(team);
+      CREATE INDEX IF NOT EXISTS idx_videos_team ON videos(team);
     `;
 
     await client.query(schema);
