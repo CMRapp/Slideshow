@@ -82,18 +82,16 @@ async function migrate() {
         await client.query(`
           CREATE TABLE media_items (
             id SERIAL PRIMARY KEY,
-            team_id INTEGER,
-            item_type VARCHAR(10) CHECK (item_type IN ('photo', 'video')) NOT NULL,
+            team_id INTEGER REFERENCES teams(id),
+            item_type VARCHAR(50) NOT NULL,
             item_number INTEGER NOT NULL,
             file_name VARCHAR(255) NOT NULL,
             file_path VARCHAR(255) NOT NULL,
-            file_size BIGINT NOT NULL,
-            mime_type VARCHAR(255) NOT NULL,
-            metadata JSONB,
-            is_processed BOOLEAN DEFAULT FALSE,
+            file_size INTEGER NOT NULL,
+            mime_type VARCHAR(100) NOT NULL,
+            file_data BYTEA,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE (team_id, item_type, item_number)
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
           );
         `);
       }
@@ -104,18 +102,17 @@ async function migrate() {
         await client.query(`
           CREATE TABLE uploaded_items (
             id SERIAL PRIMARY KEY,
-            team_id INTEGER,
-            item_type VARCHAR(10) CHECK (item_type IN ('photo', 'video')) NOT NULL,
+            team_id INTEGER REFERENCES teams(id),
+            item_type VARCHAR(50) NOT NULL,
             item_number INTEGER NOT NULL,
             file_name VARCHAR(255) NOT NULL,
             file_path VARCHAR(255) NOT NULL,
-            file_size BIGINT NOT NULL,
-            mime_type VARCHAR(255) NOT NULL,
-            upload_status VARCHAR(20) CHECK (upload_status IN ('pending', 'processing', 'completed', 'failed')) DEFAULT 'pending',
-            error_message TEXT,
+            file_size INTEGER NOT NULL,
+            mime_type VARCHAR(100) NOT NULL,
+            file_data BYTEA,
+            upload_status VARCHAR(50) DEFAULT 'pending',
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE (team_id, item_type, item_number)
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
           );
         `);
       }
@@ -234,18 +231,16 @@ async function migrate() {
       await client.query(`
         CREATE TABLE media_items (
           id SERIAL PRIMARY KEY,
-          team_id INTEGER,
-          item_type VARCHAR(10) CHECK (item_type IN ('photo', 'video')) NOT NULL,
+          team_id INTEGER REFERENCES teams(id),
+          item_type VARCHAR(50) NOT NULL,
           item_number INTEGER NOT NULL,
           file_name VARCHAR(255) NOT NULL,
           file_path VARCHAR(255) NOT NULL,
-          file_size BIGINT NOT NULL,
-          mime_type VARCHAR(255) NOT NULL,
-          metadata JSONB,
-          is_processed BOOLEAN DEFAULT FALSE,
+          file_size INTEGER NOT NULL,
+          mime_type VARCHAR(100) NOT NULL,
+          file_data BYTEA,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE (team_id, item_type, item_number)
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
       `);
 
@@ -253,18 +248,17 @@ async function migrate() {
       await client.query(`
         CREATE TABLE uploaded_items (
           id SERIAL PRIMARY KEY,
-          team_id INTEGER,
-          item_type VARCHAR(10) CHECK (item_type IN ('photo', 'video')) NOT NULL,
+          team_id INTEGER REFERENCES teams(id),
+          item_type VARCHAR(50) NOT NULL,
           item_number INTEGER NOT NULL,
           file_name VARCHAR(255) NOT NULL,
           file_path VARCHAR(255) NOT NULL,
-          file_size BIGINT NOT NULL,
-          mime_type VARCHAR(255) NOT NULL,
-          upload_status VARCHAR(20) CHECK (upload_status IN ('pending', 'processing', 'completed', 'failed')) DEFAULT 'pending',
-          error_message TEXT,
+          file_size INTEGER NOT NULL,
+          mime_type VARCHAR(100) NOT NULL,
+          file_data BYTEA,
+          upload_status VARCHAR(50) DEFAULT 'pending',
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE (team_id, item_type, item_number)
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
       `);
 

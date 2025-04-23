@@ -1,7 +1,4 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { mkdir } from 'fs';
-import path from 'path';
 import { pool } from '@/lib/db';
 
 export async function POST(request: Request) {
@@ -34,37 +31,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', team);
-    console.log('Creating upload directory:', uploadDir);
-    
-    try {
-      await new Promise<void>((resolve, reject) => {
-        mkdir(uploadDir, { recursive: true }, (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
-    } catch (error) {
-      console.error('Failed to create upload directory:', error);
-      throw new Error('Failed to create upload directory');
-    }
-
-    // Save file to disk
-    const fileName = file.name;
-    const filePath = path.join(uploadDir, fileName);
-    console.log('Saving file to:', filePath);
-    
-    try {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      await writeFile(filePath, buffer);
-      console.log('File saved successfully');
-    } catch (error) {
-      console.error('Failed to save file:', error);
-      throw new Error('Failed to save file to disk');
-    }
-
     // Get team ID
     console.log('Getting team ID for:', team);
     const teamResult = await pool.query('SELECT id FROM teams WHERE name = $1', [team]);
@@ -75,23 +41,29 @@ export async function POST(request: Request) {
     const teamId = teamResult.rows[0].id;
     console.log('Found team ID:', teamId);
 
+    // Convert file to buffer
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
     // Save file info to database
     console.log('Saving to uploaded_items table');
     try {
       await pool.query(
         `INSERT INTO uploaded_items (
           team_id, item_type, item_number, file_name, 
-          file_path, file_size, mime_type, upload_status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          file_path, file_size, mime_type, upload_status,
+          file_data
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [
           teamId,
           itemType,
           parseInt(itemNumber),
-          fileName,
-          `/uploads/${team}/${fileName}`,
+          file.name,
+          `/api/files/${team}/${file.name}`,
           file.size,
           file.type,
-          'pending'
+          'pending',
+          buffer
         ]
       );
       console.log('Saved to uploaded_items successfully');
@@ -106,16 +78,18 @@ export async function POST(request: Request) {
       await pool.query(
         `INSERT INTO media_items (
           team_id, item_type, item_number, file_name, 
-          file_path, file_size, mime_type
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          file_path, file_size, mime_type,
+          file_data
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
           teamId,
           itemType,
           parseInt(itemNumber),
-          fileName,
-          `/uploads/${team}/${fileName}`,
+          file.name,
+          `/api/files/${team}/${file.name}`,
           file.size,
-          file.type
+          file.type,
+          buffer
         ]
       );
       console.log('Saved to media_items successfully');
@@ -127,10 +101,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ 
       success: true, 
       item: {
-        filename: fileName,
+        filename: file.name,
         team: team,
         type: itemType,
-        path: `/uploads/${team}/${fileName}`
+        path: `/api/files/${team}/${file.name}`
       }
     });
   } catch (error) {
