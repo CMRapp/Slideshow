@@ -3,8 +3,8 @@
   "version": "1.6.1",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
-    "build": "next build",
+    "dev": "next dev",
+    "build": "ts-node scripts/migrate.ts && next build",
     "start": "next start",
     "lint": "next lint"
   },
