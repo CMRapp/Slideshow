@@ -34,95 +34,69 @@ interface DatabaseError extends Error {
 }
 
 export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const team = searchParams.get('team');
+  const type = searchParams.get('type');
+  const page = parseInt(searchParams.get('page') || '1');
+  const limit = parseInt(searchParams.get('limit') || '10');
+  const offset = (page - 1) * limit;
+
   try {
-    console.log('Starting media API request...');
-    const { searchParams } = new URL(request.url);
-    const team = searchParams.get('team');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const offset = (page - 1) * limit;
-    console.log('Team parameter:', team);
-
-    // First, check if the uploaded_items table exists
-    const result = await pool.query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'uploaded_items')");
-    const tableExists = result.rows[0].exists;
-
-    if (!tableExists) {
-      console.error('uploaded_items table does not exist');
-      return NextResponse.json(
-        { 
-          error: 'Database table not found',
-          details: 'The uploaded_items table does not exist. Please run the database initialization script.',
-          suggestion: 'Try restarting the application to initialize the database.'
-        },
-        { status: 500 }
-      );
-    }
-
-    // Build the query
+    // Build the base query
     let query = `
       SELECT 
         m.id,
-        m.file_name,
-        m.file_type,
-        m.file_path,
-        m.item_number,
-        m.item_type,
         m.team,
-        m.created_at,
-        CASE 
-          WHEN u.file_path IS NOT NULL THEN true
-          ELSE false
-        END as exists
+        m.item_number,
+        m.type,
+        m.filename,
+        m.created_at
       FROM media_items m
-      LEFT JOIN uploaded_items u ON m.file_path = u.file_path
+      WHERE 1=1
     `;
-    const queryParams: string[] = [];
-    let paramCount = 1;
+    const queryParams = [];
 
+    // Add filters
     if (team) {
-      query += ` WHERE m.team = $${paramCount}`;
+      query += ' AND m.team = $' + (queryParams.length + 1);
       queryParams.push(team);
-      paramCount++;
+    }
+    if (type) {
+      query += ' AND m.type = $' + (queryParams.length + 1);
+      queryParams.push(type);
     }
 
-    query += ` ORDER BY m.created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
-    queryParams.push(limit.toString(), offset.toString());
+    // Add ordering and pagination
+    query += ' ORDER BY m.item_number ASC LIMIT $' + (queryParams.length + 1) + ' OFFSET $' + (queryParams.length + 2);
+    queryParams.push(limit, offset);
 
-    console.log('Executing main query:', query, 'with params:', queryParams);
+    // Get total count
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM media_items m
+      WHERE 1=1
+      ${team ? ' AND m.team = $1' : ''}
+      ${type ? ' AND m.type = $' + (team ? '2' : '1') : ''}
+    `;
+    const countParams = [];
+    if (team) countParams.push(team);
+    if (type) countParams.push(type);
 
-    const mediaResult = await pool.query(query, queryParams);
-    const countResult = await pool.query(
-      'SELECT COUNT(*) FROM media_items' + (team ? ' WHERE team = $1' : ''),
-      team ? [team] : []
-    );
+    const [mediaResult, countResult] = await Promise.all([
+      pool.query(query, queryParams),
+      pool.query(countQuery, countParams)
+    ]);
 
-    const response: MediaResponse = {
-      media: mediaResult.rows,
-      total: parseInt(countResult.rows[0].count)
-    };
-
-    return NextResponse.json(response);
+    return NextResponse.json({
+      items: mediaResult.rows,
+      total: parseInt(countResult.rows[0].total),
+      page,
+      limit
+    });
   } catch (error) {
-    console.error('Error in media API:', error);
-    const errorDetails = error instanceof Error ? {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-      code: (error as DatabaseError).code,
-      errno: (error as DatabaseError).errno,
-      sqlState: (error as DatabaseError).sqlState,
-      sqlMessage: (error as DatabaseError).sqlMessage
-    } : {
-      message: 'Unknown error',
-      error: error
-    };
-    
+    console.error('Error fetching media:', error);
     return NextResponse.json(
-      { 
-        error: 'Unexpected error occurred',
-        details: errorDetails
-      },
+      { error: 'Failed to fetch media', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
@@ -131,33 +105,40 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const team = formData.get('teamName') as string;
+    const team = formData.get('team') as string;
     const file = formData.get('file') as File;
+    const type = formData.get('type') as string;
 
-    if (!team || !file) {
+    if (!team || !file || !type) {
       return NextResponse.json(
-        { error: 'Team name and file are required' },
+        { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    const fileName = file.name;
-    const fileType = file.type;
-    const filePath = `/uploads/${team}/${fileName}`;
-
-    // Save file to database
-    const result = await pool.query(
-      'INSERT INTO uploaded_items (file_name, file_type, file_path, team) VALUES ($1, $2, $3, $4) RETURNING *',
-      [fileName, fileType, filePath, team]
+    // Get the next item number for this team and type
+    const itemNumberResult = await pool.query(
+      `SELECT COALESCE(MAX(item_number), 0) + 1 as next_number
+       FROM media_items
+       WHERE team = $1 AND type = $2`,
+      [team, type]
     );
 
-    const uploadedItem: UploadedItem = result.rows[0];
+    const itemNumber = itemNumberResult.rows[0].next_number;
 
-    return NextResponse.json({ success: true, item: uploadedItem });
+    // Insert the new media item
+    const result = await pool.query(
+      `INSERT INTO media_items (team, item_number, type, filename)
+       VALUES ($1, $2, $3, $4)
+       RETURNING *`,
+      [team, itemNumber, type, file.name]
+    );
+
+    return NextResponse.json(result.rows[0]);
   } catch (error) {
     console.error('Error uploading media:', error);
     return NextResponse.json(
-      { error: 'Failed to upload media' },
+      { error: 'Failed to upload media', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

@@ -3,45 +3,45 @@ import { pool } from '@/lib/db';
 
 export async function GET() {
   try {
-    // Get photo count from settings
     const result = await pool.query(
-      "SELECT value FROM settings WHERE key = 'photo_count'"
+      'SELECT value FROM settings WHERE key = $1',
+      ['photo_count']
     );
 
     const count = result.rows[0]?.value || '0';
-
-    return NextResponse.json({ count: parseInt(count, 10) });
+    return NextResponse.json({ count: parseInt(count) });
   } catch (error) {
     console.error('Error fetching photo count:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch photo count' },
+      { error: 'Failed to fetch photo count', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
 }
 
 export async function POST(request: Request) {
-  const { count } = await request.json();
-
-  if (typeof count !== 'number' || count < 0) {
-    return NextResponse.json(
-      { error: 'Invalid count value' },
-      { status: 400 }
-    );
-  }
-
   try {
-    // Update photo count in settings
+    const { count } = await request.json();
+
+    if (typeof count !== 'number') {
+      return NextResponse.json(
+        { error: 'Count must be a number' },
+        { status: 400 }
+      );
+    }
+
     await pool.query(
-      "INSERT INTO settings (key, value) VALUES ('photo_count', $1) ON CONFLICT (key) DO UPDATE SET value = $1",
-      [count.toString()]
+      `INSERT INTO settings (key, value)
+       VALUES ($1, $2)
+       ON CONFLICT (key) DO UPDATE SET value = $2`,
+      ['photo_count', count.toString()]
     );
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error updating photo count:', error);
+    console.error('Error saving photo count:', error);
     return NextResponse.json(
-      { error: 'Failed to update photo count' },
+      { error: 'Failed to save photo count', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

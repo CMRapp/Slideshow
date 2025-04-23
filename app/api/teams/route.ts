@@ -6,12 +6,11 @@ export async function GET() {
     const result = await pool.query(
       'SELECT name FROM teams ORDER BY name ASC'
     );
-
     return NextResponse.json(result.rows.map(row => row.name));
   } catch (error) {
     console.error('Error fetching teams:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch teams' },
+      { error: 'Failed to fetch teams', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
@@ -28,16 +27,16 @@ export async function POST(request: Request) {
       );
     }
 
-    await pool.query(
-      'INSERT INTO teams (name) VALUES ($1) ON CONFLICT (name) DO NOTHING',
+    const result = await pool.query(
+      'INSERT INTO teams (name) VALUES ($1) RETURNING *',
       [name]
     );
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json(result.rows[0]);
   } catch (error) {
-    console.error('Error saving team:', error);
+    console.error('Error creating team:', error);
     return NextResponse.json(
-      { error: 'Failed to save team' },
+      { error: 'Failed to create team', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
