@@ -160,7 +160,7 @@ export default function SlideshowPage() {
   return (
     <SidebarLayout>
       <div 
-        className="relative w-full h-full"
+        className="fixed inset-0 -z-10"
         style={{
           backgroundImage: 'url(/treasure-hunt.jpg)',
           backgroundSize: 'cover',
@@ -168,10 +168,11 @@ export default function SlideshowPage() {
           backgroundRepeat: 'no-repeat',
           backgroundAttachment: 'fixed'
         }}
-      >
+      />
+      <div className="relative w-full h-full">
         {mediaItems.length > 0 ? (
           <>
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-4 right-4 z-10">
               <button
                 onClick={() => setIsPlaying(!isPlaying)}
                 className="p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
@@ -182,23 +183,27 @@ export default function SlideshowPage() {
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
               {currentItem.file_type.startsWith('image/') ? (
-                <Image
-                  src={currentItem.file_path}
-                  alt={`Slide ${currentIndex + 1}`}
-                  width={1920}
-                  height={1080}
-                  className="max-w-full max-h-full object-contain"
-                  priority
-                />
+                <div className="w-full h-full flex items-center justify-center">
+                  <Image
+                    src={currentItem.file_path}
+                    alt={`Slide ${currentIndex + 1}`}
+                    width={1920}
+                    height={1080}
+                    className="max-w-full max-h-full object-contain"
+                    priority
+                  />
+                </div>
               ) : (
-                <video
-                  src={currentItem.file_path}
-                  className="max-w-full max-h-full object-contain"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                />
+                <div className="w-full h-full flex items-center justify-center">
+                  <video
+                    src={currentItem.file_path}
+                    className="max-w-full max-h-full object-contain"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
+                </div>
               )}
             </div>
           </>
