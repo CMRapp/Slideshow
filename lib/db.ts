@@ -69,9 +69,12 @@ async function initializeDatabase() {
 
       CREATE TABLE IF NOT EXISTS uploaded_items (
         id SERIAL PRIMARY KEY,
-        filename VARCHAR(255) NOT NULL,
         team VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        item_type VARCHAR(50) NOT NULL,
+        item_number INTEGER NOT NULL,
+        file_path VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(team, item_type, item_number)
       );
 
       CREATE TABLE IF NOT EXISTS teams (
@@ -79,18 +82,22 @@ async function initializeDatabase() {
         name VARCHAR(255) NOT NULL UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE INDEX IF NOT EXISTS idx_uploaded_items_team ON uploaded_items(team);
     `;
 
-    // Execute schema
     await client.query(schema);
-    console.log('Database tables created successfully');
+    console.log('Database initialization completed successfully');
   } catch (error) {
-    console.error('Database initialization error:', error);
+    console.error('Database initialization failed:', error);
     throw error;
   } finally {
     client.release();
   }
 }
+
+// Call initializeDatabase when the module is imported
+initializeDatabase().catch(console.error);
 
 // Initialize database on startup
 initializeDatabase().catch(error => {

@@ -13,11 +13,28 @@ export async function GET(request: Request) {
   }
 
   try {
+    // First check if the table exists
+    const tableExists = await pool.query(
+      `SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'uploaded_items'
+      )`
+    );
+
+    if (!tableExists.rows[0].exists) {
+      return NextResponse.json(
+        { error: 'Uploaded items table does not exist' },
+        { status: 500 }
+      );
+    }
+
     const result = await pool.query(
       `SELECT 
         item_type,
         item_number,
-        team
+        team,
+        file_path
       FROM uploaded_items 
       WHERE team = $1 
       ORDER BY item_number`,
@@ -28,7 +45,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching uploaded items:', error);
     return NextResponse.json(
-      { error: 'Database error occurred' },
+      { error: 'Database error occurred', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
