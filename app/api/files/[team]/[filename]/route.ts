@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
-interface DynamicParams {
-  team: string;
-  filename: string;
-}
+type Props = {
+  params: {
+    team: string;
+    filename: string;
+  };
+};
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: DynamicParams }
-) {
+export async function GET(request: NextRequest, props: Props) {
   try {
-    const { team, filename } = params;
+    const { team, filename } = props.params;
 
     // Get the file from the database
     const result = await pool.query(
