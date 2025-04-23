@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiLogOut, FiTrash2 } from 'react-icons/fi';
+import { FiLogOut, FiTrash2, FiX } from 'react-icons/fi';
 import TabbedContainer from '../components/admin/TabbedContainer';
 import ImageViewer from '../components/ImageViewer';
 
@@ -17,6 +17,8 @@ export default function AdminPage() {
   const [videoCount, setVideoCount] = useState<number>(0);
   const [teams, setTeams] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
 
   const checkAuth = useCallback(async () => {
     try {
@@ -173,12 +175,15 @@ export default function AdminPage() {
   };
 
   const handleDeleteTeam = async (teamName: string) => {
-    if (!window.confirm(`Are you sure you want to delete the team "${teamName}" and all its associated items? This action cannot be undone.`)) {
-      return;
-    }
+    setTeamToDelete(teamName);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!teamToDelete) return;
 
     try {
-      const response = await fetch(`/api/teams?name=${encodeURIComponent(teamName)}`, {
+      const response = await fetch(`/api/teams?name=${encodeURIComponent(teamToDelete)}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -196,6 +201,9 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Error deleting team:', error);
       setError(error instanceof Error ? error.message : 'Failed to delete team');
+    } finally {
+      setShowDeleteConfirm(false);
+      setTeamToDelete(null);
     }
   };
 
@@ -213,6 +221,46 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
+      {/* Delete Confirmation Popup */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Confirm Deletion</h3>
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setTeamToDelete(null);
+                }}
+                className="text-gray-400 hover:text-white"
+              >
+                <FiX size={24} />
+              </button>
+            </div>
+            <p className="mb-6">
+              Are you sure you want to delete the team "{teamToDelete}" and all its associated items? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setTeamToDelete(null);
+                }}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
@@ -288,7 +336,7 @@ export default function AdminPage() {
               )}
             </div>
 
-            <h3 className="text-sm font-medium mb-2">Existing Teams</h3>
+            <h3 className="text-sm font-medium mb-2">Set Slideshow Options</h3>
             <div id="slideshow-options" className="grid grid-cols-2 gap-6">
               <div className="flex gap-2">
                 <div className="flex-1">
