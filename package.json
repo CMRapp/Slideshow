@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "ts-node scripts/migrate.ts && next build",
+    "build": "ts-node scripts/update-version.ts && ts-node scripts/migrate.ts && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "version": "ts-node scripts/update-version.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.0",
