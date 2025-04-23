@@ -238,7 +238,7 @@ export default function AdminPage() {
               </button>
             </div>
             <p className="mb-6">
-              Are you sure you want to delete the team "{teamToDelete}" and all its associated items? This action cannot be undone.
+              Are you sure you want to delete the team &quot;{teamToDelete}&quot; and all its associated items? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-4">
               <button
