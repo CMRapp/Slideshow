@@ -3,10 +3,10 @@ import { pool } from '@/lib/db';
 
 export async function GET(
   request: Request,
-  { params }: { params: { team: string; filename: string } }
+  context: { params: { team: string; filename: string } }
 ) {
   try {
-    const { team, filename } = params;
+    const { team, filename } = context.params;
 
     // Get the file from the database
     const result = await pool.query(
