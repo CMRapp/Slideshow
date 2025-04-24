@@ -96,6 +96,12 @@ export default function SidebarLayout({
                 <FiHome size={24} />
               </Link>
               <Link
+                href="/slideshow"
+                className={`nav-item ${pathname === '/slideshow' ? 'active' : ''}`}
+              >
+                <FiFilm size={24} />
+              </Link>
+              <Link
                 href="/upload"
                 className={`nav-item ${pathname === '/upload' ? 'active' : ''}`}
               >
