@@ -58,7 +58,7 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-black p-4">
       <div className="glass-card max-w-md w-full p-8 rounded-lg">
-        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-yellow-400 to-orange-500 text-transparent bg-clip-text" style={{ fontFamily: 'Impact, sans-serif' }}>
+        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-yellow-400 to-orange-500 text-transparent bg-clip-text">
           ADMIN LOGIN
         </h1>
 
