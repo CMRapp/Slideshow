@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiLock } from 'react-icons/fi';
+import Link from 'next/link';
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('');
@@ -56,17 +56,15 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="glass-card max-w-md w-full p-8">
-        <div className="text-center mb-8">
-          <FiLock className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white">Admin Login</h1>
-          <p className="text-gray-400 mt-2">Enter your password to access the admin panel</p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-black p-4">
+      <div className="glass-card max-w-md w-full p-8 rounded-lg">
+        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-yellow-400 to-orange-500 text-transparent bg-clip-text" style={{ fontFamily: 'Impact, sans-serif' }}>
+          ADMIN LOGIN
+        </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="password" className="block text-gray-300 mb-2">
               Password
             </label>
             <input
@@ -74,25 +72,34 @@ export default function AdminLogin() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="form-input w-full"
+              className="w-full px-4 py-2 rounded bg-gray-800/80 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
               required
             />
           </div>
 
           {error && (
-            <div className="alert-error">
+            <div className="p-3 bg-red-500/20 border border-red-500/50 text-red-300 rounded text-sm">
               {error}
             </div>
           )}
 
           <button
             type="submit"
-            className="btn-primary w-full"
+            className="w-full bg-yellow-400 text-black font-semibold py-2 px-4 rounded hover:bg-yellow-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isLoading}
           >
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>
+
+        <div className="mt-6 text-center">
+          <Link 
+            href="/slideshow" 
+            className="text-yellow-400 hover:text-yellow-300 transition-colors text-sm"
+          >
+            View Slideshow
+          </Link>
+        </div>
       </div>
     </div>
   );
