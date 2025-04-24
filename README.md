@@ -129,6 +129,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Version
 
-Current version: 1.4.0
+Current version: 1.7.0
+
+> **Note:** On 2024-04-24, the repository was reverted to commit `3e8120e` to address stability issues. This version includes updated package dependencies and enhanced functionality with @vercel/blob and ts-node integration.
 
 See [CHANGELOG.md](CHANGELOG.md) for version history and changes.

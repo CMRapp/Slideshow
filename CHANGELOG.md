@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2024-04-24
+
+### Changed
+- Reverted repository to commit `3e8120e` to address stability issues
+- Updated package dependencies to latest versions
+- Added new dependencies:
+  - @vercel/blob for enhanced file handling
+  - ts-node for TypeScript execution
+- Enhanced package-lock.json with additional modules and their respective versions
+
+### Technical Details
+- Reset point includes improved package management
+- Maintains core functionality with enhanced dependencies
+- Preserves TypeScript execution capabilities
+
 ## [1.6.3] - 2024-03-21
 
 ### Changed
