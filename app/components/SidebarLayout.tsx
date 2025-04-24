@@ -1,6 +1,6 @@
 'use client';
 
-import { FiFilm, FiUpload, FiPlay, FiPause, FiVolume2, FiVolumeX, FiSettings } from 'react-icons/fi';
+import { FiFilm, FiUpload, FiPlay, FiPause, FiVolume2, FiVolumeX, FiSettings, FiHome, FiEye } from 'react-icons/fi';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -69,11 +69,10 @@ export default function SidebarLayout({
 
   return (
     <div className="min-h-screen relative">
-          
       {/* Content Container */}
       <div className="relative w-full h-screen flex flex-col lg:flex-row">
         {/* Navigation - Sidebar on desktop, Top bar on mobile/tablet */}
-        <div className="w-full lg:w-[70px] h-[70px] lg:h-full bg-black/85 p-2 z-20 flex lg:flex-col items-center justify-center lg:justify-start">
+        <div className="w-full lg:w-[70px] h-[70px] lg:h-full glass-effect p-2 z-20 flex lg:flex-col items-center justify-center lg:justify-start">
           <div className="flex lg:flex-col items-center justify-between w-full lg:w-auto">
             {/* Logo */}
             <div className="lg:mb-8">
@@ -82,7 +81,7 @@ export default function SidebarLayout({
                 alt="Riders Logo" 
                 width={40}
                 height={40}
-                className="object-contain"
+                className="object-contain hover-glow"
                 id="logo"
                 priority
               />
@@ -91,72 +90,52 @@ export default function SidebarLayout({
             {/* Navigation Links */}
             <div className="flex lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-4">
               <Link
-                href="/slideshow"
-                className={`group relative p-3 text-white hover:text-blue-300 transition-colors ${
-                  pathname === '/slideshow' ? 'text-blue-300' : ''
-                }`}
+                href="/"
+                className={`nav-item ${pathname === '/' ? 'active' : ''}`}
               >
-                <FiFilm size={24} />
-                <span className="absolute left-full ml-2 px-2 py-1 bg-black/90 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden lg:block">
-                  Slideshow
-                </span>
+                <FiHome size={24} />
               </Link>
               <Link
                 href="/upload"
-                className={`group relative p-3 text-white hover:text-blue-300 transition-colors ${
-                  pathname === '/upload' ? 'text-blue-300' : ''
-                }`}
+                className={`nav-item ${pathname === '/upload' ? 'active' : ''}`}
               >
                 <FiUpload size={24} />
-                <span className="absolute left-full ml-2 px-2 py-1 bg-black/90 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden lg:block">
-                  Upload Media
-                </span>
+              </Link>
+              <Link
+                href="/review"
+                className={`nav-item ${pathname === '/review' ? 'active' : ''}`}
+              >
+                <FiEye size={24} />
               </Link>
             </div>
 
-            {/* Controls Container - Only show on slideshow page */}
-            {(pathname === '/slideshow' || pathname === '/') && (
-              <div id="controls" className="flex lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-4">
-                {/* Play/Pause Button */}
-                {onPlayPause && (
-                  <button
-                    onClick={onPlayPause}
-                    className="group relative p-3 text-yellow-400 hover:text-yellow-300 transition-colors"
-                    aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
-                  >
-                    {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
-                    <span className="absolute left-full ml-2 px-2 py-1 bg-black/90 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden lg:block">
-                      {isPlaying ? 'Pause' : 'Play'}
-                    </span>
-                  </button>
-                )}
-
-                {/* Volume Controls */}
-                <div className="group relative">
-                  <button
-                    onClick={toggleMute}
-                    className="p-3 text-yellow-400 hover:text-yellow-300 transition-colors"
-                  >
-                    {isMuted ? <FiVolumeX size={24} /> : <FiVolume2 size={24} />}
-                  </button>
-                  <div className="absolute left-full ml-2 p-2 bg-black/90 rounded opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={isMuted ? 0 : volume}
-                      onChange={handleVolumeChange}
-                      className="w-24 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
-                    />
-                  </div>
-                  <span className="absolute left-full ml-2 px-2 py-1 bg-black/90 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden lg:block">
-                    Volume
-                  </span>
-                </div>
+            {/* Media Controls */}
+            <div className="flex lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-4">
+              <button
+                onClick={() => onPlayPause?.()}
+                className="nav-item"
+              >
+                {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
+              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={toggleMute}
+                  className="nav-item"
+                >
+                  {isMuted ? <FiVolumeX size={24} /> : <FiVolume2 size={24} />}
+                </button>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={volume}
+                  onChange={handleVolumeChange}
+                  className="w-20 accent-yellow-400"
+                />
               </div>
-            )}
+            </div>
 
-            {/* Sidebar Branding Container */}
+            {/* Branding */}
             <div id="sidebar-branding" className="mt-auto flex flex-col lg:flex-col items-center space-y-4 lg:space-y-4">
               <div className="flex flex-row lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-4">
                 <Image 
@@ -165,7 +144,7 @@ export default function SidebarLayout({
                   alt="Side Logo" 
                   width={60}
                   height={60}
-                  className="hidden lg:block object-contain"
+                  className="hidden lg:block object-contain hover-glow"
                   priority
                 />
                 <Image 
@@ -174,21 +153,21 @@ export default function SidebarLayout({
                   alt="Side Logo" 
                   width={60}
                   height={60}
-                  className="block lg:hidden object-contain"
+                  className="block lg:hidden object-contain hover-glow"
                   priority
                 />
                 <div className="group relative p-3 text-yellow-400">
                   <span className="text-sm font-mono">v{version || 'unknown'}</span>
-                  <span className="absolute left-full ml-2 px-2 py-1 bg-black/90 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden lg:block">
+                  <span className="absolute left-full ml-2 px-2 py-1 glass-effect text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden lg:block">
                     Current Version
                   </span>
                 </div>
                 <Link
                   href="/admin"
-                  className="group relative p-3 text-gray-400 hover:text-yellow-400 transition-colors"
+                  className="nav-item"
                 >
                   <FiSettings size={24} />
-                  <span className="absolute left-full ml-2 px-2 py-1 bg-black/90 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden lg:block">
+                  <span className="absolute left-full ml-2 px-2 py-1 glass-effect text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden lg:block">
                     Admin Panel
                   </span>
                 </Link>
@@ -198,7 +177,7 @@ export default function SidebarLayout({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 lg:ml-[70px] relative z-10">
+        <div className="flex-1 overflow-auto">
           {children}
         </div>
       </div>

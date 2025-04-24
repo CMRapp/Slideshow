@@ -3,33 +3,34 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { FiLock } from 'react-icons/fi';
 
-export default function LoginPage() {
-  const router = useRouter();
+export default function AdminLogin() {
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // Check if already authenticated
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/check-auth');
-        if (response.ok) {
+        const data = await response.json();
+        if (data.authenticated) {
           router.push('/admin');
         }
-      } catch {  
-        console.error('Auth check failed');
+      } catch (err) {
+        console.error('Auth check failed:', err);
       }
     };
     checkAuth();
   }, [router]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setIsLoading(true);
+    setError('');
 
     try {
       const response = await fetch('/api/login', {
@@ -40,13 +41,14 @@ export default function LoginPage() {
         body: JSON.stringify({ password }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         router.push('/admin');
       } else {
-        const data = await response.json();
-        setError(data.error || 'Invalid password');
+        setError(data.error || 'Login failed');
       }
-    } catch (error) {
+    } catch (err) {
       setError('An error occurred during login');
     } finally {
       setIsLoading(false);
@@ -54,10 +56,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="bg-black/85 p-8 rounded-lg shadow-lg max-w-md w-full border border-white/10 shadow-[0_0_50px_rgba(255,255,255,0.5)] shadow-[0_0_30px_rgba(255,255,255,0.3)] shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-        <h2 className="text-2xl font-bold text-white mb-6 text-center">Admin Login</h2>
-        <form onSubmit={handleLogin} className="space-y-6">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="glass-card max-w-md w-full p-8">
+        <div className="text-center mb-8">
+          <FiLock className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-white">Admin Login</h1>
+          <p className="text-gray-400 mt-2">Enter your password to access the admin panel</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
               Password
@@ -67,34 +74,25 @@ export default function LoginPage() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+              className="form-input w-full"
               required
             />
           </div>
 
           {error && (
-            <div className="p-3 bg-red-900 text-white rounded-lg text-sm">
+            <div className="alert-error">
               {error}
             </div>
           )}
 
           <button
             type="submit"
+            className="btn-primary w-full"
             disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-black bg-yellow-400 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <Link 
-            href="/" 
-            className="text-yellow-400 hover:text-yellow-300 transition-colors"
-          >
-            View Slideshow
-          </Link>
-        </div>
       </div>
     </div>
   );

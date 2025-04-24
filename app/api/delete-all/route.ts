@@ -29,19 +29,34 @@ export async function DELETE() {
       console.error('Error deleting uploads directory:', error);
     }
 
-    // Delete all data from tables
+    // Delete all data from tables while preserving structure
     await client.query('TRUNCATE TABLE uploaded_items CASCADE');
     await client.query('TRUNCATE TABLE teams CASCADE');
-    await client.query('TRUNCATE TABLE settings CASCADE');
+    
+    // Reset settings to default values
+    await client.query(`
+      UPDATE settings 
+      SET value = CASE 
+        WHEN key = 'photo_count' THEN '0'
+        WHEN key = 'video_count' THEN '0'
+        ELSE value 
+      END
+    `);
 
     await client.query('COMMIT');
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true,
+      message: 'Database reset successful. All data has been cleared while preserving table structure.'
+    });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error deleting all data:', error);
+    console.error('Error resetting database:', error);
     return NextResponse.json(
-      { error: 'Failed to delete all data' },
+      { 
+        error: 'Failed to reset database',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   } finally {
