@@ -1,6 +1,6 @@
 'use client';
 
-import { FiFilm, FiUpload, FiPlay, FiPause, FiVolume2, FiVolumeX, FiSettings, FiHome, FiEye } from 'react-icons/fi';
+import { FiFilm, FiUpload, FiPlay, FiPause, FiVolume2, FiVolumeX, FiSettings } from 'react-icons/fi';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -23,6 +23,7 @@ export default function SidebarLayout({
   const [volume, setVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
   const [version, setVersion] = useState('');
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
   useEffect(() => {
     // Fetch version from package.json
@@ -90,12 +91,6 @@ export default function SidebarLayout({
             {/* Navigation Links */}
             <div className="flex lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-4">
               <Link
-                href="/"
-                className={`nav-item ${pathname === '/' ? 'active' : ''}`}
-              >
-                <FiHome size={24} />
-              </Link>
-              <Link
                 href="/slideshow"
                 className={`nav-item ${pathname === '/slideshow' ? 'active' : ''}`}
               >
@@ -107,12 +102,6 @@ export default function SidebarLayout({
               >
                 <FiUpload size={24} />
               </Link>
-              <Link
-                href="/review"
-                className={`nav-item ${pathname === '/review' ? 'active' : ''}`}
-              >
-                <FiEye size={24} />
-              </Link>
             </div>
 
             {/* Media Controls */}
@@ -123,21 +112,29 @@ export default function SidebarLayout({
               >
                 {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
               </button>
-              <div className="flex items-center space-x-2">
+              <div 
+                className="relative group"
+                onMouseEnter={() => setShowVolumeSlider(true)}
+                onMouseLeave={() => setShowVolumeSlider(false)}
+              >
                 <button
                   onClick={toggleMute}
                   className="nav-item"
                 >
                   {isMuted ? <FiVolumeX size={24} /> : <FiVolume2 size={24} />}
                 </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={volume}
-                  onChange={handleVolumeChange}
-                  className="w-20 accent-yellow-400"
-                />
+                {showVolumeSlider && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 glass-effect rounded-lg">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={volume}
+                      onChange={handleVolumeChange}
+                      className="w-20 h-1 accent-yellow-400"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
