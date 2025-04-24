@@ -1,6 +1,6 @@
 'use client';
 
-import { FiFilm, FiUpload, FiPlay, FiPause, FiVolume2, FiVolumeX, FiSettings } from 'react-icons/fi';
+import { FiFilm, FiUpload, FiVolume2, FiVolumeX, FiSettings } from 'react-icons/fi';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -8,15 +8,11 @@ import { useState, useEffect } from 'react';
 
 interface SidebarLayoutProps {
   children: React.ReactNode;
-  isPlaying?: boolean;
-  onPlayPause?: () => void;
   onVolumeChange?: (volume: number) => void;
 }
 
 export default function SidebarLayout({ 
   children, 
-  isPlaying = true,
-  onPlayPause,
   onVolumeChange 
 }: SidebarLayoutProps) {
   const pathname = usePathname();
@@ -106,12 +102,6 @@ export default function SidebarLayout({
 
             {/* Media Controls */}
             <div className="flex lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-4">
-              <button
-                onClick={() => onPlayPause?.()}
-                className="nav-item"
-              >
-                {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
-              </button>
               <div 
                 className="relative group"
                 onMouseEnter={() => setShowVolumeSlider(true)}
