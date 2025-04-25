@@ -6,6 +6,11 @@ import { FiLogOut, FiX } from 'react-icons/fi';
 import TabbedContainer from '../components/admin/TabbedContainer';
 import ImageViewer from '../components/ImageViewer';
 
+interface Team {
+  id: number;
+  name: string;
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -15,7 +20,7 @@ export default function AdminPage() {
   const [teamName, setTeamName] = useState('');
   const [photoCount, setPhotoCount] = useState<number>(0);
   const [videoCount, setVideoCount] = useState<number>(0);
-  const [teams, setTeams] = useState<string[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
@@ -145,7 +150,7 @@ export default function AdminPage() {
       const response = await fetch('/api/teams');
       if (!response.ok) throw new Error('Failed to fetch teams');
       const data = await response.json();
-      setTeams(Array.isArray(data) ? data : []);
+      setTeams(data);
     } catch (error) {
       console.error('Error fetching teams:', error);
     }
@@ -155,9 +160,9 @@ export default function AdminPage() {
     setSelectedImage(null);
   };
 
-  const fetchTeamMedia = async (team: string) => {
+  const fetchTeamMedia = async (team: Team) => {
     try {
-      const response = await fetch(`/api/team-media?team=${encodeURIComponent(team)}`);
+      const response = await fetch(`/api/team-media?team=${encodeURIComponent(team.name)}`);
       if (!response.ok) throw new Error('Failed to fetch team media');
       const data = await response.json();
       
@@ -279,10 +284,10 @@ export default function AdminPage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {teams.map((team) => (
                     <div
-                      key={team}
+                      key={team.id}
                       className="flex items-center justify-between p-4 bg-gray-800 rounded-lg"
                     >
-                      <span className="text-white">{team}</span>
+                      <span className="text-white">{team.name}</span>
                     </div>
                   ))}
                 </div>
@@ -365,11 +370,11 @@ export default function AdminPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {teams.map((team) => (
                 <div
-                  key={team}
+                  key={team.id}
                   className="p-4 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700"
                   onClick={() => fetchTeamMedia(team)}
                 >
-                  <h3 className="font-semibold">{team}</h3>
+                  <h3 className="font-semibold">{team.name}</h3>
                 </div>
               ))}
             </div>
