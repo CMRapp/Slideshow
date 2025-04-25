@@ -104,7 +104,7 @@ export default function UploadPage() {
           const compressedFile = await compressFile(file);
           console.log(`Compressed ${file.name}: ${(file.size / (1024 * 1024)).toFixed(2)}MB -> ${(compressedFile.size / (1024 * 1024)).toFixed(2)}MB`);
           formData.append('file', compressedFile);
-        } catch (error) {
+        } catch (err) {
           throw new UploadError(`Failed to compress ${file.name}`);
         }
       }
@@ -134,11 +134,11 @@ export default function UploadPage() {
       });
 
       setUploadStatus({ status: 'success', message: 'Upload completed successfully' });
-    } catch (error) {
-      console.error('Upload error:', error);
+    } catch (err) {
+      console.error('Upload error:', err);
       setUploadStatus({ 
         status: 'error', 
-        message: error instanceof Error ? error.message : 'Failed to upload files. Please try again.' 
+        message: err instanceof Error ? err.message : 'Failed to upload files. Please try again.' 
       });
     } finally {
       setProgress(null);
