@@ -59,7 +59,7 @@ export default function SidebarLayout({
     const newMuted = !isMuted;
     setIsMuted(newMuted);
     if (onVolumeChange) {
-      onVolumeChange(newMuted ? 0 : volume);
+      onVolumeChange(newMuted ? 0 : 100);
     }
   };
 
@@ -84,13 +84,19 @@ export default function SidebarLayout({
             </div>
 
             {/* Navigation Links */}
-            <div className="flex lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-4">
+            <div className="flex lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-8">
               <Link
                 href="/slideshow"
                 className={`nav-item ${pathname === '/slideshow' ? 'active' : ''}`}
               >
                 <FiFilm size={24} />
               </Link>
+              <button
+                onClick={toggleMute}
+                className="nav-item"
+              >
+                {isMuted ? <FiVolumeX size={24} /> : <FiVolume2 size={24} />}
+              </button>
               <Link
                 href="/upload"
                 className={`nav-item ${pathname === '/upload' ? 'active' : ''}`}
@@ -101,12 +107,6 @@ export default function SidebarLayout({
 
             {/* Media Controls */}
             <div className="flex lg:flex-col items-center space-y-6">
-              <button
-                onClick={toggleMute}
-                className="nav-item"
-              >
-                {isMuted ? <FiVolumeX size={24} /> : <FiVolume2 size={24} />}
-              </button>
               <div className="h-24 flex items-center">
                 <input
                   type="range"
