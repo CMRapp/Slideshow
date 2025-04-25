@@ -5,6 +5,16 @@ import { uploadToBlob } from '@/lib/blob';
 export async function GET() {
   try {
     console.log('Fetching media items from database...');
+    
+    // First, let's check what's in the uploaded_items table
+    const checkQuery = await pool.query(
+      `SELECT COUNT(*) as total, 
+              COUNT(CASE WHEN upload_status = 'completed' THEN 1 END) as completed,
+              COUNT(CASE WHEN file_path IS NOT NULL THEN 1 END) as with_path
+       FROM uploaded_items`
+    );
+    console.log('Database stats:', checkQuery.rows[0]);
+    
     const result = await pool.query(
       `SELECT 
         ui.id,
@@ -13,7 +23,8 @@ export async function GET() {
         ui.file_path,
         ui.file_name,
         ui.item_type,
-        ui.item_number
+        ui.item_number,
+        ui.upload_status
       FROM teams t
       INNER JOIN uploaded_items ui ON t.id = ui.team_id
       WHERE ui.upload_status = 'completed'
@@ -21,7 +32,11 @@ export async function GET() {
       ORDER BY t.name, ui.item_type, ui.item_number`
     );
 
-    console.log('Database query result:', result.rows);
+    console.log('Database query result:', {
+      totalRows: result.rows.length,
+      firstRow: result.rows[0],
+      allRows: result.rows
+    });
 
     if (!result.rows.length) {
       console.log('No media items found in database');
@@ -36,13 +51,22 @@ export async function GET() {
       );
       
       if (!isValid) {
-        console.warn('Invalid file path found:', item);
+        console.warn('Invalid file path found:', {
+          id: item.id,
+          team_name: item.team_name,
+          file_path: item.file_path,
+          upload_status: item.upload_status
+        });
       }
       
       return isValid;
     });
 
-    console.log('Valid media items:', validMediaItems);
+    console.log('Valid media items:', {
+      count: validMediaItems.length,
+      items: validMediaItems
+    });
+    
     return NextResponse.json({ mediaItems: validMediaItems });
   } catch (error) {
     console.error('Error fetching media items:', error);

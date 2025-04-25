@@ -26,22 +26,22 @@ export default function SlideshowPage() {
     try {
       setIsLoading(true);
       setError('');
-      console.log('Fetching media items...');
+      console.log('Slideshow: Starting to fetch media items...');
       
       const response = await fetch('/api/media');
-      console.log('Media API response status:', response.status);
+      console.log('Slideshow: Media API response status:', response.status);
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Media API error:', errorData);
+        console.error('Slideshow: Media API error:', errorData);
         throw new Error(errorData.error || 'Failed to fetch media items');
       }
       
       const data = await response.json();
-      console.log('Media items received:', data);
+      console.log('Slideshow: Raw API response:', data);
       
       if (!data.mediaItems || data.mediaItems.length === 0) {
-        console.log('No media items found');
+        console.log('Slideshow: No media items found in API response');
         setMediaItems([]);
         return;
       }
@@ -54,13 +54,20 @@ export default function SlideshowPage() {
         );
         
         if (!isValid) {
-          console.warn('Invalid file path found:', item);
+          console.warn('Slideshow: Invalid file path found:', {
+            id: item.id,
+            team_name: item.team_name,
+            file_path: item.file_path
+          });
         }
         
         return isValid;
       });
 
-      console.log('Valid media items:', validItems);
+      console.log('Slideshow: Valid media items:', {
+        total: validItems.length,
+        items: validItems
+      });
 
       if (validItems.length === 0) {
         throw new Error('No valid media items found');
@@ -73,9 +80,14 @@ export default function SlideshowPage() {
         [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
       }
 
+      console.log('Slideshow: Setting media items:', {
+        count: shuffledItems.length,
+        firstItem: shuffledItems[0]
+      });
+
       setMediaItems(shuffledItems);
     } catch (err) {
-      console.error('Error in fetchMediaItems:', err);
+      console.error('Slideshow: Error in fetchMediaItems:', err);
       setError(err instanceof Error ? err.message : 'Failed to load media items');
       setMediaItems([]);
     } finally {
