@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
-import { rm } from 'fs/promises';
-import path from 'path';
 
 interface PostgresError extends Error {
   code?: string;
@@ -14,15 +12,6 @@ interface TableRow {
   tablename: string;
 }
 
-interface FileRow {
-  file_name: string;
-  team_name: string;
-}
-
-interface TeamRow {
-  name: string;
-}
-
 export async function DELETE() {
   const client = await pool.connect();
   try {
@@ -30,44 +19,7 @@ export async function DELETE() {
     await client.query('BEGIN');
 
     try {
-      // Get all uploaded files with team names before deleting data
-      console.log('Fetching uploaded files...');
-      const result = await client.query<FileRow>(`
-        SELECT ui.file_name, t.name as team_name 
-        FROM uploaded_items ui 
-        JOIN teams t ON ui.team_id = t.id
-      `);
-      console.log(`Found ${result.rows.length} files to delete`);
-    
-      // Delete files from disk
-      for (const row of result.rows) {
-        const filePath = path.join(process.cwd(), 'uploads', row.team_name, row.file_name);
-        try {
-          await rm(filePath, { force: true });
-          console.log(`Deleted file: ${filePath}`);
-        } catch (error) {
-          console.error(`Error deleting file ${filePath}:`, error);
-          // Continue with other files even if one fails
-        }
-      }
-
-      // Delete uploads directory for each team
-      console.log('Fetching teams...');
-      const teams = await client.query<TeamRow>('SELECT name FROM teams');
-      console.log(`Found ${teams.rows.length} team directories to delete`);
-      
-      for (const team of teams.rows) {
-        const teamDir = path.join(process.cwd(), 'uploads', team.name);
-        try {
-          await rm(teamDir, { recursive: true, force: true });
-          console.log(`Deleted team directory: ${teamDir}`);
-        } catch (error) {
-          console.error(`Error deleting team directory ${teamDir}:`, error);
-          // Continue with other directories even if one fails
-        }
-      }
-
-      // Get list of all tables
+      // Get list of all tables except settings
       console.log('Fetching table list...');
       const tablesResult = await client.query<TableRow>(`
         SELECT tablename 
@@ -99,7 +51,7 @@ export async function DELETE() {
           WHEN key = 'photo_count' THEN '0'
           WHEN key = 'video_count' THEN '0'
           WHEN key = 'max_file_size' THEN '10485760'
-          WHEN key = 'allowed_image_types' THEN 'image/jpeg,image/png,image/gif'
+          WHEN key = 'allowed_image_types' THEN 'image/jpeg,image/png,gif'
           WHEN key = 'allowed_video_types' THEN 'video/mp4,video/webm,video/quicktime,video/hevc'
           ELSE value 
         END

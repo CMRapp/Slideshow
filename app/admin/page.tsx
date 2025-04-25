@@ -61,12 +61,12 @@ export default function AdminPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete media');
+        throw new Error('Failed to reset the database');
       }
 
       setSuccess('All media deleted successfully');
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to delete media');
+      setError(error instanceof Error ? error.message : 'Failed to reset the database');
     } finally {
       setShowDeleteAllConfirm(false);
     }
