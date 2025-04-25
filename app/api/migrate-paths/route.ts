@@ -54,8 +54,9 @@ export async function GET() {
     // Process each item
     for (const item of items.rows) {
       try {
-        // Generate the new Vercel Blob URL
-        const blobUrl = `https://slideshow-store.public.blob.vercel-storage.com/${item.team_name}/${item.file_name}`;
+        // Generate the new Vercel Blob URL using the correct format
+        // Format: https://{store-name}.public.blob.vercel-storage.com/{folder}/{file}
+        const blobUrl = `${process.env.NEXT_PUBLIC_BLOB_STORE_URL}/${item.team_name}/${item.file_name}`;
         
         // Update the record
         await client.query(

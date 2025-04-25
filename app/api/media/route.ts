@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { uploadToBlob } from '@/lib/blob';
 
+const BLOB_STORE_URL = 'https://public.blob.vercel-storage.com';
+
 export async function GET() {
   try {
     console.log('Fetching media items from database...');
@@ -50,8 +52,18 @@ export async function GET() {
         const pathParts = item.file_path.split('/');
         const teamName = pathParts[3];
         const fileName = pathParts[4];
-        item.file_path = `https://slideshow-store.public.blob.vercel-storage.com/${teamName}/${fileName}`;
+        item.file_path = `${BLOB_STORE_URL}/${teamName}/${fileName}`;
       }
+      
+      // If it's the old blob store URL, update to new format
+      if (item.file_path.includes('slideshow-store.public.blob.vercel-storage.com')) {
+        const url = new URL(item.file_path);
+        const pathParts = url.pathname.split('/');
+        const teamName = pathParts[1];
+        const fileName = pathParts[2];
+        item.file_path = `${BLOB_STORE_URL}/${teamName}/${fileName}`;
+      }
+      
       return item;
     });
 
