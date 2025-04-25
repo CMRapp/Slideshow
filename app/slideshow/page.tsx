@@ -241,66 +241,63 @@ export default function SlideshowPage() {
         }}
       />
       
-      <div 
-        className="flex-1 flex items-center justify-center bg-black/40"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        {mediaItems.length > 0 && (
-          <>
-            <div className="relative w-full h-full flex items-center justify-center p-4">
-              {currentItem.file_type.startsWith('image/') ? (
-                <div className="relative w-full h-full flex items-center justify-center">
-                  <div className="relative w-full h-full max-w-[90dvw] max-h-[calc(100dvh-6rem)]">
-                    <Image
+      <div className="relative flex flex-col h-[100dvh] overflow-hidden">
+        <div 
+          className="flex-1 flex items-center justify-center bg-black/40"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          {mediaItems.length > 0 && (
+            <>
+              <div className="relative w-full h-full flex items-center justify-center p-4">
+                {currentItem.file_type.startsWith('image/') ? (
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <div className="relative w-full h-full max-w-[90dvw] max-h-[calc(100dvh-6rem)]">
+                      <Image
+                        src={currentItem.file_path}
+                        alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
+                        fill
+                        sizes="90vw"
+                        className="object-contain w-full rounded-lg border border-amber-500/30"
+                        priority
+                        quality={100}
+                        unoptimized={false}
+                        crossOrigin="anonymous"
+                        onError={(e) => {
+                          console.error('Image failed to load:', currentItem.file_path);
+                          const img = e.target as HTMLImageElement;
+                          img.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <video
                       src={currentItem.file_path}
-                      alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
-                      fill
-                      sizes="90vw"
-                      className="object-contain w-full border-2 border-white/20"
-                      priority
-                      quality={100}
-                      unoptimized={false}
+                      className="max-w-[90dvw] max-h-[calc(100dvh-6rem)] object-contain w-full p-8 rounded-lg border border-amber-500/30"
+                      autoPlay
+                      loop
+                      playsInline
+                      controls
+                      controlsList="nodownload noremoteplayback"
                       crossOrigin="anonymous"
+                      onLoadedMetadata={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.volume = 0.05;
+                      }}
                       onError={(e) => {
-                        console.error('Image failed to load:', currentItem.file_path);
-                        const img = e.target as HTMLImageElement;
-                        img.style.display = 'none';
+                        console.error('Video failed to load:', currentItem.file_path);
+                        const video = e.target as HTMLVideoElement;
+                        video.style.display = 'none';
                       }}
                     />
                   </div>
-                </div>
-              ) : (
-                <div className="relative w-full h-full max-w-[90dvw] max-h-[calc(100dvh-6rem)]">
-                  <video
-                    src={currentItem.file_path}
-                    className="w-full h-full object-contain border-2 border-white/20"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    onError={(e) => {
-                      console.error('Video failed to load:', currentItem.file_path);
-                      const video = e.target as HTMLVideoElement;
-                      video.style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="absolute top-0 left-0 right-0 bg-black/80">
-              <div className="container mx-auto py-3">
-                <div className="flex items-center justify-center">
-                  <h2 className="text-white text-2xl font-semibold tracking-wide">
-                    <span>Team {currentItem.team_name}</span>
-                    <span className="mx-3 text-yellow-500">•</span>
-                    <span>{currentItem.item_type === 'photo' ? 'Photo' : 'Video'} {currentItem.item_number}</span>
-                  </h2>
-                </div>
+                )}
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </SidebarLayout>
   );
