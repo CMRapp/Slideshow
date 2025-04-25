@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-04-25
+
+### Added
+- New API endpoint `/api/team-items` to fetch uploaded items for a team
+- Enhanced upload page with disabled items functionality
+- Visual indicators for already uploaded photos and videos
+- Improved error handling with custom `UploadError` class
+- Type safety improvements with dedicated types file
+- Progress component for better upload status visualization
+
+### Changed
+- Darkened sidebar background for better contrast
+- Updated database connection configuration for Vercel environment
+- Improved team selection and item number selection UI
+- Enhanced error messages and user feedback
+- Refactored code organization for better maintainability
+
+### Fixed
+- Team names not populating in dropdown
+- Photo and video number items not being disabled when already uploaded
+- Database connection issues in serverless environment
+- Type safety issues with PostgreSQL errors
+- Error handling consistency across the application
+
+### Security
+- Improved SSL configuration for database connections
+- Enhanced error handling to prevent information leakage
+
 ## [1.8.2] - 2024-04-24
 
 ### Changed

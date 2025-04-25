@@ -1,136 +1,146 @@
 # Slideshow Application
 
-A modern, team-based media slideshow application with admin controls and secure file management.
+A modern, team-based media management and slideshow application built with Next.js, TypeScript, and PostgreSQL.
 
 ## Features
 
 ### Media Management
 - Team-based media organization
-- Photo and video support
-- Automatic file type validation
-- Secure file uploads with size limits
+- Photo and video upload support
+- Automatic file compression
 - Duplicate upload prevention
-- Image preview functionality
-- Background image customization
+- Progress tracking for uploads
+- Visual indicators for uploaded items
+
+### Slideshow
+- Responsive design for all devices
+- Automatic media playback
+- Play/pause controls
+- Volume management
+- Team and item information display
+- Optimized image loading
 
 ### Admin Features
-- Secure login system
+- Secure admin panel
 - Team management
-- Logo customization (main, side, and horizontal logos)
-- Background image upload with automatic resizing
 - Media review and management
-- Database management tools
+- Logo customization
 - Version tracking
-
-### User Interface
-- Responsive design for all devices
-- Modern, clean interface
-- Image preview popup
-- Play/pause controls
-- Volume controls with mute
-- Team name display
-- Item information overlay
+- Database management
 
 ### Security
 - JWT-based authentication
-- Protected admin routes
 - Secure file upload validation
-- Input sanitization
-- Secure password handling
-- Protected database operations
+- Protected admin routes
+- SSL database connections
+- Enhanced error handling
+
+## Technical Stack
+
+- **Frontend**: Next.js, React, TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: PostgreSQL
+- **Storage**: Vercel Blob Store
+- **Authentication**: JWT
+- **Deployment**: Vercel
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js 18+
-- MySQL 8+
-- npm or yarn
+- PostgreSQL database
+- Vercel account (for deployment)
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone [repository-url]
+git clone https://github.com/yourusername/slideshow.git
 cd slideshow
 ```
 
 2. Install dependencies:
 ```bash
 npm install
-# or
-yarn install
 ```
 
-3. Create a `.env` file in the root directory with the following variables:
-```env
-DB_HOST=your_database_host
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
-DB_NAME=your_database_name
-ADMIN_PASSWORD=your_admin_password
-NEXT_PUBLIC_MAX_FILE_SIZE=10485760 # 10MB
-NEXT_PUBLIC_ALLOWED_IMAGE_TYPES=image/jpeg,image/png
-NEXT_PUBLIC_ALLOWED_VIDEO_TYPES=video/mp4,video/webm,video/ogg,video/quicktime
+3. Set up environment variables:
+```bash
+cp .env.example .env.local
 ```
+Edit `.env.local` with your configuration:
+- Database URL
+- JWT secret
+- Admin credentials
+- Vercel Blob configuration
 
 4. Initialize the database:
 ```bash
-npm run dev
-# The application will automatically create necessary tables
+npm run db:init
 ```
 
 5. Start the development server:
 ```bash
 npm run dev
-# or
-yarn dev
 ```
-
-The application will be available at `http://localhost:3000`
 
 ## Usage
 
 ### Admin Panel
 1. Access the admin panel at `/admin`
-2. Log in with your credentials
-3. Manage teams, upload media, and customize branding
+2. Log in with admin credentials
+3. Manage teams, media, and settings
 
-### Media Upload
-1. Select a team
-2. Choose files to upload
-3. Files will be automatically validated and processed
-4. View uploaded media in the review section
+### Uploading Media
+1. Select a team from the dropdown
+2. Choose photo or video number
+3. Upload media files
+4. Track upload progress
+5. Review uploaded items
 
-### Branding
-1. Upload logos (main, side, horizontal)
-2. Set background image
-3. Customize team names
-4. Configure media counts
+### Viewing Slideshow
+1. Navigate to `/slideshow`
+2. Media automatically plays in sequence
+3. Use controls to pause/resume or adjust volume
+4. View team and item information
 
 ## Development
 
-### Available Scripts
+### Scripts
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
-- `npm run lint` - Run ESLint
+- `npm run db:init` - Initialize database
+- `npm run db:reset` - Reset database (caution: deletes all data)
+
+### Code Structure
+```
+app/
+├── api/           # API routes
+├── components/    # React components
+├── types/         # TypeScript types
+├── utils/         # Utility functions
+├── admin/         # Admin pages
+├── slideshow/     # Slideshow pages
+└── upload/        # Upload pages
+```
+
+## Version History
+
+See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Version
+## Support
 
-Current version: 1.7.0
-
-> **Note:** On 2024-04-24, the repository was reverted to commit `3e8120e` to address stability issues. This version includes updated package dependencies and enhanced functionality with @vercel/blob and ts-node integration.
-
-See [CHANGELOG.md](CHANGELOG.md) for version history and changes.
+For support, please open an issue in the GitHub repository.
