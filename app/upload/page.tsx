@@ -1,119 +1,80 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import SidebarLayout from '@/app/components/SidebarLayout';
 import { compressFile } from '@/app/utils/compression';
+import { Team, UploadStatus, ProgressStatus } from '@/app/types/upload';
+import { UploadProgress } from '@/app/components/UploadProgress';
 
-interface ProgressStatus {
-  stage: 'compressing' | 'uploading' | 'processing';
-  currentFile: string;
-  currentNumber: number;
-  totalFiles: number;
-  percent?: number;
+class UploadError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'UploadError';
+  }
 }
 
 export default function UploadPage() {
+  const [selectedTeam, setSelectedTeam] = useState<string>('');
+  const [selectedPhotoNumber, setSelectedPhotoNumber] = useState<string>('');
+  const [selectedVideoNumber, setSelectedVideoNumber] = useState<string>('');
   const [isDragging, setIsDragging] = useState(false);
-  const [teams, setTeams] = useState<string[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState('');
-  const [photoCount, setPhotoCount] = useState<number>(0);
-  const [videoCount, setVideoCount] = useState<number>(0);
-  const [selectedPhotoNumber, setSelectedPhotoNumber] = useState('');
-  const [selectedVideoNumber, setSelectedVideoNumber] = useState('');
-  const [uploadedItems, setUploadedItems] = useState<{ item_type: string; item_number: number }[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [uploadStatus, setUploadStatus] = useState<{
-    success: boolean;
-    message: string;
-  } | null>(null);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [photoCount, setPhotoCount] = useState(0);
+  const [videoCount, setVideoCount] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>({ status: 'idle', message: '' });
   const [progress, setProgress] = useState<ProgressStatus | null>(null);
 
+  const photoNumbers = useMemo(() => 
+    Array.from({ length: photoCount }, (_, i) => i + 1),
+    [photoCount]
+  );
+
+  const videoNumbers = useMemo(() => 
+    Array.from({ length: videoCount }, (_, i) => i + 1),
+    [videoCount]
+  );
+
   useEffect(() => {
-    const fetchTeams = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/teams');
-        if (response.ok) {
-          const data = await response.json();
-          setTeams(Array.isArray(data) ? data : []);
+        const [teamsResponse, photoCountResponse, videoCountResponse] = await Promise.all([
+          fetch('/api/teams'),
+          fetch('/api/photo-count'),
+          fetch('/api/video-count')
+        ]);
+
+        if (!teamsResponse.ok || !photoCountResponse.ok || !videoCountResponse.ok) {
+          throw new UploadError('Failed to fetch initial data');
         }
-      } catch (error) {
-        console.error('Failed to fetch teams:', error);
-      } finally {
-        setIsLoading(false);
+
+        const [teamsData, photoData, videoData] = await Promise.all([
+          teamsResponse.json(),
+          photoCountResponse.json(),
+          videoCountResponse.json()
+        ]);
+
+        setTeams(Array.isArray(teamsData) ? teamsData : []);
+        setPhotoCount(parseInt(photoData.count || '0', 10));
+        setVideoCount(parseInt(videoData.count || '0', 10));
+      } catch (err) {
+        console.error('Failed to fetch initial data:', err);
+        setUploadStatus({ 
+          status: 'error', 
+          message: err instanceof Error ? err.message : 'Failed to load initial data' 
+        });
       }
     };
 
-    const fetchPhotoCount = async () => {
-      try {
-        const response = await fetch('/api/photo-count');
-        if (response.ok) {
-          const data = await response.json();
-          const count = parseInt(data.count || '0', 10);
-          setPhotoCount(count);
-        }
-      } catch (error) {
-        console.error('Failed to fetch photo count:', error);
-        setPhotoCount(0);
-      }
-    };
-
-    const fetchVideoCount = async () => {
-      try {
-        const response = await fetch('/api/video-count');
-        if (response.ok) {
-          const data = await response.json();
-          const count = parseInt(data.count || '0', 10);
-          setVideoCount(count);
-        }
-      } catch (error) {
-        console.error('Failed to fetch video count:', error);
-        setVideoCount(0);
-      }
-    };
-
-    fetchTeams();
-    fetchPhotoCount();
-    fetchVideoCount();
+    fetchData();
   }, []);
-
-  useEffect(() => {
-    const fetchUploadedItems = async () => {
-      if (!selectedTeam) return;
-      
-      try {
-        console.log('Fetching uploaded items for team:', selectedTeam);
-        const response = await fetch(`/api/uploaded-items?team=${encodeURIComponent(selectedTeam)}`);
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Received uploaded items:', data.items);
-          setUploadedItems(data.items || []);
-        } else {
-          console.error('Failed to fetch uploaded items:', await response.text());
-        }
-      } catch (error) {
-        console.error('Failed to fetch uploaded items:', error);
-        setUploadedItems([]);
-      }
-    };
-
-    fetchUploadedItems();
-  }, [selectedTeam]);
 
   const handleUpload = useCallback(async (files: FileList) => {
     if (!selectedTeam) {
-      setUploadStatus({ 
-        success: false, 
-        message: 'Please select a team' 
-      });
-      return;
+      throw new UploadError('Please select a team');
     }
 
     if (!selectedPhotoNumber && !selectedVideoNumber) {
-      setUploadStatus({ 
-        success: false, 
-        message: 'Please select a photo or video number' 
-      });
-      return;
+      throw new UploadError('Please select a photo or video number');
     }
 
     try {
@@ -144,8 +105,7 @@ export default function UploadPage() {
           console.log(`Compressed ${file.name}: ${(file.size / (1024 * 1024)).toFixed(2)}MB -> ${(compressedFile.size / (1024 * 1024)).toFixed(2)}MB`);
           formData.append('file', compressedFile);
         } catch (error) {
-          console.error(`Error compressing ${file.name}:`, error);
-          throw new Error(`Failed to compress ${file.name}`);
+          throw new UploadError(`Failed to compress ${file.name}`);
         }
       }
 
@@ -163,7 +123,7 @@ export default function UploadPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
+        throw new UploadError(errorData.error || 'Upload failed');
       }
 
       setProgress({
@@ -173,23 +133,11 @@ export default function UploadPage() {
         totalFiles: files.length,
       });
 
-      setUploadStatus({ 
-        success: true, 
-        message: 'Files uploaded successfully!' 
-      });
-
-      // Refresh uploaded items list
-      if (selectedTeam) {
-        const response = await fetch(`/api/uploaded-items?team=${encodeURIComponent(selectedTeam)}`);
-        if (response.ok) {
-          const data = await response.json();
-          setUploadedItems(data.items || []);
-        }
-      }
+      setUploadStatus({ status: 'success', message: 'Upload completed successfully' });
     } catch (error) {
       console.error('Upload error:', error);
       setUploadStatus({ 
-        success: false, 
+        status: 'error', 
         message: error instanceof Error ? error.message : 'Failed to upload files. Please try again.' 
       });
     } finally {
@@ -221,6 +169,12 @@ export default function UploadPage() {
     }
   }, [handleUpload]);
 
+  const handleTeamChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedTeam(e.target.value);
+    setSelectedPhotoNumber('');
+    setSelectedVideoNumber('');
+  };
+
   const handlePhotoNumberChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedPhotoNumber(e.target.value);
     if (e.target.value) {
@@ -235,62 +189,6 @@ export default function UploadPage() {
     }
   };
 
-  const isItemUploaded = (type: 'photo' | 'video', number: number) => {
-    const isUploaded = uploadedItems.some(
-      item => item.item_type === type && item.item_number === number
-    );
-    console.log(`Checking if ${type} ${number} is uploaded:`, isUploaded, 'Items:', uploadedItems);
-    return isUploaded;
-  };
-
-  const renderProgress = () => {
-    if (!progress) return null;
-
-    const getProgressText = () => {
-      switch (progress.stage) {
-        case 'compressing':
-          return `Compressing ${progress.currentFile} (${progress.currentNumber}/${progress.totalFiles})`;
-        case 'uploading':
-          return 'Uploading files to server...';
-        case 'processing':
-          return 'Processing upload...';
-        default:
-          return '';
-      }
-    };
-
-    const getProgressColor = () => {
-      switch (progress.stage) {
-        case 'compressing':
-          return 'bg-blue-500/20 text-blue-300';
-        case 'uploading':
-          return 'bg-purple-500/20 text-purple-300';
-        case 'processing':
-          return 'bg-green-500/20 text-green-300';
-        default:
-          return '';
-      }
-    };
-
-    return (
-      <div className={`mt-4 p-4 rounded ${getProgressColor()}`}>
-        <div className="flex items-center">
-          <div className="flex-1">
-            <div className="text-sm font-medium">{getProgressText()}</div>
-            <div className="mt-2 h-2 w-full bg-black/20 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-current transition-all duration-300 ease-in-out rounded-full"
-                style={{ 
-                  width: `${(progress.currentNumber / progress.totalFiles) * 100}%`
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <SidebarLayout>
       <div className="flex-1 p-8">
@@ -302,34 +200,20 @@ export default function UploadPage() {
               <label htmlFor="teamSelect" className="block text-white mb-2">
                 Team Name
               </label>
-              {isLoading ? (
-                <div className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded text-white">
-                  Loading teams...
-                </div>
-              ) : teams.length === 0 ? (
-                <div className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded text-white">
-                  No teams available. Please add teams in the admin panel.
-                </div>
-              ) : (
-                <select
-                  id="teamSelect"
-                  value={selectedTeam}
-                  onChange={(e) => {
-                    setSelectedTeam(e.target.value);
-                    setSelectedPhotoNumber('');
-                    setSelectedVideoNumber('');
-                  }}
-                  className="w-full px-4 py-2 rounded-lg bg-black/85 border border-white/20 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none transition-all duration-200 [&>option]:bg-black [&>option]:text-white [&>option:hover]:bg-yellow-500 [&>option:hover]:text-black [&>option:checked]:bg-black [&>option:checked]:text-yellow-500"
-                  required
-                >
-                  <option value="">Select a team</option>
-                  {teams.map((team) => (
-                    <option key={team} value={team}>
-                      {team}
-                    </option>
-                  ))}
-                </select>
-              )}
+              <select
+                id="teamSelect"
+                value={selectedTeam}
+                onChange={handleTeamChange}
+                className="w-full px-4 py-2 rounded-lg bg-black/85 border border-white/20 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none transition-all duration-200 [&>option]:bg-black [&>option]:text-white [&>option:hover]:bg-yellow-500 [&>option:hover]:text-black [&>option:checked]:bg-black [&>option:checked]:text-yellow-500"
+                required
+              >
+                <option value="">Select a team</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.name}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="col-span-1">
               <label htmlFor="photoNumberSelect" className="block text-white mb-2">
@@ -344,19 +228,11 @@ export default function UploadPage() {
                 required
               >
                 <option value="">Select a photo number</option>
-                {Array.from({ length: photoCount }, (_, i) => i + 1).map((number) => {
-                  const isUploaded = isItemUploaded('photo', number);
-                  return (
-                    <option
-                      key={number}
-                      value={number.toString()}
-                      disabled={isUploaded}
-                      className={isUploaded ? 'text-gray-500 cursor-not-allowed' : ''}
-                    >
-                      Photo {number} {isUploaded ? '(Uploaded)' : ''}
-                    </option>
-                  );
-                })}
+                {photoNumbers.map((number) => (
+                  <option key={number} value={number.toString()}>
+                    Photo {number}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="col-span-1">
@@ -372,19 +248,11 @@ export default function UploadPage() {
                 required
               >
                 <option value="">Select a video number</option>
-                {Array.from({ length: videoCount }, (_, i) => i + 1).map((number) => {
-                  const isUploaded = isItemUploaded('video', number);
-                  return (
-                    <option
-                      key={number}
-                      value={number.toString()}
-                      disabled={isUploaded}
-                      className={isUploaded ? 'text-gray-500 cursor-not-allowed' : ''}
-                    >
-                      Video {number} {isUploaded ? '(Uploaded)' : ''}
-                    </option>
-                  );
-                })}
+                {videoNumbers.map((number) => (
+                  <option key={number} value={number.toString()}>
+                    Video {number}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -417,11 +285,11 @@ export default function UploadPage() {
             </div>
           </div>
 
-          {renderProgress()}
+          {progress && <UploadProgress progress={progress} />}
 
           {uploadStatus && (
             <div className={`mt-4 p-4 rounded ${
-              uploadStatus.success ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'
+              uploadStatus.status === 'success' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'
             }`}>
               {uploadStatus.message}
             </div>
