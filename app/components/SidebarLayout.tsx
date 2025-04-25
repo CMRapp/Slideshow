@@ -48,7 +48,7 @@ export default function SidebarLayout({
         <div className="w-full lg:w-[70px] h-[70px] lg:h-full glass-effect p-2 z-20 flex lg:flex-col items-center justify-center lg:justify-start">
           <div className="flex lg:flex-col items-center justify-between w-full lg:w-auto">
             {/* Logo */}
-            <div className="lg:mb-8">
+            <div className="lg:mb-5">
               <Image 
                 src="/riders-wm.png" 
                 alt="Riders Logo" 
@@ -61,7 +61,7 @@ export default function SidebarLayout({
             </div>
 
             {/* Navigation Links */}
-            <div className="flex lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-8">
+            <div className="flex lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-5">
               <Link
                 href="/slideshow"
                 className={`nav-item ${pathname === '/slideshow' ? 'active' : ''}`}
