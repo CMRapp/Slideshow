@@ -1,6 +1,6 @@
 'use client';
 
-import { FiFilm, FiUpload, FiVolume2, FiVolumeX, FiSettings } from 'react-icons/fi';
+import { FiFilm, FiUpload, FiVolume2, FiVolumeX, FiSettings, FiPlay, FiPause } from 'react-icons/fi';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -9,11 +9,15 @@ import { useState, useEffect } from 'react';
 interface SidebarLayoutProps {
   children: React.ReactNode;
   onVolumeChange?: (volume: number) => void;
+  isPlaying?: boolean;
+  onPlayPause?: () => void;
 }
 
 export default function SidebarLayout({ 
   children, 
-  onVolumeChange 
+  onVolumeChange,
+  isPlaying = false,
+  onPlayPause
 }: SidebarLayoutProps) {
   const pathname = usePathname();
   const [volume, setVolume] = useState(50);
@@ -92,10 +96,10 @@ export default function SidebarLayout({
                 <FiFilm size={24} />
               </Link>
               <button
-                onClick={toggleMute}
+                onClick={() => onPlayPause?.()}
                 className="nav-item"
               >
-                {isMuted ? <FiVolumeX size={24} /> : <FiVolume2 size={24} />}
+                {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
               </button>
               <Link
                 href="/upload"
@@ -103,6 +107,12 @@ export default function SidebarLayout({
               >
                 <FiUpload size={24} />
               </Link>
+              <button
+                onClick={toggleMute}
+                className="nav-item"
+              >
+                {isMuted ? <FiVolumeX size={24} /> : <FiVolume2 size={24} />}
+              </button>
             </div>
 
             {/* Media Controls */}
