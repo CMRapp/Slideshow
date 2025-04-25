@@ -19,37 +19,26 @@ export async function DELETE() {
     await client.query('BEGIN');
 
     try {
-      // Get list of tables in dependency order (child tables first)
+      // Get list of tables with their foreign key dependencies
       console.log('Fetching table list...');
       const tablesResult = await client.query<TableRow>(`
-        WITH RECURSIVE fk_tree AS (
-          -- Get all tables that don't depend on other tables
-          SELECT t.tablename::text as tablename,
-                 0 as level
-          FROM pg_tables t
-          LEFT JOIN pg_constraint c ON c.conrelid = t.tablename::regclass
-          WHERE t.schemaname = 'public'
-          AND t.tablename != 'settings'
-          AND c.contype = 'f' IS NULL
-          
-          UNION ALL
-          
-          -- Get tables that depend on the ones we've seen
-          SELECT DISTINCT t.tablename::text,
-                          ft.level + 1
-          FROM pg_tables t
-          JOIN pg_constraint c ON c.conrelid = t.tablename::regclass
-          JOIN fk_tree ft ON c.confrelid = ft.tablename::regclass
-          WHERE t.schemaname = 'public'
-          AND t.tablename != 'settings'
-          AND c.contype = 'f'
-        )
-        SELECT DISTINCT tablename
-        FROM fk_tree
-        ORDER BY level DESC;
+        SELECT DISTINCT tc.table_name as tablename
+        FROM information_schema.table_constraints tc
+        LEFT JOIN information_schema.constraint_column_usage ccu 
+          ON tc.constraint_name = ccu.constraint_name
+        WHERE tc.constraint_type = 'FOREIGN KEY'
+          AND tc.table_schema = 'public'
+          AND tc.table_name != 'settings'
+        UNION
+        SELECT table_name as tablename
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_type = 'BASE TABLE'
+          AND table_name != 'settings'
+        ORDER BY tablename DESC;
       `);
 
-      console.log('Tables to truncate in order:', tablesResult.rows.map(r => r.tablename));
+      console.log('Tables to truncate:', tablesResult.rows.map(r => r.tablename));
 
       // Truncate tables in the correct order
       for (const table of tablesResult.rows) {
