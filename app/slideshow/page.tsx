@@ -172,26 +172,29 @@ export default function SlideshowPage() {
           backgroundAttachment: 'fixed'
         }}
       />
-      <div className="relative w-full h-full">
+      <div className="relative w-full h-full flex items-center justify-center bg-black/40">
         {mediaItems.length > 0 ? (
           <>
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center p-4">
               {currentItem.file_type.startsWith('image/') ? (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Image
-                    src={currentItem.file_path}
-                    alt={`Slide ${currentIndex + 1}`}
-                    width={1920}
-                    height={1080}
-                    className="max-w-full max-h-full object-contain"
-                    priority
-                  />
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <div className="relative w-full h-full" style={{ maxWidth: '90vw', maxHeight: '90vh' }}>
+                    <Image
+                      src={currentItem.file_path}
+                      alt={`Slide ${currentIndex + 1}`}
+                      fill
+                      sizes="90vw"
+                      className="object-contain"
+                      priority
+                      quality={100}
+                    />
+                  </div>
                 </div>
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
+                <div className="relative w-full h-full flex items-center justify-center">
                   <video
                     src={currentItem.file_path}
-                    className="max-w-full max-h-full object-contain"
+                    className="max-w-[90vw] max-h-[90vh] object-contain"
                     autoPlay
                     loop
                     muted
@@ -200,15 +203,18 @@ export default function SlideshowPage() {
                 </div>
               )}
             </div>
-          </>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <FiImage size={48} className="mx-auto text-gray-400" />
-              <p className="mt-4 text-gray-400">No media items available</p>
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+              <div className="container mx-auto">
+                <h2 className="text-white text-xl font-semibold">
+                  {currentItem.team_name}
+                </h2>
+                <p className="text-white/80">
+                  {currentItem.item_type === 'photo' ? 'Photo' : 'Video'} {currentItem.item_number}
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          </>
+        ) : null}
       </div>
     </SidebarLayout>
   );
