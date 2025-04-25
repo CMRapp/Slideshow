@@ -24,7 +24,6 @@ export default function SlideshowPage() {
   const [isPaused, setIsPaused] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [showControls, setShowControls] = useState(true);
 
   const fetchMediaItems = async () => {
     try {
@@ -150,17 +149,6 @@ export default function SlideshowPage() {
     setIsPlaying(!isPlaying);
   };
 
-  // Add control visibility timeout
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    if (showControls) {
-      timeout = setTimeout(() => {
-        setShowControls(false);
-      }, 3000);
-    }
-    return () => clearTimeout(timeout);
-  }, [showControls]);
-
   if (error) {
     return (
       <SidebarLayout>
@@ -285,7 +273,30 @@ export default function SlideshowPage() {
                 )}
               </div>
               <div className="absolute top-0 left-0 right-0 bg-black/80">
-                <div className="container mx-auto py-3">
+                <div className="container mx-auto py-3 flex flex-col items-center gap-3">
+                  <div className="flex gap-4">
+                    <button
+                      className={controlStyles.controlButton}
+                      onClick={handlePrevious}
+                      aria-label="Previous"
+                    >
+                      <FiSkipBack />
+                    </button>
+                    <button
+                      className={controlStyles.controlButton}
+                      onClick={togglePlayPause}
+                      aria-label={isPlaying ? 'Pause' : 'Play'}
+                    >
+                      {isPlaying ? <FiPause /> : <FiPlay />}
+                    </button>
+                    <button
+                      className={controlStyles.controlButton}
+                      onClick={handleNext}
+                      aria-label="Next"
+                    >
+                      <FiSkipForward />
+                    </button>
+                  </div>
                   <h2 className="text-white text-2xl font-semibold tracking-wide text-center">
                     <span>Team {currentItem.team_name}</span>
                     <span className="mx-3 text-yellow-500">•</span>
@@ -296,35 +307,6 @@ export default function SlideshowPage() {
             </>
           )}
         </div>
-        {mediaItems.length > 0 && (
-          <div
-            className={`${controlStyles.controlsContainer} ${!showControls ? 'opacity-0' : ''}`}
-            onMouseEnter={() => setShowControls(true)}
-            onMouseLeave={() => setShowControls(false)}
-          >
-            <button
-              className={controlStyles.controlButton}
-              onClick={handlePrevious}
-              aria-label="Previous"
-            >
-              <FiSkipBack />
-            </button>
-            <button
-              className={controlStyles.controlButton}
-              onClick={togglePlayPause}
-              aria-label={isPlaying ? 'Pause' : 'Play'}
-            >
-              {isPlaying ? <FiPause /> : <FiPlay />}
-            </button>
-            <button
-              className={controlStyles.controlButton}
-              onClick={handleNext}
-              aria-label="Next"
-            >
-              <FiSkipForward />
-            </button>
-          </div>
-        )}
       </div>
     </SidebarLayout>
   );
