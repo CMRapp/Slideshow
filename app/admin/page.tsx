@@ -19,6 +19,7 @@ export default function AdminPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
   const checkAuth = useCallback(async () => {
     try {
@@ -49,11 +50,11 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteAll = async () => {
-    if (!window.confirm('Are you sure you want to delete all media? This action cannot be undone.')) {
-      return;
-    }
+  const handleDeleteAll = () => {
+    setShowDeleteAllConfirm(true);
+  };
 
+  const confirmDeleteAll = async () => {
     try {
       const response = await fetch('/api/delete-all', {
         method: 'DELETE',
@@ -66,6 +67,8 @@ export default function AdminPage() {
       setSuccess('All media deleted successfully');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to delete media');
+    } finally {
+      setShowDeleteAllConfirm(false);
     }
   };
 
@@ -221,10 +224,10 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
-      {/* Delete Confirmation Popup */}
+      {/* Delete Team Confirmation Popup */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+          <div className="glass-effect p-6 rounded-lg max-w-md w-full mx-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Confirm Deletion</h3>
               <button
@@ -255,6 +258,40 @@ export default function AdminPage() {
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete All Confirmation Popup */}
+      {showDeleteAllConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="glass-effect p-6 rounded-lg max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Reset Database</h3>
+              <button
+                onClick={() => setShowDeleteAllConfirm(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <FiX size={24} />
+              </button>
+            </div>
+            <p className="mb-6">
+              Are you sure you want to reset the database? This will permanently delete all media files and database records. This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowDeleteAllConfirm(false)}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteAll}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
+              >
+                Reset Database
               </button>
             </div>
           </div>
