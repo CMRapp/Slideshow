@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiPlay, FiPause, FiImage } from 'react-icons/fi';
+import { FiImage } from 'react-icons/fi';
 import Image from 'next/image';
 import SidebarLayout from '@/app/components/SidebarLayout';
 
@@ -158,7 +158,10 @@ export default function SlideshowPage() {
   const currentItem = mediaItems[currentIndex];
 
   return (
-    <SidebarLayout>
+    <SidebarLayout
+      isPlaying={isPlaying}
+      onPlayPause={() => setIsPlaying(!isPlaying)}
+    >
       <div 
         className="fixed inset-0 -z-10"
         style={{
@@ -172,15 +175,6 @@ export default function SlideshowPage() {
       <div className="relative w-full h-full">
         {mediaItems.length > 0 ? (
           <>
-            <div className="absolute top-4 right-4 z-10">
-              <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
-                aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
-              >
-                {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
-              </button>
-            </div>
             <div className="absolute inset-0 flex items-center justify-center">
               {currentItem.file_type.startsWith('image/') ? (
                 <div className="w-full h-full flex items-center justify-center">

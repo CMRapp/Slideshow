@@ -97,7 +97,9 @@ export default function SidebarLayout({
               </Link>
               <button
                 onClick={() => onPlayPause?.()}
-                className="nav-item"
+                className="p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
+                id="play-pause-button"
+                aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
               >
                 {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
               </button>
