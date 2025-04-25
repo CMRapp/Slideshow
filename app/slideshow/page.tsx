@@ -257,7 +257,7 @@ export default function SlideshowPage() {
                         alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
                         fill
                         sizes="90vw"
-                        className="object-contain glass-card w-full p-8 rounded-lg"
+                        className="object-contain glass-card w-full p-8 rounded-lg border border-amber-500/30"
                         priority
                         quality={100}
                         unoptimized={false}
@@ -274,7 +274,7 @@ export default function SlideshowPage() {
                   <div className="relative w-full h-full flex items-center justify-center">
                     <video
                       src={currentItem.file_path}
-                      className="max-w-[90dvw] max-h-[calc(100dvh-6rem)] object-contain glass-card w-full p-8 rounded-lg"
+                      className="max-w-[90dvw] max-h-[calc(100dvh-6rem)] object-contain glass-card w-full p-8 rounded-lg border border-amber-500/30"
                       autoPlay
                       loop
                       playsInline
