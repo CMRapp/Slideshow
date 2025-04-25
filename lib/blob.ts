@@ -1,12 +1,11 @@
 import { put, list, del } from '@vercel/blob';
-import { getToken } from '@/lib/auth';
 
 export async function uploadToBlob(file: File, teamName: string) {
   try {
     const blob = await put(file.name, file, {
       access: 'public',
       addRandomSuffix: true,
-      token: await getToken(),
+      token: process.env.BLOB_READ_WRITE_TOKEN
     });
 
     return {
@@ -25,7 +24,7 @@ export async function uploadToBlob(file: File, teamName: string) {
 export async function deleteFromBlob(url: string) {
   try {
     await del(url, {
-      token: await getToken()
+      token: process.env.BLOB_READ_WRITE_TOKEN
     });
     return { success: true };
   } catch (error) {
@@ -39,7 +38,9 @@ export async function deleteFromBlob(url: string) {
 
 export async function listBlobs() {
   try {
-    const blobs = await list();
+    const blobs = await list({
+      token: process.env.BLOB_READ_WRITE_TOKEN
+    });
     return {
       success: true,
       blobs: blobs.blobs
