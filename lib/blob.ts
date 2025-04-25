@@ -2,7 +2,9 @@ import { put, list, del } from '@vercel/blob';
 
 export async function uploadToBlob(file: File, teamName: string) {
   try {
-    const blob = await put(file.name, file, {
+    const fileName = `${teamName}/${file.name}`;
+    
+    const blob = await put(fileName, file, {
       access: 'public',
       addRandomSuffix: true,
       token: process.env.BLOB_READ_WRITE_TOKEN
