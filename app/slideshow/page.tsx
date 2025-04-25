@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { FiImage, FiPlay, FiPause, FiSkipBack, FiSkipForward } from 'react-icons/fi';
 import Image from 'next/image';
 import SidebarLayout from '@/app/components/SidebarLayout';
-import styles from '@/app/styles/VideoPlayer.module.css';
 import controlStyles from '@/app/styles/SlideshowControls.module.css';
 
 interface MediaItem {
