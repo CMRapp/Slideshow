@@ -4,6 +4,14 @@ import { useState, useCallback, useEffect } from 'react';
 import SidebarLayout from '@/app/components/SidebarLayout';
 import { compressFile } from '@/app/utils/compression';
 
+interface ProgressStatus {
+  stage: 'compressing' | 'uploading' | 'processing';
+  currentFile: string;
+  currentNumber: number;
+  totalFiles: number;
+  percent?: number;
+}
+
 export default function UploadPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [teams, setTeams] = useState<string[]>([]);
@@ -18,7 +26,7 @@ export default function UploadPage() {
     success: boolean;
     message: string;
   } | null>(null);
-  const [compressionProgress, setCompressionProgress] = useState<string | null>(null);
+  const [progress, setProgress] = useState<ProgressStatus | null>(null);
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -109,7 +117,6 @@ export default function UploadPage() {
     }
 
     try {
-      setUploadStatus({ success: true, message: 'Processing files...' });
       const formData = new FormData();
       formData.append('team', selectedTeam);
       
@@ -124,7 +131,13 @@ export default function UploadPage() {
       // Process and compress each file
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        setCompressionProgress(`Compressing ${file.name}...`);
+        
+        setProgress({
+          stage: 'compressing',
+          currentFile: file.name,
+          currentNumber: i + 1,
+          totalFiles: files.length,
+        });
         
         try {
           const compressedFile = await compressFile(file);
@@ -136,7 +149,12 @@ export default function UploadPage() {
         }
       }
 
-      setCompressionProgress('Uploading...');
+      setProgress({
+        stage: 'uploading',
+        currentFile: 'all files',
+        currentNumber: files.length,
+        totalFiles: files.length,
+      });
 
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -147,6 +165,13 @@ export default function UploadPage() {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Upload failed');
       }
+
+      setProgress({
+        stage: 'processing',
+        currentFile: 'finalizing',
+        currentNumber: files.length,
+        totalFiles: files.length,
+      });
 
       setUploadStatus({ 
         success: true, 
@@ -168,7 +193,7 @@ export default function UploadPage() {
         message: error instanceof Error ? error.message : 'Failed to upload files. Please try again.' 
       });
     } finally {
-      setCompressionProgress(null);
+      setProgress(null);
     }
   }, [selectedTeam, selectedPhotoNumber, selectedVideoNumber]);
 
@@ -216,6 +241,54 @@ export default function UploadPage() {
     );
     console.log(`Checking if ${type} ${number} is uploaded:`, isUploaded, 'Items:', uploadedItems);
     return isUploaded;
+  };
+
+  const renderProgress = () => {
+    if (!progress) return null;
+
+    const getProgressText = () => {
+      switch (progress.stage) {
+        case 'compressing':
+          return `Compressing ${progress.currentFile} (${progress.currentNumber}/${progress.totalFiles})`;
+        case 'uploading':
+          return 'Uploading files to server...';
+        case 'processing':
+          return 'Processing upload...';
+        default:
+          return '';
+      }
+    };
+
+    const getProgressColor = () => {
+      switch (progress.stage) {
+        case 'compressing':
+          return 'bg-blue-500/20 text-blue-300';
+        case 'uploading':
+          return 'bg-purple-500/20 text-purple-300';
+        case 'processing':
+          return 'bg-green-500/20 text-green-300';
+        default:
+          return '';
+      }
+    };
+
+    return (
+      <div className={`mt-4 p-4 rounded ${getProgressColor()}`}>
+        <div className="flex items-center">
+          <div className="flex-1">
+            <div className="text-sm font-medium">{getProgressText()}</div>
+            <div className="mt-2 h-2 w-full bg-black/20 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-current transition-all duration-300 ease-in-out rounded-full"
+                style={{ 
+                  width: `${(progress.currentNumber / progress.totalFiles) * 100}%`
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -344,11 +417,7 @@ export default function UploadPage() {
             </div>
           </div>
 
-          {compressionProgress && (
-            <div className="mt-4 p-4 rounded bg-blue-500/20 text-blue-300">
-              {compressionProgress}
-            </div>
-          )}
+          {renderProgress()}
 
           {uploadStatus && (
             <div className={`mt-4 p-4 rounded ${

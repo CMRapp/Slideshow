@@ -19,6 +19,7 @@ export default function SlideshowPage() {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -103,7 +104,7 @@ export default function SlideshowPage() {
     let interval: NodeJS.Timeout;
     let cycleCount = 0;
     
-    if (isPlaying && mediaItems.length > 0) {
+    if (isPlaying && !isPaused && mediaItems.length > 0) {
       interval = setInterval(() => {
         setCurrentIndex((prev) => {
           const nextIndex = (prev + 1) % mediaItems.length;
@@ -118,7 +119,7 @@ export default function SlideshowPage() {
       }, 5000);
     }
     return () => clearInterval(interval);
-  }, [isPlaying, mediaItems.length]);
+  }, [isPlaying, isPaused, mediaItems.length]);
 
   const shuffleMediaItems = () => {
     setMediaItems(prevItems => {
@@ -201,7 +202,11 @@ export default function SlideshowPage() {
         }}
       />
       <div className="relative flex flex-col h-[100dvh] overflow-hidden">
-        <div className="flex-1 flex items-center justify-center bg-black/40">
+        <div 
+          className="flex-1 flex items-center justify-center bg-black/40"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
           {mediaItems.length > 0 && (
             <>
               <div className="relative w-full h-full flex items-center justify-center p-4">
@@ -233,9 +238,12 @@ export default function SlideshowPage() {
                       className="max-w-[90dvw] max-h-[calc(100dvh-6rem)] object-contain"
                       autoPlay
                       loop
-                      muted
                       playsInline
                       crossOrigin="anonymous"
+                      onLoadedMetadata={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.volume = 0.5;
+                      }}
                       onError={(e) => {
                         console.error('Video failed to load:', currentItem.file_path);
                         const video = e.target as HTMLVideoElement;
