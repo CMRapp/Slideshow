@@ -13,6 +13,11 @@ class UploadError extends Error {
   }
 }
 
+interface UploadedItem {
+  item_type: 'photo' | 'video';
+  item_number: number;
+}
+
 export default function UploadPage() {
   const [selectedTeam, setSelectedTeam] = useState<string>('');
   const [selectedPhotoNumber, setSelectedPhotoNumber] = useState<string>('');
@@ -23,6 +28,7 @@ export default function UploadPage() {
   const [videoCount, setVideoCount] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>({ status: 'idle', message: '' });
   const [progress, setProgress] = useState<ProgressStatus | null>(null);
+  const [uploadedItems, setUploadedItems] = useState<UploadedItem[]>([]);
 
   const photoNumbers = useMemo(() => 
     Array.from({ length: photoCount }, (_, i) => i + 1),
@@ -169,10 +175,24 @@ export default function UploadPage() {
     }
   }, [handleUpload]);
 
-  const handleTeamChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedTeam(e.target.value);
+  const handleTeamChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const teamName = e.target.value;
+    setSelectedTeam(teamName);
     setSelectedPhotoNumber('');
     setSelectedVideoNumber('');
+    setUploadedItems([]);
+
+    if (teamName) {
+      try {
+        const response = await fetch(`/api/team-items?team=${encodeURIComponent(teamName)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setUploadedItems(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch team items:', error);
+      }
+    }
   };
 
   const handlePhotoNumberChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -187,6 +207,12 @@ export default function UploadPage() {
     if (e.target.value) {
       setSelectedPhotoNumber('');
     }
+  };
+
+  const isItemUploaded = (type: 'photo' | 'video', number: number) => {
+    return uploadedItems.some(
+      item => item.item_type === type && item.item_number === number
+    );
   };
 
   return (
@@ -229,8 +255,12 @@ export default function UploadPage() {
               >
                 <option value="">Select a photo number</option>
                 {photoNumbers.map((number) => (
-                  <option key={number} value={number.toString()}>
-                    Photo {number}
+                  <option 
+                    key={number} 
+                    value={number.toString()}
+                    disabled={isItemUploaded('photo', number)}
+                  >
+                    Photo {number} {isItemUploaded('photo', number) ? '(Uploaded)' : ''}
                   </option>
                 ))}
               </select>
@@ -249,8 +279,12 @@ export default function UploadPage() {
               >
                 <option value="">Select a video number</option>
                 {videoNumbers.map((number) => (
-                  <option key={number} value={number.toString()}>
-                    Video {number}
+                  <option 
+                    key={number} 
+                    value={number.toString()}
+                    disabled={isItemUploaded('video', number)}
+                  >
+                    Video {number} {isItemUploaded('video', number) ? '(Uploaded)' : ''}
                   </option>
                 ))}
               </select>
