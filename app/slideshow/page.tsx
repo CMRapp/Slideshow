@@ -204,10 +204,7 @@ export default function SlideshowPage() {
   const currentItem = mediaItems[currentIndex];
 
   return (
-    <SidebarLayout
-      isPlaying={isPlaying}
-      onPlayPause={() => setIsPlaying(!isPlaying)}
-    >
+    <SidebarLayout>
       <div 
         className="fixed inset-0 -z-10"
         style={{
