@@ -19,29 +19,43 @@ export async function DELETE() {
     await client.query('BEGIN');
 
     try {
-      // Get list of all tables except settings
+      // Get list of tables in dependency order (child tables first)
       console.log('Fetching table list...');
       const tablesResult = await client.query<TableRow>(`
-        SELECT tablename 
-        FROM pg_catalog.pg_tables 
-        WHERE schemaname = 'public' 
-        AND tablename NOT IN ('settings')
+        WITH RECURSIVE fk_tree AS (
+          -- Get all tables that don't depend on other tables
+          SELECT t.tablename::text as tablename,
+                 0 as level
+          FROM pg_tables t
+          LEFT JOIN pg_constraint c ON c.conrelid = t.tablename::regclass
+          WHERE t.schemaname = 'public'
+          AND t.tablename != 'settings'
+          AND c.contype = 'f' IS NULL
+          
+          UNION ALL
+          
+          -- Get tables that depend on the ones we've seen
+          SELECT DISTINCT t.tablename::text,
+                          ft.level + 1
+          FROM pg_tables t
+          JOIN pg_constraint c ON c.conrelid = t.tablename::regclass
+          JOIN fk_tree ft ON c.confrelid = ft.tablename::regclass
+          WHERE t.schemaname = 'public'
+          AND t.tablename != 'settings'
+          AND c.contype = 'f'
+        )
+        SELECT DISTINCT tablename
+        FROM fk_tree
+        ORDER BY level DESC;
       `);
-      console.log('Tables to truncate:', tablesResult.rows.map(r => r.tablename));
 
-      // Disable triggers temporarily to avoid foreign key constraint issues
-      console.log('Disabling triggers...');
-      await client.query('SET session_replication_role = replica');
+      console.log('Tables to truncate in order:', tablesResult.rows.map(r => r.tablename));
 
-      // Truncate all tables except settings
+      // Truncate tables in the correct order
       for (const table of tablesResult.rows) {
         console.log(`Truncating table: ${table.tablename}`);
-        await client.query(`TRUNCATE TABLE "${table.tablename}" CASCADE`);
+        await client.query(`DELETE FROM "${table.tablename}"`);
       }
-
-      // Re-enable triggers
-      console.log('Re-enabling triggers...');
-      await client.query('SET session_replication_role = DEFAULT');
     
       // Reset settings to default values
       console.log('Resetting settings...');
@@ -108,15 +122,6 @@ export async function DELETE() {
       { status: 500 }
     );
   } finally {
-    // Ensure triggers are re-enabled even if an error occurred
-    try {
-      await client.query('SET session_replication_role = DEFAULT');
-      console.log('Ensured triggers are re-enabled');
-    } catch (error) {
-      const pgError = error as PostgresError;
-      console.error('Error re-enabling triggers:', pgError);
-    }
-
     try {
       client.release();
       console.log('Client released successfully');
