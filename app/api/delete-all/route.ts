@@ -3,6 +3,26 @@ import { pool } from '@/lib/db';
 import { rm } from 'fs/promises';
 import path from 'path';
 
+interface PostgresError extends Error {
+  code?: string;
+  detail?: string;
+  hint?: string;
+  position?: string;
+}
+
+interface TableRow {
+  tablename: string;
+}
+
+interface FileRow {
+  file_name: string;
+  team_name: string;
+}
+
+interface TeamRow {
+  name: string;
+}
+
 export async function DELETE() {
   const client = await pool.connect();
   try {
@@ -12,7 +32,7 @@ export async function DELETE() {
     try {
       // Get all uploaded files with team names before deleting data
       console.log('Fetching uploaded files...');
-      const result = await client.query(`
+      const result = await client.query<FileRow>(`
         SELECT ui.file_name, t.name as team_name 
         FROM uploaded_items ui 
         JOIN teams t ON ui.team_id = t.id
@@ -33,7 +53,7 @@ export async function DELETE() {
 
       // Delete uploads directory for each team
       console.log('Fetching teams...');
-      const teams = await client.query('SELECT name FROM teams');
+      const teams = await client.query<TeamRow>('SELECT name FROM teams');
       console.log(`Found ${teams.rows.length} team directories to delete`);
       
       for (const team of teams.rows) {
@@ -49,7 +69,7 @@ export async function DELETE() {
 
       // Get list of all tables
       console.log('Fetching table list...');
-      const tablesResult = await client.query(`
+      const tablesResult = await client.query<TableRow>(`
         SELECT tablename 
         FROM pg_catalog.pg_tables 
         WHERE schemaname = 'public' 
@@ -94,14 +114,15 @@ export async function DELETE() {
       });
     } catch (innerError) {
       // Log the specific error that occurred during the reset process
+      const pgError = innerError as PostgresError;
       console.error('Error during reset process:', {
-        error: innerError,
-        message: innerError instanceof Error ? innerError.message : 'Unknown error',
-        stack: innerError instanceof Error ? innerError.stack : undefined,
-        code: (innerError as any)?.code,
-        detail: (innerError as any)?.detail,
-        hint: (innerError as any)?.hint,
-        position: (innerError as any)?.position
+        error: pgError,
+        message: pgError.message,
+        stack: pgError.stack,
+        code: pgError.code,
+        detail: pgError.detail,
+        hint: pgError.hint,
+        position: pgError.position
       });
 
       // Attempt to rollback
@@ -115,21 +136,22 @@ export async function DELETE() {
       throw innerError; // Re-throw to be caught by outer catch
     }
   } catch (error) {
+    const pgError = error as PostgresError;
     console.error('Final error handler:', {
-      error: error,
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      code: (error as any)?.code,
-      detail: (error as any)?.detail,
-      hint: (error as any)?.hint,
-      position: (error as any)?.position
+      error: pgError,
+      message: pgError.message,
+      stack: pgError.stack,
+      code: pgError.code,
+      detail: pgError.detail,
+      hint: pgError.hint,
+      position: pgError.position
     });
 
     return NextResponse.json(
       { 
         error: 'Failed to reset database',
-        details: error instanceof Error ? error.message : 'Unknown error',
-        code: (error as any)?.code
+        details: pgError.message,
+        code: pgError.code
       },
       { status: 500 }
     );
@@ -139,14 +161,16 @@ export async function DELETE() {
       await client.query('SET session_replication_role = DEFAULT');
       console.log('Ensured triggers are re-enabled');
     } catch (error) {
-      console.error('Error re-enabling triggers:', error);
+      const pgError = error as PostgresError;
+      console.error('Error re-enabling triggers:', pgError);
     }
 
     try {
       client.release();
       console.log('Client released successfully');
     } catch (error) {
-      console.error('Error releasing client:', error);
+      const pgError = error as PostgresError;
+      console.error('Error releasing client:', pgError);
     }
   }
 } 
