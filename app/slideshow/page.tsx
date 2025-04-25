@@ -134,7 +134,7 @@ export default function SlideshowPage() {
   if (error) {
     return (
       <SidebarLayout>
-        <div className="flex items-center justify-center h-full">
+        <div className="flex items-center justify-center h-[100dvh]">
           <div className="text-center p-8 bg-white/10 backdrop-blur-sm rounded-lg shadow-md">
             <div className="text-red-500 text-xl mb-4">Error</div>
             <p className="text-white">{error}</p>
@@ -153,7 +153,7 @@ export default function SlideshowPage() {
   if (isLoading) {
     return (
       <SidebarLayout>
-        <div className="flex items-center justify-center h-full">
+        <div className="flex items-center justify-center h-[100dvh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
             <p className="mt-4 text-white">Loading media...</p>
@@ -166,7 +166,7 @@ export default function SlideshowPage() {
   if (mediaItems.length === 0) {
     return (
       <SidebarLayout>
-        <div className="flex items-center justify-center h-full">
+        <div className="flex items-center justify-center h-[100dvh]">
           <div className="text-center p-8 bg-white/10 backdrop-blur-sm rounded-lg shadow-md">
             <FiImage className="mx-auto text-6xl text-white/40 mb-4" />
             <h2 className="text-2xl font-semibold text-white mb-2">No Media Items</h2>
@@ -200,61 +200,65 @@ export default function SlideshowPage() {
           backgroundAttachment: 'fixed'
         }}
       />
-      <div className="relative w-full h-full flex items-center justify-center bg-black/40">
-        {mediaItems.length > 0 ? (
-          <>
-            <div className="absolute inset-0 flex items-center justify-center p-4">
-              {currentItem.file_type.startsWith('image/') ? (
-                <div className="relative w-full h-full flex items-center justify-center">
-                  <div className="relative w-full h-full" style={{ maxWidth: '90vw', maxHeight: '90vh' }}>
-                    <Image
+      <div className="relative flex flex-col h-[100dvh] overflow-hidden">
+        <div className="flex-1 flex items-center justify-center bg-black/40">
+          {mediaItems.length > 0 && (
+            <>
+              <div className="relative w-full h-full flex items-center justify-center p-4">
+                {currentItem.file_type.startsWith('image/') ? (
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <div className="relative w-full h-full max-w-[90dvw] max-h-[calc(100dvh-8rem)]">
+                      <div className="absolute inset-0 rounded-lg shadow-[0_0_30px_rgba(255,255,255,0.15)] pointer-events-none"></div>
+                      <Image
+                        src={currentItem.file_path}
+                        alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
+                        fill
+                        sizes="90vw"
+                        className="object-contain rounded-lg border border-white/10"
+                        priority
+                        quality={100}
+                        unoptimized={false}
+                        crossOrigin="anonymous"
+                        onError={(e) => {
+                          console.error('Image failed to load:', currentItem.file_path);
+                          const img = e.target as HTMLImageElement;
+                          img.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-lg shadow-[0_0_30px_rgba(255,255,255,0.15)] pointer-events-none"></div>
+                    <video
                       src={currentItem.file_path}
-                      alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
-                      fill
-                      sizes="90vw"
-                      className="object-contain"
-                      priority
-                      quality={100}
-                      unoptimized={false}
+                      className="max-w-[90dvw] max-h-[calc(100dvh-8rem)] object-contain rounded-lg border border-white/10"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
                       crossOrigin="anonymous"
                       onError={(e) => {
-                        console.error('Image failed to load:', currentItem.file_path);
-                        const img = e.target as HTMLImageElement;
-                        img.style.display = 'none';
+                        console.error('Video failed to load:', currentItem.file_path);
+                        const video = e.target as HTMLVideoElement;
+                        video.style.display = 'none';
                       }}
                     />
                   </div>
-                </div>
-              ) : (
-                <div className="relative w-full h-full flex items-center justify-center">
-                  <video
-                    src={currentItem.file_path}
-                    className="max-w-[90vw] max-h-[90vh] object-contain"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    crossOrigin="anonymous"
-                    onError={(e) => {
-                      console.error('Video failed to load:', currentItem.file_path);
-                      const video = e.target as HTMLVideoElement;
-                      video.style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 bg-black/80">
-              <div className="container mx-auto text-center py-4">
-                <h3 className="text-white text-2xl font-semibold tracking-wide">
-                  <span>Team {currentItem.team_name}</span>
-                  <span className="mx-3 text-yellow-500">•</span>
-                  <span>{currentItem.item_type === 'photo' ? 'Photo' : 'Video'} {currentItem.item_number}</span>
-                </h3>
+                )}
               </div>
-            </div>
-          </>
-        ) : null}
+              <div className="absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm">
+                <div className="container mx-auto text-center py-4">
+                  <h3 className="text-white text-2xl font-semibold tracking-wide">
+                    <span>Team {currentItem.team_name}</span>
+                    <span className="mx-3 text-yellow-500">•</span>
+                    <span>{currentItem.item_type === 'photo' ? 'Photo' : 'Video'} {currentItem.item_number}</span>
+                  </h3>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </SidebarLayout>
   );
