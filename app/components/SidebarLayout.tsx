@@ -1,6 +1,6 @@
 'use client';
 
-import { FiFilm, FiUpload, FiVolume2, FiVolumeX, FiSettings, FiPlay, FiPause } from 'react-icons/fi';
+import { FiFilm, FiUpload, FiSettings, FiPlay, FiPause } from 'react-icons/fi';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -8,20 +8,16 @@ import { useState, useEffect } from 'react';
 
 interface SidebarLayoutProps {
   children: React.ReactNode;
-  onVolumeChange?: (volume: number) => void;
   isPlaying?: boolean;
   onPlayPause?: () => void;
 }
 
 export default function SidebarLayout({ 
   children, 
-  onVolumeChange,
   isPlaying = false,
   onPlayPause
 }: SidebarLayoutProps) {
   const pathname = usePathname();
-  const [volume, setVolume] = useState(50);
-  const [isMuted, setIsMuted] = useState(false);
   const [version, setVersion] = useState('');
 
   useEffect(() => {
@@ -43,29 +39,6 @@ export default function SidebarLayout({
 
     fetchVersion();
   }, []);
-
-  useEffect(() => {
-    if (onVolumeChange) {
-      onVolumeChange(isMuted ? 0 : volume);
-    }
-  }, [volume, isMuted, onVolumeChange]);
-
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseInt(e.target.value);
-    setVolume(newVolume);
-    setIsMuted(newVolume === 0);
-    if (onVolumeChange) {
-      onVolumeChange(newVolume);
-    }
-  };
-
-  const toggleMute = () => {
-    const newMuted = !isMuted;
-    setIsMuted(newMuted);
-    if (onVolumeChange) {
-      onVolumeChange(newMuted ? 0 : 100);
-    }
-  };
 
   return (
     <div className="min-h-screen relative">
@@ -109,15 +82,8 @@ export default function SidebarLayout({
               >
                 <FiUpload size={24} />
               </Link>
-              <button
-                onClick={toggleMute}
-                className="nav-item"
-              >
-                {isMuted ? <FiVolumeX size={24} /> : <FiVolume2 size={24} />}
-              </button>
             </div>
 
-            
             {/* Branding */}
             <div id="sidebar-branding" className="mt-auto flex flex-col lg:flex-col items-center space-y-4 lg:space-y-4">
               <div className="flex flex-row lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-4">
