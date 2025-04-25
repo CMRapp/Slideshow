@@ -17,8 +17,6 @@ export default function AdminPage() {
   const [videoCount, setVideoCount] = useState<number>(0);
   const [teams, setTeams] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
   const checkAuth = useCallback(async () => {
@@ -48,10 +46,6 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Logout failed:', error);
     }
-  };
-
-  const handleDeleteAll = () => {
-    setShowDeleteAllConfirm(true);
   };
 
   const handlePhotoCountSave = async () => {
