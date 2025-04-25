@@ -240,43 +240,89 @@ export default function AdminPage() {
 
         <TabbedContainer>
           {/* Slideshow Config Tab */}
-          <div className="space-y-6">
-            <div className="p-4 bg-gray-800 rounded-lg">
-              <h3 className="text-lg font-semibold mb-4">Slideshow Settings</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Photo Count</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      value={photoCount}
-                      onChange={(e) => setPhotoCount(parseInt(e.target.value) || 0)}
-                      className="flex-1 p-2 bg-gray-700 rounded"
-                    />
-                    <button
-                      onClick={handlePhotoCountSave}
-                      className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500"
+          <div className="space-y-6" id="team-info">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <h3 className="text-sm font-medium mb-2">Team Name Entry</h3>
+                <input
+                  type="text"
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                  className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                  placeholder="Enter A New Team Name"
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={handleTeamNameSave}
+                  disabled={!teamName.trim()}
+                  className="h-[42px] bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+
+            {/* Team Listing */}
+            <div className="mt-4" id="team-listing">
+              <h3 className="text-sm font-medium mb-2">Existing Teams</h3>
+              {teams.length === 0 ? (
+                <p className="text-gray-400">No teams found</p>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {teams.map((team) => (
+                    <div
+                      key={team}
+                      className="flex items-center justify-between p-4 bg-gray-800 rounded-lg"
                     >
-                      Save
-                    </button>
-                  </div>
+                      <span className="text-white">{team}</span>
+                    </div>
+                  ))}
                 </div>
-                <div>
+              )}
+            </div>
+
+            <h3 className="text-sm font-medium mb-2">Set Slideshow Options</h3>
+            <div id="slideshow-options" className="grid grid-cols-2 gap-6">
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium mb-2">Photo Count</label>
+                  <input
+                    type="number"
+                    value={photoCount}
+                    onChange={(e) => setPhotoCount(Number(e.target.value))}
+                    className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                    placeholder="Enter photo count"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={handlePhotoCountSave}
+                    className="h-[42px] bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <div className="flex-1">
                   <label className="block text-sm font-medium mb-2">Video Count</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      value={videoCount}
-                      onChange={(e) => setVideoCount(parseInt(e.target.value) || 0)}
-                      className="flex-1 p-2 bg-gray-700 rounded"
-                    />
-                    <button
-                      onClick={handleVideoCountSave}
-                      className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500"
-                    >
-                      Save
-                    </button>
-                  </div>
+                  <input
+                    type="number"
+                    value={videoCount}
+                    onChange={(e) => setVideoCount(Number(e.target.value))}
+                    className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                    placeholder="Enter video count"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={handleVideoCountSave}
+                    className="h-[42px] bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500"
+                  >
+                    Save
+                  </button>
                 </div>
               </div>
             </div>
@@ -285,24 +331,8 @@ export default function AdminPage() {
           {/* Branding Tab */}
           <div className="space-y-6">
             <div className="p-4 bg-gray-800 rounded-lg">
-              <h3 className="text-lg font-semibold mb-4">Team Management</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Team Name</label>
-                  <input
-                    type="text"
-                    value={teamName}
-                    onChange={(e) => setTeamName(e.target.value)}
-                    className="w-full p-2 bg-gray-700 rounded"
-                  />
-                </div>
-                <button
-                  onClick={handleTeamNameSave}
-                  className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
-                >
-                  Save Team
-                </button>
-              </div>
+              <h3 className="text-lg font-semibold mb-4">Branding Settings</h3>
+              <p className="text-gray-400">Branding settings coming soon...</p>
             </div>
           </div>
 
