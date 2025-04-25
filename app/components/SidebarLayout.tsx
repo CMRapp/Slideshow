@@ -19,7 +19,6 @@ export default function SidebarLayout({
   const [volume, setVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
   const [version, setVersion] = useState('');
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
   useEffect(() => {
     // Fetch version from package.json
