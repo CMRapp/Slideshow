@@ -64,3 +64,16 @@ h3 {
   font-size: 20px;
   line-height: 1.4;
 }
+
+/* Navigation Styles */
+.nav-item {
+  @apply p-3 rounded-lg text-white/70 transition-all duration-200;
+}
+
+.nav-item:hover {
+  @apply text-yellow-400 bg-yellow-400/10;
+}
+
+.nav-item.active {
+  @apply text-yellow-400 bg-yellow-400/20;
+}
