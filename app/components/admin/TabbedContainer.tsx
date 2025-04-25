@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import { FiSliders, FiImage, FiDatabase, FiEye } from 'react-icons/fi';
 
 interface TabbedContainerProps {
-  children: React.ReactNode[];
+  children: ReactNode[];
 }
 
 export default function TabbedContainer({ children }: TabbedContainerProps) {
@@ -41,7 +41,7 @@ export default function TabbedContainer({ children }: TabbedContainerProps) {
 
       {/* Content Area */}
       <div className="flex-1 p-6 bg-black/85">
-        {children[activeTab]}
+        {children && children[activeTab]}
       </div>
     </div>
   );
