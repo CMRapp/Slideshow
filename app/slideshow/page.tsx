@@ -215,7 +215,8 @@ export default function SlideshowPage() {
                       className="object-contain"
                       priority
                       quality={100}
-                      unoptimized={true}
+                      unoptimized={false}
+                      crossOrigin="anonymous"
                       onError={(e) => {
                         console.error('Image failed to load:', currentItem.file_path);
                         const img = e.target as HTMLImageElement;
@@ -233,6 +234,7 @@ export default function SlideshowPage() {
                     loop
                     muted
                     playsInline
+                    crossOrigin="anonymous"
                     onError={(e) => {
                       console.error('Video failed to load:', currentItem.file_path);
                       const video = e.target as HTMLVideoElement;
