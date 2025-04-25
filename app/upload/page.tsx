@@ -104,7 +104,7 @@ export default function UploadPage() {
           const compressedFile = await compressFile(file);
           console.log(`Compressed ${file.name}: ${(file.size / (1024 * 1024)).toFixed(2)}MB -> ${(compressedFile.size / (1024 * 1024)).toFixed(2)}MB`);
           formData.append('file', compressedFile);
-        } catch (err) {
+        } catch {
           throw new UploadError(`Failed to compress ${file.name}`);
         }
       }
