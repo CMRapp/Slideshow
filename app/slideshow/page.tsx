@@ -207,14 +207,13 @@ export default function SlideshowPage() {
               <div className="relative w-full h-full flex items-center justify-center p-4">
                 {currentItem.file_type.startsWith('image/') ? (
                   <div className="relative w-full h-full flex items-center justify-center">
-                    <div className="relative w-full h-full max-w-[90dvw] max-h-[calc(100dvh-8rem)]">
-                      <div className="absolute inset-0 rounded-lg shadow-[0_0_30px_rgba(255,255,255,0.15)] pointer-events-none"></div>
+                    <div className="relative w-full h-full max-w-[90dvw] max-h-[calc(100dvh-6rem)]">
                       <Image
                         src={currentItem.file_path}
                         alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
                         fill
                         sizes="90vw"
-                        className="object-contain rounded-lg border border-white/10"
+                        className="object-contain"
                         priority
                         quality={100}
                         unoptimized={false}
@@ -229,10 +228,9 @@ export default function SlideshowPage() {
                   </div>
                 ) : (
                   <div className="relative w-full h-full flex items-center justify-center">
-                    <div className="absolute inset-0 rounded-lg shadow-[0_0_30px_rgba(255,255,255,0.15)] pointer-events-none"></div>
                     <video
                       src={currentItem.file_path}
-                      className="max-w-[90dvw] max-h-[calc(100dvh-8rem)] object-contain rounded-lg border border-white/10"
+                      className="max-w-[90dvw] max-h-[calc(100dvh-6rem)] object-contain"
                       autoPlay
                       loop
                       muted
@@ -247,9 +245,9 @@ export default function SlideshowPage() {
                   </div>
                 )}
               </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm">
-                <div className="container mx-auto text-center py-4">
-                  <h3 className="text-white text-2xl font-semibold tracking-wide">
+              <div className="absolute bottom-0 left-0 right-0 bg-black/80">
+                <div className="container mx-auto py-2">
+                  <h3 className="text-white text-xl font-semibold tracking-wide text-center">
                     <span>Team {currentItem.team_name}</span>
                     <span className="mx-3 text-yellow-500">•</span>
                     <span>{currentItem.item_type === 'photo' ? 'Photo' : 'Video'} {currentItem.item_number}</span>
