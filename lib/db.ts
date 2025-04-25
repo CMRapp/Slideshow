@@ -11,7 +11,9 @@ if (missingEnvVars.length > 0) {
 // Create connection pool with Neon configuration
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: true
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Test the connection
