@@ -117,20 +117,7 @@ export default function SidebarLayout({
               </button>
             </div>
 
-            {/* Media Controls */}
-            <div className="flex lg:flex-col items-center space-y-6">
-              <div className="h-24 flex items-center">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={volume}
-                  onChange={handleVolumeChange}
-                  className="w-1 h-24 accent-yellow-400 [-webkit-appearance:slider-vertical] [writing-mode:bt-lr]"
-                />
-              </div>
-            </div>
-
+            
             {/* Branding */}
             <div id="sidebar-branding" className="mt-auto flex flex-col lg:flex-col items-center space-y-4 lg:space-y-4">
               <div className="flex flex-row lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-4">
