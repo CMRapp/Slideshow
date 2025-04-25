@@ -48,6 +48,27 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteAll = () => {
+    setShowDeleteAllConfirm(true);
+  };
+
+  const confirmDeleteAll = async () => {
+    try {
+      const response = await fetch('/api/delete-all', {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reset the database');
+      }
+
+      setSuccess('All media deleted successfully');
+      setShowDeleteAllConfirm(false);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to reset the database');
+    }
+  };
+
   const handlePhotoCountSave = async () => {
     try {
       const response = await fetch('/api/photo-count', {
@@ -183,7 +204,7 @@ export default function AdminPage() {
                 Cancel
               </button>
               <button
-                onClick={handleDeleteAll}
+                onClick={confirmDeleteAll}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
               >
                 Reset Database
