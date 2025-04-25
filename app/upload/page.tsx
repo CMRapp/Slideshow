@@ -18,6 +18,8 @@ export default function UploadPage() {
     message: string;
   } | null>(null);
 
+  const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB in bytes
+
   useEffect(() => {
     const fetchTeams = async () => {
       try {
@@ -104,6 +106,18 @@ export default function UploadPage() {
         message: 'Please select a photo or video number' 
       });
       return;
+    }
+
+    // Check file size
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.size > MAX_FILE_SIZE) {
+        setUploadStatus({
+          success: false,
+          message: `File "${file.name}" is too large. Maximum file size is 4MB.`
+        });
+        return;
+      }
     }
 
     try {
