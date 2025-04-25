@@ -9,14 +9,14 @@ export function middleware(request: NextRequest) {
 
   // Check if the route is protected
   if (protectedRoutes.some(route => pathname.startsWith(route)) && !pathname.includes('/login')) {
-    const authToken = request.cookies.get('auth-token');
+    const session = request.cookies.get('session');
 
-    // If no auth token, redirect to login page
-    if (!authToken) {
+    // If no session cookie, redirect to login page
+    if (!session) {
       return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
-    // TODO: Validate the auth token here
+    // TODO: Validate the session here
     // For now, we'll just check if it exists
   }
 
