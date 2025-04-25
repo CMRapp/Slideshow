@@ -1,7 +1,5 @@
 import { put } from '@vercel/blob';
 
-const BLOB_STORE_URL = 'https://public.blob.vercel-storage.com';
-
 export async function uploadToBlob(file: File, teamName: string) {
   try {
     const blob = await put(`${teamName}/${file.name}`, file, {
