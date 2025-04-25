@@ -160,9 +160,16 @@ export default function AdminPage() {
       const response = await fetch(`/api/team-media?team=${encodeURIComponent(team)}`);
       if (!response.ok) throw new Error('Failed to fetch team media');
       const data = await response.json();
-      setSelectedImage(data[0]?.file_path || null);
+      
+      // Check if we have items and if the first item has a file_path
+      if (data.items && data.items.length > 0 && data.items[0].file_path) {
+        setSelectedImage(data.items[0].file_path);
+      } else {
+        setSelectedImage(null);
+      }
     } catch (error) {
       console.error('Error fetching team media:', error);
+      setSelectedImage(null);
     }
   };
 
