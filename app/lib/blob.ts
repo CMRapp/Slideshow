@@ -4,18 +4,15 @@ const BLOB_STORE_URL = 'https://public.blob.vercel-storage.com';
 
 export async function uploadToBlob(file: File, teamName: string) {
   try {
-    const blob = await put(file.name, file, {
+    const blob = await put(`${teamName}/${file.name}`, file, {
       access: 'public',
       addRandomSuffix: false,
       token: process.env.BLOB_READ_WRITE_TOKEN
     });
 
-    // Return the correct URL format
-    const url = `${BLOB_STORE_URL}/${teamName}/${file.name}`;
-    
     return {
       success: true,
-      url
+      url: blob.url
     };
   } catch (error) {
     console.error('Failed to upload to blob store:', error);
