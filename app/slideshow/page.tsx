@@ -261,7 +261,7 @@ export default function SlideshowPage() {
                       crossOrigin="anonymous"
                       onLoadedMetadata={(e) => {
                         const video = e.target as HTMLVideoElement;
-                        video.volume = 0.15;
+                        video.volume = 0.05;
                       }}
                       onError={(e) => {
                         console.error('Video failed to load:', currentItem.file_path);
@@ -273,35 +273,37 @@ export default function SlideshowPage() {
                 )}
               </div>
               <div className="absolute top-0 left-0 right-0 bg-black/80">
-                <div className="container mx-auto py-3 flex flex-col items-center gap-3">
-                  <div className="flex gap-4">
-                    <button
-                      className={controlStyles.controlButton}
-                      onClick={handlePrevious}
-                      aria-label="Previous"
-                    >
-                      <FiSkipBack />
-                    </button>
-                    <button
-                      className={controlStyles.controlButton}
-                      onClick={togglePlayPause}
-                      aria-label={isPlaying ? 'Pause' : 'Play'}
-                    >
-                      {isPlaying ? <FiPause /> : <FiPlay />}
-                    </button>
-                    <button
-                      className={controlStyles.controlButton}
-                      onClick={handleNext}
-                      aria-label="Next"
-                    >
-                      <FiSkipForward />
-                    </button>
+                <div className="container mx-auto py-3">
+                  <div className="flex items-center justify-center gap-6">
+                    <div className="flex gap-2">
+                      <button
+                        className={controlStyles.controlButton}
+                        onClick={handlePrevious}
+                        aria-label="Previous"
+                      >
+                        <FiSkipBack />
+                      </button>
+                      <button
+                        className={controlStyles.controlButton}
+                        onClick={togglePlayPause}
+                        aria-label={isPlaying ? 'Pause' : 'Play'}
+                      >
+                        {isPlaying ? <FiPause /> : <FiPlay />}
+                      </button>
+                      <button
+                        className={controlStyles.controlButton}
+                        onClick={handleNext}
+                        aria-label="Next"
+                      >
+                        <FiSkipForward />
+                      </button>
+                    </div>
+                    <h2 className="text-white text-2xl font-semibold tracking-wide">
+                      <span>Team {currentItem.team_name}</span>
+                      <span className="mx-3 text-yellow-500">•</span>
+                      <span>{currentItem.item_type === 'photo' ? 'Photo' : 'Video'} {currentItem.item_number}</span>
+                    </h2>
                   </div>
-                  <h2 className="text-white text-2xl font-semibold tracking-wide text-center">
-                    <span>Team {currentItem.team_name}</span>
-                    <span className="mx-3 text-yellow-500">•</span>
-                    <span>{currentItem.item_type === 'photo' ? 'Photo' : 'Video'} {currentItem.item_number}</span>
-                  </h2>
                 </div>
               </div>
             </>
