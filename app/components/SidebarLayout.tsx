@@ -101,30 +101,22 @@ export default function SidebarLayout({
             </div>
 
             {/* Media Controls */}
-            <div className="flex lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-4">
-              <div 
-                className="relative group"
-                onMouseEnter={() => setShowVolumeSlider(true)}
-                onMouseLeave={() => setShowVolumeSlider(false)}
+            <div className="flex lg:flex-col items-center space-y-6">
+              <button
+                onClick={toggleMute}
+                className="nav-item"
               >
-                <button
-                  onClick={toggleMute}
-                  className="nav-item"
-                >
-                  {isMuted ? <FiVolumeX size={24} /> : <FiVolume2 size={24} />}
-                </button>
-                {showVolumeSlider && (
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 glass-effect rounded-lg">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={volume}
-                      onChange={handleVolumeChange}
-                      className="w-20 h-1 accent-yellow-400"
-                    />
-                  </div>
-                )}
+                {isMuted ? <FiVolumeX size={24} /> : <FiVolume2 size={24} />}
+              </button>
+              <div className="h-24 flex items-center">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={volume}
+                  onChange={handleVolumeChange}
+                  className="w-1 h-24 accent-yellow-400 [-webkit-appearance:slider-vertical] [writing-mode:bt-lr]"
+                />
               </div>
             </div>
 
