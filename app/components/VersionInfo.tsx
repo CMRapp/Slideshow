@@ -22,7 +22,7 @@ export default function VersionInfo() {
 
   return (
     <div className="fixed bottom-2 right-2 text-xs text-gray-400">
-      <div>Version: {versionInfo.version}</div>
+      <div>v1.0.0 Stable</div>
       <div>Build: {new Date(versionInfo.buildDate).toLocaleString()}</div>
       <div>Environment: {versionInfo.environment}</div>
     </div>
