@@ -72,7 +72,9 @@ export default function SidebarLayout({ children, slideshowControls }: SidebarLa
             </div>
 
             {/* Slideshow Controls */}
-            {slideshowControls}
+            <div className="mt-5">
+              {slideshowControls}
+            </div>
 
             {/* Branding */}
             <div id="sidebar-branding" className="mt-auto flex flex-col lg:flex-col items-center space-y-4 lg:space-y-4">
