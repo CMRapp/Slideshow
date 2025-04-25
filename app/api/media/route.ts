@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
+import { uploadToBlob } from '@/lib/blob';
 
 export async function GET() {
   try {
@@ -19,13 +20,8 @@ export async function GET() {
       ORDER BY t.name, ui.item_type, ui.item_number`
     );
 
-    // Process the file paths to ensure they're absolute
-    const processedItems = result.rows.map(item => ({
-      ...item,
-      file_path: item.file_path.startsWith('/') ? item.file_path : `/${item.file_path}`
-    }));
-
-    return NextResponse.json({ mediaItems: processedItems });
+    // The file_path now contains the full Vercel Blob Store URL
+    return NextResponse.json({ mediaItems: result.rows });
   } catch (error) {
     console.error('Error fetching media items:', error);
     return NextResponse.json(
@@ -46,6 +42,15 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
+      );
+    }
+
+    // Upload to Vercel Blob Store
+    const uploadResult = await uploadToBlob(file, teamName);
+    if (!uploadResult.success) {
+      return NextResponse.json(
+        { error: 'Failed to upload file to storage' },
+        { status: 500 }
       );
     }
 
@@ -74,7 +79,7 @@ export async function POST(request: Request) {
 
     const itemNumber = itemNumberResult.rows[0].next_number;
 
-    // Insert the new media item
+    // Insert the new media item with the Blob Store URL
     const result = await pool.query(
       `INSERT INTO uploaded_items (
         team_id, item_type, item_number, file_name,
@@ -86,10 +91,10 @@ export async function POST(request: Request) {
         type,
         itemNumber,
         file.name,
-        `/api/files/${teamName}/${file.name}`,
+        uploadResult.url, // Use the Blob Store URL
         file.size,
         file.type,
-        'pending'
+        'completed' // Mark as completed since upload is done
       ]
     );
 

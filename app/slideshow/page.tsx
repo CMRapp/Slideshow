@@ -80,15 +80,8 @@ export default function SlideshowPage() {
         console.log('No media items found');
         setMediaItems([]);
       } else {
-        // Ensure file paths are absolute
-        const processedData = data.mediaItems.map((item: MediaItem) => ({
-          ...item,
-          file_path: item.file_path.startsWith('/') ? item.file_path : `/${item.file_path}`,
-          thumbnail_path: item.thumbnail_path ? (item.thumbnail_path.startsWith('/') ? item.thumbnail_path : `/${item.thumbnail_path}`) : null
-        }));
-        console.log('Processed media items:', processedData);
-        // Shuffle the items before setting them
-        const shuffledItems = [...processedData];
+        // No need to process file paths as they are now full Blob Store URLs
+        const shuffledItems = [...data.mediaItems];
         for (let i = shuffledItems.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
@@ -187,6 +180,7 @@ export default function SlideshowPage() {
                       className="object-contain"
                       priority
                       quality={100}
+                      unoptimized={true}
                     />
                   </div>
                 </div>
@@ -204,12 +198,11 @@ export default function SlideshowPage() {
               )}
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-              <div className="container mx-auto">
-                <h2 className="text-white text-xl font-semibold">
-                  {currentItem.team_name}
-                </h2>
-                <p className="text-white/80">
-                  {currentItem.item_type === 'photo' ? 'Photo' : 'Video'} {currentItem.item_number}
+              <div className="container mx-auto text-center">
+                <p className="text-white text-xl">
+                  <span className="font-semibold">Team {currentItem.team_name}</span>
+                  <span className="mx-2">•</span>
+                  <span>{currentItem.item_type === 'photo' ? 'Photo' : 'Video'} {currentItem.item_number}</span>
                 </p>
               </div>
             </div>

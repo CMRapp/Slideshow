@@ -1,0 +1,54 @@
+import { put, list, del } from '@vercel/blob';
+import { getToken } from '@/lib/auth';
+
+export async function uploadToBlob(file: File, teamName: string) {
+  try {
+    const blob = await put(file.name, file, {
+      access: 'public',
+      addRandomSuffix: true,
+      token: await getToken(),
+    });
+
+    return {
+      url: blob.url,
+      success: true
+    };
+  } catch (error) {
+    console.error('Error uploading to blob store:', error);
+    return {
+      success: false,
+      error: 'Failed to upload file'
+    };
+  }
+}
+
+export async function deleteFromBlob(url: string) {
+  try {
+    await del(url, {
+      token: await getToken()
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting from blob store:', error);
+    return {
+      success: false,
+      error: 'Failed to delete file'
+    };
+  }
+}
+
+export async function listBlobs() {
+  try {
+    const blobs = await list();
+    return {
+      success: true,
+      blobs: blobs.blobs
+    };
+  } catch (error) {
+    console.error('Error listing blobs:', error);
+    return {
+      success: false,
+      error: 'Failed to list files'
+    };
+  }
+} 
