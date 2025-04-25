@@ -1,8 +1,30 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
-import { uploadToBlob } from '@/lib/blob';
-import fs from 'fs/promises';
-import path from 'path';
+
+interface DatabaseItem {
+  id: number;
+  file_name: string;
+  file_path: string;
+  team_name: string;
+  mime_type: string;
+}
+
+interface MigrationSuccess {
+  id: number;
+  oldPath: string;
+  newPath: string;
+}
+
+interface MigrationFailure {
+  id: number;
+  path: string;
+  error: string;
+}
+
+interface MigrationResults {
+  success: MigrationSuccess[];
+  failed: MigrationFailure[];
+}
 
 export async function GET() {
   const client = await pool.connect();
@@ -10,7 +32,7 @@ export async function GET() {
     await client.query('BEGIN');
     
     // Get all items with old path format
-    const items = await client.query(`
+    const items = await client.query<DatabaseItem>(`
       SELECT 
         ui.id,
         ui.file_name,
@@ -24,9 +46,9 @@ export async function GET() {
 
     console.log('Found items to migrate:', items.rows.length);
 
-    const results = {
-      success: [] as any[],
-      failed: [] as any[]
+    const results: MigrationResults = {
+      success: [],
+      failed: []
     };
 
     // Process each item
@@ -36,7 +58,7 @@ export async function GET() {
         const blobUrl = `https://slideshow-store.public.blob.vercel-storage.com/${item.team_name}/${item.file_name}`;
         
         // Update the record
-        const updateResult = await client.query(
+        await client.query(
           `UPDATE uploaded_items 
            SET file_path = $1
            WHERE id = $2
