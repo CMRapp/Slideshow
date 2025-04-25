@@ -253,13 +253,13 @@ export default function SlideshowPage() {
                   </div>
                 )}
               </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-black/80">
-                <div className="container mx-auto py-2">
-                  <h3 className="text-white text-xl font-semibold tracking-wide text-center">
+              <div className="absolute top-0 left-0 right-0 bg-black/80">
+                <div className="container mx-auto py-3">
+                  <h2 className="text-white text-2xl font-semibold tracking-wide text-center">
                     <span>Team {currentItem.team_name}</span>
                     <span className="mx-3 text-yellow-500">•</span>
                     <span>{currentItem.item_type === 'photo' ? 'Photo' : 'Video'} {currentItem.item_number}</span>
-                  </h3>
+                  </h2>
                 </div>
               </div>
             </>
