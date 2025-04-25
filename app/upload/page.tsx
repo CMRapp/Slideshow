@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import SidebarLayout from '@/app/components/SidebarLayout';
+import { compressFile } from '@/app/utils/compression';
 
 export default function UploadPage() {
   const [isDragging, setIsDragging] = useState(false);
@@ -17,8 +18,7 @@ export default function UploadPage() {
     success: boolean;
     message: string;
   } | null>(null);
-
-  const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB in bytes
+  const [compressionProgress, setCompressionProgress] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -108,18 +108,6 @@ export default function UploadPage() {
       return;
     }
 
-    // Check file size
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (file.size > MAX_FILE_SIZE) {
-        setUploadStatus({
-          success: false,
-          message: `File "${file.name}" is too large. Maximum file size is 4MB.`
-        });
-        return;
-      }
-    }
-
     try {
       setUploadStatus({ success: true, message: 'Processing files...' });
       const formData = new FormData();
@@ -133,11 +121,22 @@ export default function UploadPage() {
         formData.append('itemNumber', selectedVideoNumber);
       }
 
-      // Process each file
+      // Process and compress each file
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        formData.append('file', file);
+        setCompressionProgress(`Compressing ${file.name}...`);
+        
+        try {
+          const compressedFile = await compressFile(file);
+          console.log(`Compressed ${file.name}: ${(file.size / (1024 * 1024)).toFixed(2)}MB -> ${(compressedFile.size / (1024 * 1024)).toFixed(2)}MB`);
+          formData.append('file', compressedFile);
+        } catch (error) {
+          console.error(`Error compressing ${file.name}:`, error);
+          throw new Error(`Failed to compress ${file.name}`);
+        }
       }
+
+      setCompressionProgress('Uploading...');
 
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -168,6 +167,8 @@ export default function UploadPage() {
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to upload files. Please try again.' 
       });
+    } finally {
+      setCompressionProgress(null);
     }
   }, [selectedTeam, selectedPhotoNumber, selectedVideoNumber]);
 
@@ -342,6 +343,12 @@ export default function UploadPage() {
               </p>
             </div>
           </div>
+
+          {compressionProgress && (
+            <div className="mt-4 p-4 rounded bg-blue-500/20 text-blue-300">
+              {compressionProgress}
+            </div>
+          )}
 
           {uploadStatus && (
             <div className={`mt-4 p-4 rounded ${
