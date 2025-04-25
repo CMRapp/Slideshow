@@ -4,6 +4,7 @@ import { uploadToBlob } from '@/lib/blob';
 
 export async function GET() {
   try {
+    console.log('Fetching media items from database...');
     const result = await pool.query(
       `SELECT 
         ui.id,
@@ -14,14 +15,35 @@ export async function GET() {
         ui.item_type,
         ui.item_number
       FROM teams t
-      LEFT JOIN uploaded_items ui ON t.id = ui.team_id
+      INNER JOIN uploaded_items ui ON t.id = ui.team_id
       WHERE ui.upload_status = 'completed'
       AND ui.file_path IS NOT NULL
       ORDER BY t.name, ui.item_type, ui.item_number`
     );
 
-    // The file_path now contains the full Vercel Blob Store URL
-    return NextResponse.json({ mediaItems: result.rows });
+    console.log('Database query result:', result.rows);
+
+    if (!result.rows.length) {
+      console.log('No media items found in database');
+      return NextResponse.json({ mediaItems: [] });
+    }
+
+    // Validate each media item has a proper URL
+    const validMediaItems = result.rows.filter(item => {
+      const isValid = item.file_path && (
+        item.file_path.startsWith('https://') || 
+        item.file_path.startsWith('http://')
+      );
+      
+      if (!isValid) {
+        console.warn('Invalid file path found:', item);
+      }
+      
+      return isValid;
+    });
+
+    console.log('Valid media items:', validMediaItems);
+    return NextResponse.json({ mediaItems: validMediaItems });
   } catch (error) {
     console.error('Error fetching media items:', error);
     return NextResponse.json(
@@ -32,35 +54,42 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const client = await pool.connect();
   try {
+    await client.query('BEGIN');
+    
     const formData = await request.formData();
     const teamName = formData.get('team') as string;
     const file = formData.get('file') as File;
-    const type = formData.get('type') as string;
+    const itemType = formData.get('itemType') as string;
 
-    if (!teamName || !file || !type) {
+    if (!teamName || !file || !itemType) {
+      console.error('Missing required fields:', { teamName, file, itemType });
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // Upload to Vercel Blob Store
+    console.log('Uploading to Vercel Blob:', { teamName, fileName: file.name, itemType });
     const uploadResult = await uploadToBlob(file, teamName);
     if (!uploadResult.success) {
+      console.error('Blob upload failed:', uploadResult.error);
       return NextResponse.json(
         { error: 'Failed to upload file to storage' },
         { status: 500 }
       );
     }
+    console.log('Blob upload successful:', uploadResult.url);
 
-    // First get the team_id
-    const teamResult = await pool.query(
+    // Get team_id
+    const teamResult = await client.query(
       'SELECT id FROM teams WHERE name = $1',
       [teamName]
     );
 
     if (teamResult.rows.length === 0) {
+      await client.query('ROLLBACK');
       return NextResponse.json(
         { error: 'Team not found' },
         { status: 404 }
@@ -69,18 +98,26 @@ export async function POST(request: Request) {
 
     const teamId = teamResult.rows[0].id;
 
-    // Get the next item number for this team and type
-    const itemNumberResult = await pool.query(
+    // Get next item number
+    const itemNumberResult = await client.query(
       `SELECT COALESCE(MAX(item_number), 0) + 1 as next_number
        FROM uploaded_items
        WHERE team_id = $1 AND item_type = $2`,
-      [teamId, type]
+      [teamId, itemType]
     );
 
     const itemNumber = itemNumberResult.rows[0].next_number;
 
-    // Insert the new media item with the Blob Store URL
-    const result = await pool.query(
+    console.log('Inserting into database:', {
+      teamId,
+      itemType,
+      itemNumber,
+      fileName: file.name,
+      url: uploadResult.url
+    });
+
+    // Insert with Blob Store URL
+    const result = await client.query(
       `INSERT INTO uploaded_items (
         team_id, item_type, item_number, file_name,
         file_path, file_size, mime_type, upload_status
@@ -88,22 +125,28 @@ export async function POST(request: Request) {
       RETURNING *`,
       [
         teamId,
-        type,
+        itemType,
         itemNumber,
         file.name,
-        uploadResult.url, // Use the Blob Store URL
+        uploadResult.url,
         file.size,
         file.type,
-        'completed' // Mark as completed since upload is done
+        'completed'
       ]
     );
 
+    await client.query('COMMIT');
+    console.log('Database insert successful:', result.rows[0]);
+
     return NextResponse.json(result.rows[0]);
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Error uploading media:', error);
     return NextResponse.json(
       { error: 'Failed to upload media' },
       { status: 500 }
     );
+  } finally {
+    client.release();
   }
 } 

@@ -10,7 +10,7 @@ interface MediaItem {
   team_name: string;
   file_type: string;
   file_path: string;
-  thumbnail_path: string | null;
+  file_name: string;
   item_type?: string;
   item_number?: number;
 }
@@ -22,16 +22,65 @@ export default function SlideshowPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Function to shuffle media items
-  const shuffleMediaItems = () => {
-    setMediaItems(prevItems => {
-      const newItems = [...prevItems];
-      for (let i = newItems.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newItems[i], newItems[j]] = [newItems[j], newItems[i]];
+  const fetchMediaItems = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+      console.log('Fetching media items...');
+      
+      const response = await fetch('/api/media');
+      console.log('Media API response status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Media API error:', errorData);
+        throw new Error(errorData.error || 'Failed to fetch media items');
       }
-      return newItems;
-    });
+      
+      const data = await response.json();
+      console.log('Media items received:', data);
+      
+      if (!data.mediaItems || data.mediaItems.length === 0) {
+        console.log('No media items found');
+        setMediaItems([]);
+        return;
+      }
+
+      // Validate URLs
+      const validItems = data.mediaItems.filter((item: MediaItem) => {
+        const isValid = item.file_path && (
+          item.file_path.startsWith('https://') || 
+          item.file_path.startsWith('http://')
+        );
+        
+        if (!isValid) {
+          console.warn('Invalid file path found:', item);
+        }
+        
+        return isValid;
+      });
+
+      console.log('Valid media items:', validItems);
+
+      if (validItems.length === 0) {
+        throw new Error('No valid media items found');
+      }
+
+      // Shuffle the items
+      const shuffledItems = [...validItems];
+      for (let i = shuffledItems.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
+      }
+
+      setMediaItems(shuffledItems);
+    } catch (err) {
+      console.error('Error in fetchMediaItems:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load media items');
+      setMediaItems([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -48,7 +97,6 @@ export default function SlideshowPage() {
           const nextIndex = (prev + 1) % mediaItems.length;
           cycleCount++;
           
-          // Shuffle items every 5 cycles through the slideshow
           if (cycleCount % (mediaItems.length * 5) === 0) {
             shuffleMediaItems();
           }
@@ -60,40 +108,15 @@ export default function SlideshowPage() {
     return () => clearInterval(interval);
   }, [isPlaying, mediaItems.length]);
 
-  const fetchMediaItems = async () => {
-    try {
-      setIsLoading(true);
-      console.log('Fetching media items...');
-      const response = await fetch('/api/media');
-      console.log('Media API response:', response);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Media API error:', errorData);
-        throw new Error(errorData.error || 'Failed to fetch media items');
+  const shuffleMediaItems = () => {
+    setMediaItems(prevItems => {
+      const newItems = [...prevItems];
+      for (let i = newItems.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newItems[i], newItems[j]] = [newItems[j], newItems[i]];
       }
-      
-      const data = await response.json();
-      console.log('Media items received:', data);
-      
-      if (!data.mediaItems || data.mediaItems.length === 0) {
-        console.log('No media items found');
-        setMediaItems([]);
-      } else {
-        // No need to process file paths as they are now full Blob Store URLs
-        const shuffledItems = [...data.mediaItems];
-        for (let i = shuffledItems.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
-        }
-        setMediaItems(shuffledItems);
-      }
-    } catch (err) {
-      console.error('Error in fetchMediaItems:', err);
-      setError('Failed to load media items');
-    } finally {
-      setIsLoading(false);
-    }
+      return newItems;
+    });
   };
 
   if (error) {
@@ -174,13 +197,18 @@ export default function SlideshowPage() {
                   <div className="relative w-full h-full" style={{ maxWidth: '90vw', maxHeight: '90vh' }}>
                     <Image
                       src={currentItem.file_path}
-                      alt={`Slide ${currentIndex + 1}`}
+                      alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
                       fill
                       sizes="90vw"
                       className="object-contain"
                       priority
                       quality={100}
                       unoptimized={true}
+                      onError={(e) => {
+                        console.error('Image failed to load:', currentItem.file_path);
+                        const img = e.target as HTMLImageElement;
+                        img.style.display = 'none';
+                      }}
                     />
                   </div>
                 </div>
@@ -193,17 +221,22 @@ export default function SlideshowPage() {
                     loop
                     muted
                     playsInline
+                    onError={(e) => {
+                      console.error('Video failed to load:', currentItem.file_path);
+                      const video = e.target as HTMLVideoElement;
+                      video.style.display = 'none';
+                    }}
                   />
                 </div>
               )}
             </div>
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-              <div className="container mx-auto text-center">
-                <p className="text-white text-xl">
-                  <span className="font-semibold">Team {currentItem.team_name}</span>
-                  <span className="mx-2">•</span>
+            <div className="absolute bottom-0 left-0 right-0 bg-black/80">
+              <div className="container mx-auto text-center py-4">
+                <h3 className="text-white text-2xl font-semibold tracking-wide">
+                  <span>Team {currentItem.team_name}</span>
+                  <span className="mx-3 text-yellow-500">•</span>
                   <span>{currentItem.item_type === 'photo' ? 'Photo' : 'Video'} {currentItem.item_number}</span>
-                </p>
+                </h3>
               </div>
             </div>
           </>
