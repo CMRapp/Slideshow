@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiImage } from 'react-icons/fi';
+import { FiImage, FiPlay, FiPause, FiSkipBack, FiSkipForward } from 'react-icons/fi';
 import Image from 'next/image';
 import SidebarLayout from '@/app/components/SidebarLayout';
 import styles from '@/app/styles/VideoPlayer.module.css';
+import controlStyles from '@/app/styles/SlideshowControls.module.css';
 
 interface MediaItem {
   id: number;
@@ -23,6 +24,7 @@ export default function SlideshowPage() {
   const [isPaused, setIsPaused] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [showControls, setShowControls] = useState(true);
 
   const fetchMediaItems = async () => {
     try {
@@ -132,6 +134,32 @@ export default function SlideshowPage() {
       return newItems;
     });
   };
+
+  const handlePrevious = () => {
+    setCurrentIndex((prev) => {
+      if (prev === 0) return mediaItems.length - 1;
+      return prev - 1;
+    });
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % mediaItems.length);
+  };
+
+  const togglePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  // Add control visibility timeout
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (showControls) {
+      timeout = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+    }
+    return () => clearTimeout(timeout);
+  }, [showControls]);
 
   if (error) {
     return (
@@ -245,7 +273,7 @@ export default function SlideshowPage() {
                       crossOrigin="anonymous"
                       onLoadedMetadata={(e) => {
                         const video = e.target as HTMLVideoElement;
-                        video.volume = 0.25;
+                        video.volume = 0.15;
                       }}
                       onError={(e) => {
                         console.error('Video failed to load:', currentItem.file_path);
@@ -268,6 +296,35 @@ export default function SlideshowPage() {
             </>
           )}
         </div>
+        {mediaItems.length > 0 && (
+          <div
+            className={`${controlStyles.controlsContainer} ${!showControls ? 'opacity-0' : ''}`}
+            onMouseEnter={() => setShowControls(true)}
+            onMouseLeave={() => setShowControls(false)}
+          >
+            <button
+              className={controlStyles.controlButton}
+              onClick={handlePrevious}
+              aria-label="Previous"
+            >
+              <FiSkipBack />
+            </button>
+            <button
+              className={controlStyles.controlButton}
+              onClick={togglePlayPause}
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+            >
+              {isPlaying ? <FiPause /> : <FiPlay />}
+            </button>
+            <button
+              className={controlStyles.controlButton}
+              onClick={handleNext}
+              aria-label="Next"
+            >
+              <FiSkipForward />
+            </button>
+          </div>
+        )}
       </div>
     </SidebarLayout>
   );
