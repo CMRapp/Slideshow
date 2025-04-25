@@ -3,7 +3,6 @@ import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
 
 const MAX_IMAGE_SIZE_MB = 4;
-const MAX_VIDEO_SIZE_MB = 4;
 
 export async function compressImage(file: File): Promise<File> {
   const options = {
