@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { FiImage } from 'react-icons/fi';
 import Image from 'next/image';
 import SidebarLayout from '@/app/components/SidebarLayout';
+import styles from '@/app/styles/VideoPlayer.module.css';
 
 interface MediaItem {
   id: number;
@@ -232,17 +233,19 @@ export default function SlideshowPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="relative w-full h-full flex items-center justify-center">
+                  <div className={`relative w-full h-full flex items-center justify-center ${styles.videoPlayer}`}>
                     <video
                       src={currentItem.file_path}
                       className="max-w-[90dvw] max-h-[calc(100dvh-6rem)] object-contain"
                       autoPlay
                       loop
                       playsInline
+                      controls
+                      controlsList="nodownload noremoteplayback"
                       crossOrigin="anonymous"
                       onLoadedMetadata={(e) => {
                         const video = e.target as HTMLVideoElement;
-                        video.volume = 0.5;
+                        video.volume = 0.25;
                       }}
                       onError={(e) => {
                         console.error('Video failed to load:', currentItem.file_path);
