@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiLogOut, FiTrash2, FiX } from 'react-icons/fi';
+import { FiLogOut, FiX } from 'react-icons/fi';
 import TabbedContainer from '../components/admin/TabbedContainer';
 import ImageViewer from '../components/ImageViewer';
 
@@ -54,28 +54,7 @@ export default function AdminPage() {
     setShowDeleteAllConfirm(true);
   };
 
-  const confirmDeleteAll = async () => {
-    try {
-      const response = await fetch('/api/delete-all', {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to reset the database');
-      }
-
-      setSuccess('All media deleted successfully');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to reset the database');
-    } finally {
-      setShowDeleteAllConfirm(false);
-    }
-  };
-
   const handlePhotoCountSave = async () => {
-    setError(null);
-    setSuccess(null);
-
     try {
       const response = await fetch('/api/photo-count', {
         method: 'POST',
@@ -86,20 +65,16 @@ export default function AdminPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save photo count');
+        throw new Error('Failed to save photo count');
       }
 
-      setSuccess('Photo count saved successfully!');
+      setSuccess('Photo count saved successfully');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to save photo count');
     }
   };
 
   const handleVideoCountSave = async () => {
-    setError(null);
-    setSuccess(null);
-
     try {
       const response = await fetch('/api/video-count', {
         method: 'POST',
@@ -110,11 +85,10 @@ export default function AdminPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save video count');
+        throw new Error('Failed to save video count');
       }
 
-      setSuccess('Video count saved successfully!');
+      setSuccess('Video count saved successfully');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to save video count');
     }
@@ -177,39 +151,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteTeam = async (teamName: string) => {
-    setTeamToDelete(teamName);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!teamToDelete) return;
-
-    try {
-      const response = await fetch(`/api/teams?name=${encodeURIComponent(teamToDelete)}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete team');
-      }
-
-      setSuccess('Team deleted successfully');
-      fetchTeams(); // Refresh the teams list
-    } catch (error) {
-      console.error('Error deleting team:', error);
-      setError(error instanceof Error ? error.message : 'Failed to delete team');
-    } finally {
-      setShowDeleteConfirm(false);
-      setTeamToDelete(null);
-    }
-  };
-
   useEffect(() => {
     fetchTeams();
   }, []);
@@ -224,46 +165,6 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
-      {/* Delete Team Confirmation Popup */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="glass-effect p-6 rounded-lg max-w-md w-full mx-4 border border-white/10 shadow-[0_0_15px_rgba(234,179,8,0.15)] hover:shadow-[0_0_20px_rgba(234,179,8,0.20)] transition-shadow duration-300">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Confirm Deletion</h3>
-              <button
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  setTeamToDelete(null);
-                }}
-                className="text-gray-400 hover:text-white"
-              >
-                <FiX size={24} />
-              </button>
-            </div>
-            <p className="mb-6">
-              Are you sure you want to delete the team &quot;{teamToDelete}&quot; and all its associated items? This action cannot be undone.
-            </p>
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  setTeamToDelete(null);
-                }}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Delete All Confirmation Popup */}
       {showDeleteAllConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -288,7 +189,7 @@ export default function AdminPage() {
                 Cancel
               </button>
               <button
-                onClick={confirmDeleteAll}
+                onClick={handleDeleteAll}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
               >
                 Reset Database
@@ -330,21 +231,37 @@ export default function AdminPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Photo Count</label>
-                  <input
-                    type="number"
-                    value={photoCount}
-                    onChange={(e) => setPhotoCount(parseInt(e.target.value) || 0)}
-                    className="w-full p-2 bg-gray-700 rounded"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={photoCount}
+                      onChange={(e) => setPhotoCount(parseInt(e.target.value) || 0)}
+                      className="flex-1 p-2 bg-gray-700 rounded"
+                    />
+                    <button
+                      onClick={handlePhotoCountSave}
+                      className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500"
+                    >
+                      Save
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Video Count</label>
-                  <input
-                    type="number"
-                    value={videoCount}
-                    onChange={(e) => setVideoCount(parseInt(e.target.value) || 0)}
-                    className="w-full p-2 bg-gray-700 rounded"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={videoCount}
+                      onChange={(e) => setVideoCount(parseInt(e.target.value) || 0)}
+                      className="flex-1 p-2 bg-gray-700 rounded"
+                    />
+                    <button
+                      onClick={handleVideoCountSave}
+                      className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500"
+                    >
+                      Save
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
