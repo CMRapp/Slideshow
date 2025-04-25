@@ -40,7 +40,7 @@ export default function SidebarLayout({ children, slideshowControls }: SidebarLa
       {/* Content Container */}
       <div className="relative w-full h-screen flex flex-col lg:flex-row">
         {/* Navigation - Sidebar on desktop, Top bar on mobile/tablet */}
-        <div className="w-full lg:w-[70px] h-[70px] lg:h-full glass-effect p-2 z-20 flex lg:flex-col items-center justify-center lg:justify-start">
+        <div className="w-full lg:w-[70px] h-[70px] lg:h-full glass-effect bg-black/95 p-2 z-20 flex lg:flex-col items-center justify-center lg:justify-start">
           <div className="flex lg:flex-col items-center justify-between w-full lg:w-auto">
             {/* Logo */}
             <div className="lg:mb-5">
