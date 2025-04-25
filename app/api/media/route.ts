@@ -43,8 +43,20 @@ export async function GET() {
       return NextResponse.json({ mediaItems: [] });
     }
 
-    // Validate each media item has a proper URL
-    const validMediaItems = result.rows.filter(item => {
+    // Process and validate each media item
+    const processedItems = result.rows.map(item => {
+      // If it's an old path format, convert to Vercel Blob URL
+      if (item.file_path.startsWith('/api/files/')) {
+        const pathParts = item.file_path.split('/');
+        const teamName = pathParts[3];
+        const fileName = pathParts[4];
+        item.file_path = `https://slideshow-store.public.blob.vercel-storage.com/${teamName}/${fileName}`;
+      }
+      return item;
+    });
+
+    // Validate URLs
+    const validMediaItems = processedItems.filter(item => {
       const isValid = item.file_path && (
         item.file_path.startsWith('https://') || 
         item.file_path.startsWith('http://')
