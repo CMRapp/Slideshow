@@ -257,7 +257,7 @@ export default function SlideshowPage() {
                         alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
                         fill
                         sizes="90vw"
-                        className="object-contain glass-card w-full p-8 rounded-lg border border-amber-500/30"
+                        className="object-contain w-full p-8 rounded-lg border border-amber-500/30"
                         priority
                         quality={100}
                         unoptimized={false}
