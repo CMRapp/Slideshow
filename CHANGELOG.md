@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.2] - 2024-04-24
+
+### Changed
+- Improved database reset functionality with proper table ordering
+- Enhanced error handling in database operations
+- Updated table truncation approach to work with limited permissions
+- Implemented dependency-aware table clearing using information schema
+
+### Fixed
+- Database reset issues in production environment
+- Permission-related errors during database operations
+- Table dependency handling during reset operations
+- Error logging and reporting in database management
+
 ## [1.7.0] - 2024-04-24
 
 ### Changed
