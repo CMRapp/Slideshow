@@ -28,7 +28,9 @@ export default function TeamMediaPage() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/check-auth');
+        const response = await fetch('/api/check-auth', {
+          credentials: 'include'
+        });
         if (response.ok) {
           setIsAuthenticated(true);
         } else {
@@ -49,7 +51,9 @@ export default function TeamMediaPage() {
     const fetchTeamMedia = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/media/team/${teamName}`);
+        const response = await fetch(`/api/media/team/${teamName}`, {
+          credentials: 'include'
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch team media');
         }
@@ -71,6 +75,7 @@ export default function TeamMediaPage() {
     try {
       const response = await fetch(`/api/media/${mediaId}`, {
         method: 'DELETE',
+        credentials: 'include'
       });
 
       if (!response.ok) {
