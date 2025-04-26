@@ -18,7 +18,7 @@ export async function GET(
     return NextResponse.json({ error: 'Missing team name.' }, { status: 400 });
   }
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const session = cookieStore.get('session');
 
   if (!session) {
