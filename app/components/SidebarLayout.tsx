@@ -72,8 +72,10 @@ export default function SidebarLayout({ children, slideshowControls }: SidebarLa
             </div>
 
             {/* Slideshow Controls */}
-            <div className="flex items-center lg:mt-5">
-              {slideshowControls}
+            <div className="flex items-center">
+              <div className="flex lg:flex-col gap-2">
+                {slideshowControls}
+              </div>
             </div>
 
             {/* Branding */}

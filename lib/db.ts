@@ -1,6 +1,4 @@
-import { Pool } from '@neondatabase/serverless';
-import { DatabaseError, DatabaseClient } from '@types/database';
-import { handleDatabaseError } from '@utils/error-handling';
+import { Pool, PoolClient } from '@neondatabase/serverless';
 
 // Check for required environment variables
 const requiredEnvVars = ['DATABASE_URL'];
@@ -14,69 +12,58 @@ if (missingEnvVars.length > 0) {
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: process.env.NODE_ENV === 'production'
+    rejectUnauthorized: false
   }
 });
 
 // Test the connection
 pool.connect()
-  .then((client: DatabaseClient) => {
+  .then(client => {
     console.log('Database connection successful');
     client.release();
   })
-  .catch((error: DatabaseError) => {
-    console.error('Database connection failed:', handleDatabaseError(error));
+  .catch(error => {
+    console.error('Database connection failed:', {
+      code: error.code,
+      message: error.message,
+      stack: error.stack
+    });
     throw error;
   });
 
-async function columnExists(client: DatabaseClient, tableName: string, columnName: string): Promise<boolean> {
-  try {
-    const result = await client.query<{ exists: boolean }>(
-      `SELECT EXISTS (
-        SELECT 1 
-        FROM information_schema.columns 
-        WHERE table_name = $1 AND column_name = $2
-      )`,
-      [tableName, columnName]
-    );
-    return result.rows[0].exists;
-  } catch (error) {
-    throw new Error(`Failed to check column existence: ${(error as DatabaseError).message}`);
-  }
+async function columnExists(client: PoolClient, tableName: string, columnName: string): Promise<boolean> {
+  const result = await client.query(
+    `SELECT EXISTS (
+      SELECT 1 
+      FROM information_schema.columns 
+      WHERE table_name = $1 AND column_name = $2
+    )`,
+    [tableName, columnName]
+  );
+  return result.rows[0].exists;
 }
 
-async function constraintExists(client: DatabaseClient, constraintName: string): Promise<boolean> {
-  try {
-    const result = await client.query<{ exists: boolean }>(
-      `SELECT EXISTS (
-        SELECT 1 FROM information_schema.table_constraints 
-        WHERE constraint_name = $1
-      )`,
-      [constraintName]
-    );
-    return result.rows[0].exists;
-  } catch (error) {
-    throw new Error(`Failed to check constraint existence: ${(error as DatabaseError).message}`);
-  }
+async function indexExists(client: PoolClient, indexName: string): Promise<boolean> {
+  const result = await client.query(
+    `SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = $1)`,
+    [indexName]
+  );
+  return result.rows[0].exists;
 }
 
-async function indexExists(client: DatabaseClient, indexName: string): Promise<boolean> {
-  try {
-    const result = await client.query<{ exists: boolean }>(
-      `SELECT EXISTS (
-        SELECT 1 FROM pg_indexes 
-        WHERE indexname = $1
-      )`,
-      [indexName]
-    );
-    return result.rows[0].exists;
-  } catch (error) {
-    throw new Error(`Failed to check index existence: ${(error as DatabaseError).message}`);
-  }
+async function constraintExists(client: PoolClient, constraintName: string): Promise<boolean> {
+  const result = await client.query(
+    `SELECT EXISTS (
+      SELECT 1 FROM information_schema.table_constraints 
+      WHERE constraint_name = $1
+    )`,
+    [constraintName]
+  );
+  return result.rows[0].exists;
 }
 
 // Initialize database tables if they don't exist
-export async function initializeDatabase(): Promise<void> {
+async function initializeDatabase() {
   const client = await pool.connect();
   try {
     console.log('Starting database initialization...');
@@ -169,15 +156,21 @@ export async function initializeDatabase(): Promise<void> {
 
     console.log('Database initialization completed successfully');
   } catch (error) {
-    console.error('Database initialization failed:', handleDatabaseError(error));
+    console.error('Database initialization failed:', error);
     throw error;
   } finally {
     client.release();
   }
 }
 
+// Export the initialization function
+export { initializeDatabase };
+
+// Call initializeDatabase when the module is imported
+initializeDatabase().catch(console.error);
+
 // Initialize database on startup
 initializeDatabase().catch(error => {
-  console.error('Failed to initialize database:', handleDatabaseError(error));
+  console.error('Failed to initialize database:', error);
   process.exit(1);
 }); 

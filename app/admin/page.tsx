@@ -160,8 +160,22 @@ export default function AdminPage() {
     setSelectedImage(null);
   };
 
-  const handleTeamClick = (teamName: string) => {
-    router.push(`/admin/team/${encodeURIComponent(teamName)}`);
+  const fetchTeamMedia = async (team: Team) => {
+    try {
+      const response = await fetch(`/api/team-media?team=${encodeURIComponent(team.name)}`);
+      if (!response.ok) throw new Error('Failed to fetch team media');
+      const data = await response.json();
+      
+      // Check if we have items and if the first item has a file_path
+      if (data.items && data.items.length > 0 && data.items[0].file_path) {
+        setSelectedImage(data.items[0].file_path);
+      } else {
+        setSelectedImage(null);
+      }
+    } catch (error) {
+      console.error('Error fetching team media:', error);
+      setSelectedImage(null);
+    }
   };
 
   useEffect(() => {
@@ -358,7 +372,7 @@ export default function AdminPage() {
                 <div
                   key={team.id}
                   className="p-4 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700"
-                  onClick={() => handleTeamClick(team.name)}
+                  onClick={() => fetchTeamMedia(team)}
                 >
                   <h3 className="font-semibold">{team.name}</h3>
                 </div>
