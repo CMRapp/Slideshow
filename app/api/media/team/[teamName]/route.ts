@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { Pool } from '@neondatabase/serverless';
 
@@ -9,9 +9,9 @@ const pool = new Pool({
 });
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   context: { params: { teamName: string } }
-): Promise<Response> {
+) {
   const { teamName } = context.params;
 
   if (!teamName) {
