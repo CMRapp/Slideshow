@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { pool } from '@/app/lib/db';
+import { cookies } from 'next/headers';
+import { Pool } from '@neondatabase/serverless';
+
+// Create connection pool with Neon configuration
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { teamName: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    // Check authentication
+    const cookieStore = cookies();
+    const session = cookieStore.get('session');
+
     if (!session) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
