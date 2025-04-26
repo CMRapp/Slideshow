@@ -1,6 +1,6 @@
 import { Pool, PoolClient } from '@neondatabase/serverless';
-import { DatabaseError, DatabaseClient } from '@/types/database';
-import { handleDatabaseError } from '@/utils/error-handling';
+import { DatabaseError, DatabaseClient } from '@types/database';
+import { handleDatabaseError } from '@utils/error-handling';
 
 // Check for required environment variables
 const requiredEnvVars = ['DATABASE_URL'];
