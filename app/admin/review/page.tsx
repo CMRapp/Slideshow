@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 
 interface TeamStats {
   team_name: string;
@@ -56,25 +55,22 @@ export default function ReviewPage() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {teamStats.map((team) => (
-            <Link 
-              key={team.team_name} 
-              href={`/admin/team/${encodeURIComponent(team.team_name)}`}
-              className="block"
+            <div 
+              key={team.team_name}
+              className="bg-gray-800 rounded-lg p-6"
             >
-              <div className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors">
-                <h2 className="text-xl font-semibold mb-4">{team.team_name}</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-700 rounded p-3">
-                    <div className="text-sm text-gray-400">Photos</div>
-                    <div className="text-2xl font-bold">{team.photo_count}</div>
-                  </div>
-                  <div className="bg-gray-700 rounded p-3">
-                    <div className="text-sm text-gray-400">Videos</div>
-                    <div className="text-2xl font-bold">{team.video_count}</div>
-                  </div>
+              <h2 className="text-xl font-semibold mb-4">{team.team_name}</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-700 rounded p-3">
+                  <div className="text-sm text-gray-400">Photos</div>
+                  <div className="text-2xl font-bold">{team.photo_count}</div>
+                </div>
+                <div className="bg-gray-700 rounded p-3">
+                  <div className="text-sm text-gray-400">Videos</div>
+                  <div className="text-2xl font-bold">{team.video_count}</div>
                 </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       </div>
