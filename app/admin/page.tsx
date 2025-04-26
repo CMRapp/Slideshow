@@ -42,10 +42,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteAll = () => {
-    setShowDeleteAllConfirm(true);
-  };
-
   const confirmDeleteAll = async () => {
     try {
       const response = await fetch('/api/delete-all', {
