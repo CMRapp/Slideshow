@@ -203,7 +203,11 @@ export default function SlideshowPage() {
   const currentItem = mediaItems[currentIndex];
 
   const slideshowControls = mediaItems.length > 0 ? (
+<<<<<<< HEAD
     <div className="flex flex-row lg:flex-col gap-2">
+=======
+    <div className="flex flex-row items-center justify-center gap-2 p-2">
+>>>>>>> parent of 01a1948 (Revert "Update SidebarLayout and SlideshowPage components to improve layout responsiveness and styling consistency for slideshow controls.")
       <button
         className={`${controlStyles.controlButton} w-10 h-10 lg:w-12 lg:h-12`}
         onClick={handlePrevious}
