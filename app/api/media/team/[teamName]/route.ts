@@ -1,45 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { Pool } from '@neondatabase/serverless';
-
-// Initialize connection pool once
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-});
+import { pool } from '@lib/db';
+import { MediaItem, DatabaseError } from '../../../../types/database';
+import { AppError, handleDatabaseError, handleAppError } from '@utils/error-handling';
 
 export async function GET(
   request: NextRequest,
-  context: { params: { teamName: string } }
+  { params }: { params: { teamName: string } }
 ) {
+  const client = await pool.connect();
   try {
-    const { teamName } = context.params;
-
-    if (!teamName) {
-      return NextResponse.json({ error: 'Missing team name.' }, { status: 400 });
-    }
-
-    const cookieStore = cookies(); // <-- no await needed here!
-    const session = cookieStore.get('session');
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const decodedTeamName = decodeURIComponent(teamName);
-
-    const result = await pool.query(
-      'SELECT * FROM media_items WHERE team_name = $1 ORDER BY created_at DESC',
-      [decodedTeamName]
+    const { teamName } = params;
+    
+    const result = await client.query<MediaItem>(
+      `SELECT m.* 
+       FROM media_items m
+       JOIN teams t ON m.team_id = t.id
+       WHERE t.name = $1
+       ORDER BY m.item_number ASC`,
+      [teamName]
     );
 
-    if (result.rows.length === 0) {
-      return NextResponse.json({ error: 'Team not found or no media items.' }, { status: 404 });
-    }
-
-    return NextResponse.json({ mediaItems: result.rows });
+    return NextResponse.json(result.rows);
   } catch (error) {
-    console.error('Error fetching team media:', error);
-    return NextResponse.json({ error: 'Failed to fetch media items' }, { status: 500 });
+    if (error instanceof AppError) {
+      return NextResponse.json(handleAppError(error), { status: error.statusCode });
+    }
+    return NextResponse.json(handleDatabaseError(error), { status: 500 });
+  } finally {
+    client.release();
   }
 }
