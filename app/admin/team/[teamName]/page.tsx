@@ -30,7 +30,8 @@ export default function TeamMediaPage({
       try {
         const resolvedParams = await params;
         setTeamName(resolvedParams.teamName);
-      } catch (err) {
+      } catch (error) {
+        console.error('Failed to load team name:', error);
         setError('Failed to load team name');
       }
     };
