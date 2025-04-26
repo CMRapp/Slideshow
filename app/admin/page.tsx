@@ -12,6 +12,10 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  const [teamName, setTeamName] = useState('');
+  const [photoCount, setPhotoCount] = useState<number>(0);
+  const [videoCount, setVideoCount] = useState<number>(0);
+  const [teams, setTeams] = useState<{ id: number; name: string }[]>([]);
 
   const checkAuth = useCallback(async () => {
     try {
@@ -58,6 +62,92 @@ export default function AdminPage() {
       setError(error instanceof Error ? error.message : 'Failed to reset the database');
     }
   };
+
+  const handlePhotoCountSave = async () => {
+    try {
+      const response = await fetch('/api/photo-count', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ count: photoCount }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save photo count');
+      }
+
+      setSuccess('Photo count saved successfully');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to save photo count');
+    }
+  };
+
+  const handleVideoCountSave = async () => {
+    try {
+      const response = await fetch('/api/video-count', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ count: videoCount }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save video count');
+      }
+
+      setSuccess('Video count saved successfully');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to save video count');
+    }
+  };
+
+  const handleTeamNameSave = async () => {
+    setError(null);
+    setSuccess(null);
+
+    if (!teamName.trim()) {
+      setError('Please enter a team name');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/save-team-name', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ teamName: teamName.trim() }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save team name');
+      }
+
+      setSuccess('Team name saved successfully!');
+      setTeamName('');
+      fetchTeams(); // Refresh the teams list
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to save team name');
+    }
+  };
+
+  const fetchTeams = async () => {
+    try {
+      const response = await fetch('/api/teams');
+      if (!response.ok) throw new Error('Failed to fetch teams');
+      const data = await response.json();
+      setTeams(data);
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTeams();
+  }, []);
 
   if (isLoading) {
     return <div className="min-h-screen bg-black flex items-center justify-center">Loading...</div>;
@@ -129,10 +219,91 @@ export default function AdminPage() {
 
         <TabbedContainer>
           {/* Slideshow Config Tab */}
-          <div className="space-y-6">
-            <div className="p-4 bg-gray-800 rounded-lg">
-              <h3 className="text-lg font-semibold mb-4">Slideshow Settings</h3>
-              <p className="text-gray-400">Slideshow settings coming soon...</p>
+          <div className="space-y-6" id="team-info">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <h3 className="text-sm font-medium mb-2">Team Name Entry</h3>
+                <input
+                  type="text"
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                  className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                  placeholder="Enter A New Team Name"
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={handleTeamNameSave}
+                  disabled={!teamName.trim()}
+                  className="h-[42px] bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+
+            {/* Team Listing */}
+            <div className="mt-4" id="team-listing">
+              <h3 className="text-sm font-medium mb-2">Existing Teams</h3>
+              {teams.length === 0 ? (
+                <p className="text-gray-400">No teams found</p>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {teams.map((team) => (
+                    <div
+                      key={team.id}
+                      className="flex items-center justify-between p-4 bg-gray-800 rounded-lg"
+                    >
+                      <span className="text-white">{team.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <h3 className="text-sm font-medium mb-2">Set Slideshow Options</h3>
+            <div id="slideshow-options" className="grid grid-cols-2 gap-6">
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium mb-2">Photo Count</label>
+                  <input
+                    type="number"
+                    value={photoCount}
+                    onChange={(e) => setPhotoCount(Number(e.target.value))}
+                    className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                    placeholder="Enter photo count"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={handlePhotoCountSave}
+                    className="h-[42px] bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium mb-2">Video Count</label>
+                  <input
+                    type="number"
+                    value={videoCount}
+                    onChange={(e) => setVideoCount(Number(e.target.value))}
+                    className="w-full p-2 border rounded bg-gray-800 border-gray-700 text-white"
+                    placeholder="Enter video count"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={handleVideoCountSave}
+                    className="h-[42px] bg-yellow-400 text-black py-2 px-4 rounded hover:bg-yellow-500"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
