@@ -10,14 +10,10 @@ const pool = new Pool({
   }
 });
 
-type Props = {
-  params: { teamName: string }
-};
-
 export async function GET(
   request: NextRequest,
-  { params }: Props
-) {
+  context: { params: { teamName: string } }
+): Promise<NextResponse> {
   try {
     // Check authentication
     const cookieStore = cookies();
@@ -27,7 +23,7 @@ export async function GET(
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const { teamName } = params;
+    const { teamName } = context.params;
     const decodedTeamName = decodeURIComponent(teamName);
 
     const client = await pool.connect();
