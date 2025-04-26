@@ -8,10 +8,16 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
+type RouteContext = {
+  params: {
+    teamName: string;
+  };
+};
+
 export async function GET(
   request: NextRequest,
-  context: { params: { teamName: string } }
-) {
+  context: RouteContext
+): Promise<NextResponse> {
   const { teamName } = context.params;
 
   if (!teamName) {
