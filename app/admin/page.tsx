@@ -178,6 +178,10 @@ export default function AdminPage() {
     }
   };
 
+  const handleTeamClick = (teamName: string) => {
+    router.push(`/admin/team/${encodeURIComponent(teamName)}`);
+  };
+
   useEffect(() => {
     fetchTeams();
   }, []);
