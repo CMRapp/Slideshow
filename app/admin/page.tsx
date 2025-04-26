@@ -127,7 +127,48 @@ export default function AdminPage() {
           </div>
         )}
 
-        <TabbedContainer />
+        <TabbedContainer>
+          {/* Slideshow Config Tab */}
+          <div className="space-y-6">
+            <div className="p-4 bg-gray-800 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4">Slideshow Settings</h3>
+              <p className="text-gray-400">Slideshow settings coming soon...</p>
+            </div>
+          </div>
+
+          {/* Branding Tab */}
+          <div className="space-y-6">
+            <div className="p-4 bg-gray-800 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4">Branding Settings</h3>
+              <p className="text-gray-400">Branding settings coming soon...</p>
+            </div>
+          </div>
+
+          {/* Database Management Tab */}
+          <div className="space-y-6">
+            <div className="p-4 bg-red-900/50 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4">Danger Zone</h3>
+              <p className="text-sm text-gray-300 mb-4">
+                This action will permanently delete all media files and database records.
+                This action cannot be undone.
+              </p>
+              <button
+                onClick={() => setShowDeleteAllConfirm(true)}
+                className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
+              >
+                Reset Database
+              </button>
+            </div>
+          </div>
+
+          {/* Review Tab */}
+          <div className="space-y-6">
+            <div className="p-4 bg-gray-800 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4">Team Review</h3>
+              <p className="text-gray-400">Team Review coming soon...</p>
+            </div>
+          </div>
+        </TabbedContainer>
       </div>
     </div>
   );
