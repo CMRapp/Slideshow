@@ -10,8 +10,14 @@ const pool = new Pool({
 
 export async function GET(
   request: Request,
-  { params }: { params: { teamName: string } }
+  context: { params: { teamName: string } }
 ): Promise<Response> {
+  const { teamName } = context.params;
+
+  if (!teamName) {
+    return NextResponse.json({ error: 'Missing team name.' }, { status: 400 });
+  }
+
   const cookieStore = cookies();
   const session = cookieStore.get('session');
 
@@ -19,7 +25,7 @@ export async function GET(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const decodedTeamName = decodeURIComponent(params.teamName);
+  const decodedTeamName = decodeURIComponent(teamName);
 
   try {
     const result = await pool.query(
