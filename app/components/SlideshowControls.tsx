@@ -1,3 +1,12 @@
+import { 
+  ChevronLeftIcon, 
+  ChevronRightIcon, 
+  PlayIcon, 
+  PauseIcon, 
+  ArrowsPointingInIcon, 
+  ArrowsPointingOutIcon 
+} from '@heroicons/react/24/outline';
+
 export default function SlideshowControls({ 
   isPaused, 
   onPauseToggle, 
