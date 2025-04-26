@@ -7,6 +7,27 @@ import {
   ArrowsPointingOutIcon 
 } from '@heroicons/react/24/outline';
 
+interface SlideshowControlsProps {
+  isPaused: boolean;
+  onPauseToggle: () => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  onFullscreenToggle: () => void;
+  isFullscreen: boolean;
+  currentItem: {
+    id: string;
+    team_name: string;
+    item_type: string;
+    item_number: string;
+  };
+  mediaItems: Array<{
+    id: string;
+    team_name: string;
+    item_type: string;
+    item_number: string;
+  }>;
+}
+
 export default function SlideshowControls({ 
   isPaused, 
   onPauseToggle, 
