@@ -8,32 +8,26 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-type RouteContext = {
-  params: {
-    teamName: string;
-  };
-};
-
 export async function GET(
   request: NextRequest,
-  context: RouteContext
-): Promise<NextResponse> {
-  const { teamName } = context.params;
-
-  if (!teamName) {
-    return NextResponse.json({ error: 'Missing team name.' }, { status: 400 });
-  }
-
-  const cookieStore = await cookies();
-  const session = cookieStore.get('session');
-
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const decodedTeamName = decodeURIComponent(teamName);
-
+  { params }: { params: { teamName: string } }
+) {
   try {
+    const { teamName } = params;
+
+    if (!teamName) {
+      return NextResponse.json({ error: 'Missing team name.' }, { status: 400 });
+    }
+
+    const cookieStore = await cookies();
+    const session = cookieStore.get('session');
+
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const decodedTeamName = decodeURIComponent(teamName);
+
     const result = await pool.query(
       'SELECT * FROM media_items WHERE team_name = $1 ORDER BY created_at DESC',
       [decodedTeamName]
