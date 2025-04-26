@@ -1,4 +1,4 @@
-import { DatabaseError, ErrorResponse } from '@/types/database';
+import { DatabaseError, ErrorResponse } from '../types/database';
 
 export class AppError extends Error {
   constructor(

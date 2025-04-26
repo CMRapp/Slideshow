@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { Team, DatabaseError } from '@/types/database';
-import { AppError, handleDatabaseError, handleAppError, validateRequiredFields } from '../../utils/error-handling';
+import { AppError, handleDatabaseError, handleAppError, validateRequiredFields } from '../../../utils/error-handling';
 
 export async function GET(
   request: Request,
