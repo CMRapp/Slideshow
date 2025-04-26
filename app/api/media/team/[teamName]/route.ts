@@ -13,7 +13,7 @@ const pool = new Pool({
 export async function GET(
   request: NextRequest,
   { params }: { params: { teamName: string } }
-) {
+): Promise<Response> {
   try {
     // Check authentication
     const cookieStore = cookies();
