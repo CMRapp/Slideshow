@@ -94,9 +94,9 @@ export default function SidebarLayout({ children, slideshowControls }: SidebarLa
                   id="side-logo"
                   src="/side-logo-horiz.png" 
                   alt="Side Logo" 
-                  width={60}
+                  width={120}
                   height={60}
-                  className="block lg:hidden object-contain hover-glow"
+                  className="block lg:hidden object-contain hover-glow max-h-[60px] w-auto"
                   priority
                 />
                 <div className="group relative p-3 text-yellow-400">
