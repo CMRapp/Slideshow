@@ -3,19 +3,13 @@ import { pool } from '@lib/db';
 import { MediaItem } from '../../../../types/database';
 import { AppError, handleDatabaseError, handleAppError } from '@utils/error-handling';
 
-type RouteContext = {
-  params: {
-    teamName: string;
-  };
-};
-
 export async function GET(
   request: NextRequest,
-  context: RouteContext
-) {
+  { params }: { params: { teamName: string } }
+): Promise<NextResponse> {
   const client = await pool.connect();
   try {
-    const { teamName } = context.params;
+    const { teamName } = params;
     
     const result = await client.query<MediaItem>(
       `SELECT m.* 
