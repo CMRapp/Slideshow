@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
-    const teamName = searchParams.get('teamName');
+export async function GET(req: NextRequest, { params }: { params: { teamName: string } }) {
+    const { teamName } = params;
 
     if (!teamName) {
         return new NextResponse(JSON.stringify({ error: 'Team name is required' }), {
