@@ -15,14 +15,11 @@ interface MediaItem {
   item_number?: number;
 }
 
-interface PageProps {
-  params: {
-    teamName: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
+type Props = {
+  params: { teamName: string }
 }
 
-export default function TeamMediaPage({ params }: PageProps) {
+export default function TeamMediaPage({ params }: Props) {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
