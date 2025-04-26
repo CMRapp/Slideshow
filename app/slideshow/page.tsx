@@ -203,27 +203,27 @@ export default function SlideshowPage() {
   const currentItem = mediaItems[currentIndex];
 
   const slideshowControls = mediaItems.length > 0 ? (
-    <div className="flex flex-col gap-2 mb-8">
+    <div className="flex flex-row lg:flex-col gap-2">
       <button
-        className={controlStyles.controlButton}
+        className={`${controlStyles.controlButton} w-10 h-10 lg:w-12 lg:h-12`}
         onClick={handlePrevious}
         aria-label="Previous"
       >
-        <FiSkipBack />
+        <FiSkipBack size={20} />
       </button>
       <button
-        className={controlStyles.controlButton}
+        className={`${controlStyles.controlButton} w-10 h-10 lg:w-12 lg:h-12`}
         onClick={togglePlayPause}
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
-        {isPlaying ? <FiPause /> : <FiPlay />}
+        {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
       </button>
       <button
-        className={controlStyles.controlButton}
+        className={`${controlStyles.controlButton} w-10 h-10 lg:w-12 lg:h-12`}
         onClick={handleNext}
         aria-label="Next"
       >
-        <FiSkipForward />
+        <FiSkipForward size={20} />
       </button>
     </div>
   ) : null;
