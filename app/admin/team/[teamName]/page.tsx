@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FiArrowLeft, FiTrash2 } from 'react-icons/fi';
@@ -19,11 +19,33 @@ interface MediaItem {
 
 export default function TeamMediaPage() {
   const { teamName } = useParams();
+  const router = useRouter();
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/check-auth');
+        if (response.ok) {
+          setIsAuthenticated(true);
+        } else {
+          router.push('/admin/login');
+        }
+      } catch (err) {
+        console.error('Auth check failed:', err);
+        router.push('/admin/login');
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
     const fetchTeamMedia = async () => {
       try {
         setIsLoading(true);
@@ -41,7 +63,7 @@ export default function TeamMediaPage() {
     };
 
     fetchTeamMedia();
-  }, [teamName]);
+  }, [teamName, isAuthenticated]);
 
   const handleDelete = async (mediaId: number) => {
     if (!confirm('Are you sure you want to delete this media item?')) return;
@@ -61,6 +83,10 @@ export default function TeamMediaPage() {
       alert('Failed to delete media item');
     }
   };
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   if (isLoading) {
     return (
