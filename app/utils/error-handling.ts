@@ -1,4 +1,4 @@
-import { DatabaseError, ErrorResponse } from '../types/database';
+import { DatabaseError, ErrorResponse } from '@types/database';
 
 export class AppError extends Error {
   constructor(
@@ -52,7 +52,7 @@ export function handleAppError(error: unknown): ErrorResponse {
   };
 }
 
-export function validateRequiredFields<T extends Record<string, any>>(
+export function validateRequiredFields<T extends Record<string, unknown>>(
   data: T,
   requiredFields: (keyof T)[]
 ): void {

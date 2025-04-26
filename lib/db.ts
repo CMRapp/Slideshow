@@ -1,4 +1,4 @@
-import { Pool, PoolClient } from '@neondatabase/serverless';
+import { Pool } from '@neondatabase/serverless';
 import { DatabaseError, DatabaseClient } from '@types/database';
 import { handleDatabaseError } from '@utils/error-handling';
 

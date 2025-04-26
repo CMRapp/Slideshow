@@ -29,7 +29,7 @@ export interface MediaItem {
   file_path: string;
   file_size: number;
   mime_type: string;
-  metadata: Record<string, any> | null;
+  metadata: Record<string, unknown> | null;
   is_processed: boolean;
   created_at: Date;
   updated_at: Date;
@@ -68,7 +68,7 @@ export interface QueryResult<T> {
 
 // Database Client Types
 export interface DatabaseClient extends PoolClient {
-  query<T = any>(queryText: string, values?: any[]): Promise<QueryResult<T>>;
+  query<T = unknown>(queryText: string, values?: unknown[]): Promise<QueryResult<T>>;
 }
 
 // Error Response Types
