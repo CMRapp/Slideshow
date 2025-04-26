@@ -57,6 +57,7 @@ export default function TeamMediaPage() {
 
       setMediaItems(prevItems => prevItems.filter(item => item.id !== mediaId));
     } catch (err) {
+      console.error('Error deleting media:', err);
       alert('Failed to delete media item');
     }
   };

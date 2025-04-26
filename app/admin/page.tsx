@@ -376,7 +376,7 @@ export default function AdminPage() {
                 <div
                   key={team.id}
                   className="p-4 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700"
-                  onClick={() => fetchTeamMedia(team)}
+                  onClick={() => handleTeamClick(team.name)}
                 >
                   <h3 className="font-semibold">{team.name}</h3>
                 </div>
