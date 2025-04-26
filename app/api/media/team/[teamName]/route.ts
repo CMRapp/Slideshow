@@ -10,16 +10,16 @@ const pool = new Pool({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { teamName: string } }
+  context: { params: { teamName: string } }
 ) {
   try {
-    const { teamName } = params;
+    const { teamName } = context.params;
 
     if (!teamName) {
       return NextResponse.json({ error: 'Missing team name.' }, { status: 400 });
     }
 
-    const cookieStore = await cookies();
+    const cookieStore = cookies(); // <-- no await needed here!
     const session = cookieStore.get('session');
 
     if (!session) {
