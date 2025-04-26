@@ -72,14 +72,8 @@ export default function SidebarLayout({ children, slideshowControls }: SidebarLa
             </div>
 
             {/* Slideshow Controls */}
-            <div className="flex items-center">
-              <div className="flex lg:flex-col gap-2">
-                {slideshowControls}
-              </div>
-=======
-            <div className="lg:mt-5">
+            <div className="flex items-center lg:mt-5">
               {slideshowControls}
->>>>>>> parent of 01a1948 (Revert "Update SidebarLayout and SlideshowPage components to improve layout responsiveness and styling consistency for slideshow controls.")
             </div>
 
             {/* Branding */}
