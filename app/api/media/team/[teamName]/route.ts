@@ -1,43 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { Pool } from '@neondatabase/serverless';
 
-// Create connection pool with Neon configuration
+// Initialize connection pool once
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: { rejectUnauthorized: false },
 });
 
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { teamName: string } }
 ): Promise<Response> {
+  const cookieStore = cookies();
+  const session = cookieStore.get('session');
+
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const decodedTeamName = decodeURIComponent(params.teamName);
+
   try {
-    // Check authentication
-    const cookieStore = cookies();
-    const session = cookieStore.get('session');
+    const result = await pool.query(
+      'SELECT * FROM media_items WHERE team_name = $1 ORDER BY created_at DESC',
+      [decodedTeamName]
+    );
 
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: 'Team not found or no media items.' }, { status: 404 });
     }
 
-    const decodedTeamName = decodeURIComponent(params.teamName);
-
-    const client = await pool.connect();
-    try {
-      const result = await client.query(
-        'SELECT * FROM media_items WHERE team_name = $1 ORDER BY created_at DESC',
-        [decodedTeamName]
-      );
-
-      return NextResponse.json({ mediaItems: result.rows });
-    } finally {
-      client.release();
-    }
+    return NextResponse.json({ mediaItems: result.rows });
   } catch (error) {
     console.error('Error fetching team media:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch media items' }, { status: 500 });
   }
-} 
+}
