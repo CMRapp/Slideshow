@@ -12,7 +12,7 @@ const pool = new Pool({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { teamName: string } }
+  context: { params: { teamName: string } }
 ) {
   try {
     // Check authentication
@@ -23,7 +23,7 @@ export async function GET(
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const { teamName } = params;
+    const { teamName } = context.params;
     const decodedTeamName = decodeURIComponent(teamName);
 
     const client = await pool.connect();
