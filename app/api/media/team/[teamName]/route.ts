@@ -12,19 +12,18 @@ const pool = new Pool({
 
 export async function GET(
   request: NextRequest,
-  context: { params: { teamName: string } }
-): Promise<NextResponse> {
+  { params }: { params: { teamName: string } }
+) {
   try {
     // Check authentication
     const cookieStore = cookies();
     const session = cookieStore.get('session');
 
     if (!session) {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { teamName } = context.params;
-    const decodedTeamName = decodeURIComponent(teamName);
+    const decodedTeamName = decodeURIComponent(params.teamName);
 
     const client = await pool.connect();
     try {
@@ -39,6 +38,6 @@ export async function GET(
     }
   } catch (error) {
     console.error('Error fetching team media:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 } 
