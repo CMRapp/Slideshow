@@ -72,11 +72,7 @@ export default function SidebarLayout({ children, slideshowControls }: SidebarLa
             </div>
 
             {/* Slideshow Controls */}
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> parent of 217451f (Update SidebarLayout component to adjust slideshow controls layout for improved alignment and visual consistency.)
-            <div className="mt-5 lg:mt-0">
+            <div className="flex items-center">
               <div className="flex lg:flex-col gap-2">
                 {slideshowControls}
               </div>
