@@ -203,7 +203,7 @@ export default function SlideshowPage() {
   const currentItem = mediaItems[currentIndex];
 
   const slideshowControls = mediaItems.length > 0 ? (
-    <div className="flex flex-row items-center justify-center gap-2 p-2">
+    <div className="flex flex-col gap-2 mb-8">
       <button
         className={controlStyles.controlButton}
         onClick={handlePrevious}
