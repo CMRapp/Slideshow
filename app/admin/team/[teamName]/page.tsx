@@ -15,32 +15,12 @@ interface MediaItem {
   item_number?: number;
 }
 
-export default function TeamMediaPage({
-  params,
-}: {
-  params: Promise<{ teamName: string }>;
-}) {
-  const [teamName, setTeamName] = useState('');
+export default function TeamMediaPage({ params }: { params: { teamName: string } }) {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const initialize = async () => {
-      try {
-        const resolvedParams = await params;
-        setTeamName(resolvedParams.teamName);
-      } catch (error) {
-        console.error('Failed to load team name:', error);
-        setError('Failed to load team name');
-      }
-    };
-    initialize();
-  }, [params]);
-
-  useEffect(() => {
-    if (!teamName) return;
-
     const fetchTeamMedia = async () => {
       try {
         setIsLoading(true);
@@ -49,7 +29,7 @@ export default function TeamMediaPage({
         
         const data = await response.json();
         const teamMedia = data.mediaItems.filter((item: MediaItem) => 
-          item.team_name === decodeURIComponent(teamName)
+          item.team_name === decodeURIComponent(params.teamName)
         );
         
         setMediaItems(teamMedia);
@@ -61,7 +41,7 @@ export default function TeamMediaPage({
     };
 
     fetchTeamMedia();
-  }, [teamName]);
+  }, [params.teamName]);
 
   const photos = mediaItems.filter(item => item.file_type.startsWith('image/'));
   const videos = mediaItems.filter(item => item.file_type.startsWith('video/'));
@@ -93,7 +73,7 @@ export default function TeamMediaPage({
         </Link>
 
         <h1 className="text-3xl font-bold mb-8">
-          Team {decodeURIComponent(teamName)}
+          Team {decodeURIComponent(params.teamName)}
         </h1>
 
         {/* Photos Section */}
