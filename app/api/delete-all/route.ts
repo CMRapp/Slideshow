@@ -44,8 +44,8 @@ export async function DELETE() {
       for (const table of tablesResult.rows) {
         console.log(`Truncating table: ${table.tablename}`);
         await client.query(`DELETE FROM "${table.tablename}"`);
-      }
-    
+    }
+
       // Reset settings to default values
       console.log('Resetting settings...');
       await client.query(`
@@ -112,7 +112,7 @@ export async function DELETE() {
     );
   } finally {
     try {
-      client.release();
+    client.release();
       console.log('Client released successfully');
     } catch (error) {
       const pgError = error as PostgresError;
