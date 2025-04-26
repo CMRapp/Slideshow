@@ -15,7 +15,14 @@ interface MediaItem {
   item_number?: number;
 }
 
-export default function TeamMediaPage({ params }: { params: { teamName: string } }) {
+interface PageProps {
+  params: {
+    teamName: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default function TeamMediaPage({ params }: PageProps) {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
