@@ -72,7 +72,7 @@ export default function SidebarLayout({ children, slideshowControls }: SidebarLa
             </div>
 
             {/* Slideshow Controls */}
-            <div className="mt-5">
+            <div className="lg:mt-5">
               {slideshowControls}
             </div>
 
