@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { FiArrowLeft } from 'react-icons/fi';
+import Image from 'next/image';
 
 interface MediaItem {
   id: string;
@@ -86,7 +87,7 @@ export default function TeamMediaPage() {
           >
             <FiArrowLeft size={24} />
           </button>
-          <h1 className="text-2xl font-bold">{teamName}'s Media</h1>
+          <h1 className="text-2xl font-bold">{teamName}&apos;s Media</h1>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -96,10 +97,12 @@ export default function TeamMediaPage() {
               className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden group"
             >
               {item.type === 'photo' ? (
-                <img
+                <Image
                   src={item.thumbnailUrl}
                   alt={`Media item ${item.id}`}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 />
               ) : (
                 <video
