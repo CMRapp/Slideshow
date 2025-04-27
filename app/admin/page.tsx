@@ -345,7 +345,7 @@ export default function AdminPage() {
                       key={team.id}
                       className="flex items-center justify-between p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
                       onClick={() => {
-                        router.push(`/admin/team/${encodeURIComponent(team.name)}`);
+                        console.log(`Reviewing team: ${team.name}`);
                       }}
                     >
                       <span className="text-white">{team.name}</span>
