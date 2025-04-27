@@ -22,10 +22,23 @@ export default function TeamMediaPage() {
   useEffect(() => {
     const fetchTeamMedia = async () => {
       try {
-        const response = await fetch(`/api/media/team/${teamName}`);
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch(`/api/media/team/${teamName}`, {
+          credentials: 'include', // Include cookies for authentication
+        });
+
+        if (response.status === 401) {
+          // Redirect to login if unauthorized
+          router.push('/admin/login');
+          return;
+        }
+
         if (!response.ok) {
           throw new Error('Failed to fetch team media');
         }
+
         const data = await response.json();
         setMediaItems(data);
       } catch (err) {
@@ -36,7 +49,7 @@ export default function TeamMediaPage() {
     };
 
     fetchTeamMedia();
-  }, [teamName]);
+  }, [teamName, router]);
 
   if (isLoading) {
     return (
@@ -90,41 +103,47 @@ export default function TeamMediaPage() {
           <h1 className="text-2xl font-bold">{teamName}&apos;s Media</h1>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {mediaItems.map((item) => (
-            <div
-              key={item.id}
-              className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden group"
-            >
-              {item.type === 'photo' ? (
-                <Image
-                  src={item.thumbnailUrl}
-                  alt={`Media item ${item.id}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                />
-              ) : (
-                <video
-                  src={item.url}
-                  className="w-full h-full object-cover"
-                  poster={item.thumbnailUrl}
-                />
-              )}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <button
-                  onClick={() => {
-                    // Add your media preview action here
-                    console.log(`Previewing media: ${item.id}`);
-                  }}
-                  className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
-                >
-                  {item.type === 'photo' ? 'View' : 'Play'}
-                </button>
+        {mediaItems.length === 0 ? (
+          <div className="p-4 bg-gray-800 rounded-lg">
+            <p className="text-gray-400">No media found for this team</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {mediaItems.map((item) => (
+              <div
+                key={item.id}
+                className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden group"
+              >
+                {item.type === 'photo' ? (
+                  <Image
+                    src={item.thumbnailUrl}
+                    alt={`Media item ${item.id}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  />
+                ) : (
+                  <video
+                    src={item.url}
+                    className="w-full h-full object-cover"
+                    poster={item.thumbnailUrl}
+                  />
+                )}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <button
+                    onClick={() => {
+                      // Add your media preview action here
+                      console.log(`Previewing media: ${item.id}`);
+                    }}
+                    className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+                  >
+                    {item.type === 'photo' ? 'View' : 'Play'}
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
