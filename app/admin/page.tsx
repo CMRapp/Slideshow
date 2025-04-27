@@ -336,7 +336,19 @@ export default function AdminPage() {
           <div className="space-y-6">
             <div className="p-4 bg-gray-800 rounded-lg">
               <h3 className="text-lg font-semibold mb-4">Team Review</h3>
-              <p className="text-gray-400">Team Review coming soon...</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {teams.map((team) => (
+                  <button
+                    key={team.id}
+                    className="p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-center"
+                    onClick={() => {
+                      router.push(`/admin/team/${encodeURIComponent(team.name)}`);
+                    }}
+                  >
+                    <span className="font-medium">{team.name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </TabbedContainer>
