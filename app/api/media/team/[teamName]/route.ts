@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { pool } from '@/app/lib/db';
+import { cookies } from 'next/headers';
 
 export async function GET(
   request: Request,
   { params }: { params: { teamName: string } }
 ) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    // Check authentication using your existing cookie-based system
+    const cookieStore = cookies();
+    const sessionCookie = cookieStore.get('session');
+    
+    if (!sessionCookie?.value) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
