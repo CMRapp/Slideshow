@@ -334,7 +334,7 @@ export default function AdminPage() {
 
           {/* Review Tab */}
           <div className="space-y-6">
-            <div className="p-4 bg-gray-800 rounded-lg">
+            <div className="p-4">
               <h3 className="text-sm font-medium mb-2">Team Review</h3>
               {teams.length === 0 ? (
                 <p className="text-gray-400">No teams found</p>
@@ -343,7 +343,7 @@ export default function AdminPage() {
                   {teams.map((team) => (
                     <button
                       key={team.id}
-                      className="flex items-center justify-between p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+                      className="flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-600 rounded-lg transition-colors"
                       onClick={() => {
                         console.log(`Reviewing team: ${team.name}`);
                       }}
