@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-type Props = {
-  params: { filename: string }
-}
-
 export async function GET(
   request: Request,
-  { params }: Props
+  { params }: { params: { filename: string } }
 ) {
   try {
     // Check authentication
