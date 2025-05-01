@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 export async function GET(
-  request: Request,
-  context: { params: { filename: string } }
+  request: NextRequest,
+  { params }: { params: { filename: string } }
 ) {
   try {
     // Check authentication
@@ -17,7 +17,7 @@ export async function GET(
       );
     }
 
-    const filename = context.params.filename;
+    const filename = params.filename;
     const validFilenames = ['riders-wm.png', 'side-logo-vertical.png', 'side-logo-horiz.png'];
 
     if (!validFilenames.includes(filename)) {
