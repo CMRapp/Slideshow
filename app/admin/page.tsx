@@ -12,6 +12,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  const [teamToDelete, setTeamToDelete] = useState<{ id: number; name: string } | null>(null);
   const [teamName, setTeamName] = useState('');
   const [photoCount, setPhotoCount] = useState<number>(0);
   const [videoCount, setVideoCount] = useState<number>(0);
@@ -135,8 +136,14 @@ export default function AdminPage() {
   };
 
   const handleDeleteTeam = async (teamId: number, teamName: string) => {
+    setTeamToDelete({ id: teamId, name: teamName });
+  };
+
+  const confirmDeleteTeam = async () => {
+    if (!teamToDelete) return;
+
     try {
-      const response = await fetch(`/api/teams?name=${encodeURIComponent(teamName)}`, {
+      const response = await fetch(`/api/teams?name=${encodeURIComponent(teamToDelete.name)}`, {
         method: 'DELETE',
       });
 
@@ -145,9 +152,11 @@ export default function AdminPage() {
       }
 
       setSuccess('Team deleted successfully');
+      setTeamToDelete(null);
       fetchTeams(); // Refresh the teams list
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to delete team');
+      setTeamToDelete(null);
     }
   };
 
@@ -204,6 +213,40 @@ export default function AdminPage() {
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
               >
                 Reset Database
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Team Confirmation Popup */}
+      {teamToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="glass-effect p-6 rounded-lg max-w-md w-full mx-4 border border-white/10 shadow-[0_0_15px_rgba(234,179,8,0.15)] hover:shadow-[0_0_20px_rgba(234,179,8,0.20)] transition-shadow duration-300">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Delete Team</h3>
+              <button
+                onClick={() => setTeamToDelete(null)}
+                className="text-gray-400 hover:text-white"
+              >
+                <FiX size={24} />
+              </button>
+            </div>
+            <p className="mb-6">
+              Are you sure you want to delete the team &quot;{teamToDelete.name}&quot;? This will permanently delete all associated media files and records. This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setTeamToDelete(null)}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteTeam}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
+              >
+                Delete Team
               </button>
             </div>
           </div>
