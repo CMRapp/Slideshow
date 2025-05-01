@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiLogOut, FiX } from 'react-icons/fi';
+import { FiLogOut, FiX, FiTrash2 } from 'react-icons/fi';
 import TabbedContainer from '../components/admin/TabbedContainer';
 
 export default function AdminPage() {
@@ -134,6 +134,23 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteTeam = async (teamId: number, teamName: string) => {
+    try {
+      const response = await fetch(`/api/teams?name=${encodeURIComponent(teamName)}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete team');
+      }
+
+      setSuccess('Team deleted successfully');
+      fetchTeams(); // Refresh the teams list
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to delete team');
+    }
+  };
+
   const fetchTeams = async () => {
     try {
       const response = await fetch('/api/teams');
@@ -255,6 +272,15 @@ export default function AdminPage() {
                       className="flex items-center justify-between p-4 bg-gray-800 rounded-lg"
                     >
                       <span className="text-white">{team.name}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTeam(team.id, team.name);
+                        }}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        <FiTrash2 size={20} />
+                      </button>
                     </div>
                   ))}
                 </div>
