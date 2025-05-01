@@ -5,7 +5,7 @@ import { put } from '@vercel/blob';
 export async function POST(request: Request) {
   try {
     // Check authentication
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const session = cookieStore.get('session');
 
     if (!session) {
