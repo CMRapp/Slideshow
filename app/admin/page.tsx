@@ -22,7 +22,6 @@ export default function AdminPage() {
   const loadImage = async (element: HTMLImageElement, url: string) => {
     try {
       const response = await fetch(url, {
-        mode: 'cors',
         credentials: 'include',
       });
       if (response.ok) {
@@ -43,13 +42,13 @@ export default function AdminPage() {
     const sideLogoHorizontal = document.getElementById('side-logo') as HTMLImageElement;
 
     if (mainLogo) {
-      loadImage(mainLogo, 'https://public.blob.vercel-storage.com/logos/riders-wm.png');
+      loadImage(mainLogo, '/api/logos/riders-wm.png');
     }
     if (sideLogoVertical) {
-      loadImage(sideLogoVertical, 'https://public.blob.vercel-storage.com/logos/side-logo-vertical.png');
+      loadImage(sideLogoVertical, '/api/logos/side-logo-vertical.png');
     }
     if (sideLogoHorizontal) {
-      loadImage(sideLogoHorizontal, 'https://public.blob.vercel-storage.com/logos/side-logo-horiz.png');
+      loadImage(sideLogoHorizontal, '/api/logos/side-logo-horiz.png');
     }
   }, []);
 
@@ -264,12 +263,10 @@ export default function AdminPage() {
       const logoElements = document.querySelectorAll(`#${logoType === 'main' ? 'logo' : 'side-logo'}`);
       logoElements.forEach(el => {
         if (el instanceof HTMLImageElement) {
-          const baseUrl = `https://public.blob.vercel-storage.com/logos/${
-            logoType === 'main' ? 'riders-wm.png' : 
-            logoType === 'vertical' ? 'side-logo-vertical.png' : 
-            'side-logo-horiz.png'
-          }`;
-          loadImage(el, `${baseUrl}?t=${new Date().getTime()}`);
+          const filename = logoType === 'main' ? 'riders-wm.png' : 
+                          logoType === 'vertical' ? 'side-logo-vertical.png' : 
+                          'side-logo-horiz.png';
+          loadImage(el, `/api/logos/${filename}?t=${new Date().getTime()}`);
         }
       });
 
@@ -279,12 +276,10 @@ export default function AdminPage() {
       setLogoUploadStatus({ status: 'error', message: error instanceof Error ? error.message : 'Failed to upload logo' });
       // Revert preview on error
       if (previewElement) {
-        const baseUrl = `https://public.blob.vercel-storage.com/logos/${
-          logoType === 'main' ? 'riders-wm.png' : 
-          logoType === 'vertical' ? 'side-logo-vertical.png' : 
-          'side-logo-horiz.png'
-        }`;
-        loadImage(previewElement, baseUrl);
+        const filename = logoType === 'main' ? 'riders-wm.png' : 
+                        logoType === 'vertical' ? 'side-logo-vertical.png' : 
+                        'side-logo-horiz.png';
+        loadImage(previewElement, `/api/logos/${filename}`);
       }
     }
   };
