@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 
 export async function GET(
   request: Request,
-  { params }: { params: { filename: string } }
+  context: { params: { filename: string } }
 ) {
   try {
     // Check authentication
@@ -17,7 +17,7 @@ export async function GET(
       );
     }
 
-    const filename = params.filename;
+    const filename = context.params.filename;
     const validFilenames = ['riders-wm.png', 'side-logo-vertical.png', 'side-logo-horiz.png'];
 
     if (!validFilenames.includes(filename)) {
