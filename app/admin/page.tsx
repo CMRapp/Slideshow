@@ -200,9 +200,14 @@ export default function AdminPage() {
       const response = await fetch('/api/upload-logos', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          router.push('/admin/login');
+          return;
+        }
         throw new Error('Failed to upload logo');
       }
 
@@ -452,7 +457,7 @@ export default function AdminPage() {
                   <label className="block text-sm font-medium mb-2">Side Logo (Vertical)</label>
                   <div className="flex items-center gap-4">
                     <div className="w-20 h-20 bg-gray-700 rounded-lg flex items-center justify-center">
-                      <img id="side-logo" src="/side-logo-vertical.png" alt="Side Logo Vertical" className="max-w-[60px] object-contain" />
+                      <img id="side-logo" src="/side-logo-vertical.png" alt="Side Logo Vertical" className="max-w-[60px] max-h-[60px] w-auto h-auto object-contain" />
                     </div>
                     <input
                       type="file"
