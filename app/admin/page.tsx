@@ -18,39 +18,6 @@ export default function AdminPage() {
   const [videoCount, setVideoCount] = useState<number>(0);
   const [teams, setTeams] = useState<{ id: number; name: string }[]>([]);
 
-  const loadImage = async (element: HTMLImageElement, url: string) => {
-    try {
-      const response = await fetch(url, {
-        credentials: 'include',
-      });
-      if (response.ok) {
-        const blob = await response.blob();
-        element.src = URL.createObjectURL(blob);
-      } else {
-        console.error(`Failed to load image: ${url}`);
-      }
-    } catch (error) {
-      console.error(`Error loading image: ${url}`, error);
-    }
-  };
-
-  // Initialize logo previews
-  useEffect(() => {
-    const mainLogo = document.getElementById('logo') as HTMLImageElement;
-    const sideLogoVertical = document.getElementById('side-logo') as HTMLImageElement;
-    const sideLogoHorizontal = document.getElementById('side-logo') as HTMLImageElement;
-
-    if (mainLogo) {
-      loadImage(mainLogo, '/api/logos/riders-wm.png');
-    }
-    if (sideLogoVertical) {
-      loadImage(sideLogoVertical, '/api/logos/side-logo-vertical.png');
-    }
-    if (sideLogoHorizontal) {
-      loadImage(sideLogoHorizontal, '/api/logos/side-logo-horiz.png');
-    }
-  }, []);
-
   const checkAuth = useCallback(async () => {
     try {
       const response = await fetch('/api/check-auth');
