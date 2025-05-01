@@ -19,6 +19,40 @@ export default function AdminPage() {
   const [teams, setTeams] = useState<{ id: number; name: string }[]>([]);
   const [logoUploadStatus, setLogoUploadStatus] = useState<{ status: 'idle' | 'success' | 'error', message: string }>({ status: 'idle', message: '' });
 
+  const loadImage = async (element: HTMLImageElement, url: string) => {
+    try {
+      const response = await fetch(url, {
+        mode: 'cors',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        element.src = URL.createObjectURL(blob);
+      } else {
+        console.error(`Failed to load image: ${url}`);
+      }
+    } catch (error) {
+      console.error(`Error loading image: ${url}`, error);
+    }
+  };
+
+  // Initialize logo previews
+  useEffect(() => {
+    const mainLogo = document.getElementById('logo') as HTMLImageElement;
+    const sideLogoVertical = document.getElementById('side-logo') as HTMLImageElement;
+    const sideLogoHorizontal = document.getElementById('side-logo') as HTMLImageElement;
+
+    if (mainLogo) {
+      loadImage(mainLogo, 'https://public.blob.vercel-storage.com/logos/riders-wm.png');
+    }
+    if (sideLogoVertical) {
+      loadImage(sideLogoVertical, 'https://public.blob.vercel-storage.com/logos/side-logo-vertical.png');
+    }
+    if (sideLogoHorizontal) {
+      loadImage(sideLogoHorizontal, 'https://public.blob.vercel-storage.com/logos/side-logo-horiz.png');
+    }
+  }, []);
+
   const checkAuth = useCallback(async () => {
     try {
       const response = await fetch('/api/check-auth');
@@ -210,6 +244,9 @@ export default function AdminPage() {
         method: 'POST',
         body: formData,
         credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+        },
       });
 
       if (!response.ok) {
@@ -217,7 +254,8 @@ export default function AdminPage() {
           router.push('/admin/login');
           return;
         }
-        throw new Error('Failed to upload logo');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload logo');
       }
 
       setLogoUploadStatus({ status: 'success', message: 'Logo uploaded successfully!' });
@@ -231,7 +269,7 @@ export default function AdminPage() {
             logoType === 'vertical' ? 'side-logo-vertical.png' : 
             'side-logo-horiz.png'
           }`;
-          el.src = `${baseUrl}?t=${new Date().getTime()}`;
+          loadImage(el, `${baseUrl}?t=${new Date().getTime()}`);
         }
       });
 
@@ -246,7 +284,7 @@ export default function AdminPage() {
           logoType === 'vertical' ? 'side-logo-vertical.png' : 
           'side-logo-horiz.png'
         }`;
-        previewElement.src = baseUrl;
+        loadImage(previewElement, baseUrl);
       }
     }
   };

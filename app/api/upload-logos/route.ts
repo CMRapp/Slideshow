@@ -33,7 +33,9 @@ export async function POST(request: Request) {
       const blob = await put('logos/riders-wm.png', mainLogo, {
         access: 'public',
         addRandomSuffix: false,
-        token: process.env.BLOB_READ_WRITE_TOKEN
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+        contentType: mainLogo.type,
+        cacheControl: 'public, max-age=31536000',
       });
       uploadPromises.push(blob);
     }
@@ -42,7 +44,9 @@ export async function POST(request: Request) {
       const blob = await put('logos/side-logo-vertical.png', sideLogoVertical, {
         access: 'public',
         addRandomSuffix: false,
-        token: process.env.BLOB_READ_WRITE_TOKEN
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+        contentType: sideLogoVertical.type,
+        cacheControl: 'public, max-age=31536000',
       });
       uploadPromises.push(blob);
     }
@@ -51,7 +55,9 @@ export async function POST(request: Request) {
       const blob = await put('logos/side-logo-horiz.png', sideLogoHorizontal, {
         access: 'public',
         addRandomSuffix: false,
-        token: process.env.BLOB_READ_WRITE_TOKEN
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+        contentType: sideLogoHorizontal.type,
+        cacheControl: 'public, max-age=31536000',
       });
       uploadPromises.push(blob);
     }
