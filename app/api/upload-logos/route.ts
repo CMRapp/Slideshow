@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
+import { cookies } from 'next/headers';
+import { put } from '@vercel/blob';
 
 export async function POST(request: Request) {
   try {
+    // Check authentication
+    const cookieStore = cookies();
+    const session = cookieStore.get('session');
+
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const formData = await request.formData();
     const mainLogo = formData.get('mainLogo') as File;
     const sideLogoVertical = formData.get('sideLogoVertical') as File;
@@ -19,24 +30,30 @@ export async function POST(request: Request) {
     const uploadPromises = [];
 
     if (mainLogo) {
-      const bytes = await mainLogo.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const path = join(process.cwd(), 'public', 'riders-wm.png');
-      uploadPromises.push(writeFile(path, buffer));
+      const blob = await put('logos/riders-wm.png', mainLogo, {
+        access: 'public',
+        addRandomSuffix: false,
+        token: process.env.BLOB_READ_WRITE_TOKEN
+      });
+      uploadPromises.push(blob);
     }
 
     if (sideLogoVertical) {
-      const bytes = await sideLogoVertical.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const path = join(process.cwd(), 'public', 'side-logo-vertical.png');
-      uploadPromises.push(writeFile(path, buffer));
+      const blob = await put('logos/side-logo-vertical.png', sideLogoVertical, {
+        access: 'public',
+        addRandomSuffix: false,
+        token: process.env.BLOB_READ_WRITE_TOKEN
+      });
+      uploadPromises.push(blob);
     }
 
     if (sideLogoHorizontal) {
-      const bytes = await sideLogoHorizontal.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const path = join(process.cwd(), 'public', 'side-logo-horiz.png');
-      uploadPromises.push(writeFile(path, buffer));
+      const blob = await put('logos/side-logo-horiz.png', sideLogoHorizontal, {
+        access: 'public',
+        addRandomSuffix: false,
+        token: process.env.BLOB_READ_WRITE_TOKEN
+      });
+      uploadPromises.push(blob);
     }
 
     await Promise.all(uploadPromises);
@@ -45,7 +62,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error uploading logos:', error);
     return NextResponse.json(
-      { error: 'Failed to upload logos' },
+      { error: 'Failed to upload logos', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

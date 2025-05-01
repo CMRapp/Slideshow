@@ -435,7 +435,7 @@ export default function AdminPage() {
                   <label className="block text-sm font-medium mb-2">Site Logo</label>
                   <div className="flex items-center gap-4">
                     <div className="w-20 h-20 bg-gray-700 rounded-lg flex items-center justify-center">
-                      <img id="logo" src="/riders-wm.png" alt="Site Logo" className="max-h-[60px] object-contain" />
+                      <img id="logo" src="https://public.blob.vercel-storage.com/logos/riders-wm.png" alt="Site Logo" className="max-h-[60px] object-contain" />
                     </div>
                     <input
                       type="file"
@@ -457,7 +457,7 @@ export default function AdminPage() {
                   <label className="block text-sm font-medium mb-2">Side Logo (Vertical)</label>
                   <div className="flex items-center gap-4">
                     <div className="w-20 h-20 bg-gray-700 rounded-lg flex items-center justify-center">
-                      <img id="side-logo" src="/side-logo-vertical.png" alt="Side Logo Vertical" className="max-w-[60px] max-h-[60px] w-auto h-auto object-contain" />
+                      <img id="side-logo" src="https://public.blob.vercel-storage.com/logos/side-logo-vertical.png" alt="Side Logo Vertical" className="max-w-[60px] max-h-[60px] w-auto h-auto object-contain" />
                     </div>
                     <input
                       type="file"
@@ -479,7 +479,7 @@ export default function AdminPage() {
                   <label className="block text-sm font-medium mb-2">Side Logo (Horizontal)</label>
                   <div className="flex items-center gap-4">
                     <div className="w-20 h-20 bg-gray-700 rounded-lg flex items-center justify-center">
-                      <img id="side-logo" src="/side-logo-horiz.png" alt="Side Logo Horizontal" className="max-h-[60px] object-contain" />
+                      <img id="side-logo" src="https://public.blob.vercel-storage.com/logos/side-logo-horiz.png" alt="Side Logo Horizontal" className="max-h-[60px] object-contain" />
                     </div>
                     <input
                       type="file"
