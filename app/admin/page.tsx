@@ -17,6 +17,7 @@ export default function AdminPage() {
   const [photoCount, setPhotoCount] = useState<number>(0);
   const [videoCount, setVideoCount] = useState<number>(0);
   const [teams, setTeams] = useState<{ id: number; name: string }[]>([]);
+  const [logoUploadStatus, setLogoUploadStatus] = useState<{ status: 'idle' | 'success' | 'error', message: string }>({ status: 'idle', message: '' });
 
   const checkAuth = useCallback(async () => {
     try {
@@ -174,6 +175,50 @@ export default function AdminPage() {
   useEffect(() => {
     fetchTeams();
   }, []);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>, logoType: 'main' | 'vertical' | 'horizontal') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
+    if (!validTypes.includes(file.type)) {
+      setLogoUploadStatus({ status: 'error', message: 'Invalid file type. Please upload a PNG, JPG, or SVG file.' });
+      return;
+    }
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setLogoUploadStatus({ status: 'error', message: 'File size too large. Maximum size is 5MB.' });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append(logoType === 'main' ? 'mainLogo' : logoType === 'vertical' ? 'sideLogoVertical' : 'sideLogoHorizontal', file);
+
+    try {
+      const response = await fetch('/api/upload-logos', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload logo');
+      }
+
+      setLogoUploadStatus({ status: 'success', message: 'Logo uploaded successfully!' });
+      
+      // Force a refresh of the image elements
+      const logoElements = document.querySelectorAll(`#${logoType === 'main' ? 'logo' : 'side-logo'}`);
+      logoElements.forEach(el => {
+        if (el instanceof HTMLImageElement) {
+          el.src = el.src + '?' + new Date().getTime();
+        }
+      });
+    } catch (error) {
+      setLogoUploadStatus({ status: 'error', message: error instanceof Error ? error.message : 'Failed to upload logo' });
+    }
+  };
 
   if (isLoading) {
     return <div className="min-h-screen bg-black flex items-center justify-center">Loading...</div>;
@@ -380,7 +425,81 @@ export default function AdminPage() {
           <div className="space-y-6">
             <div className="p-4 bg-gray-800 rounded-lg">
               <h3 className="text-lg font-semibold mb-4">Branding Settings</h3>
-              <p className="text-gray-400">Branding settings coming soon...</p>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Site Logo</label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 bg-gray-700 rounded-lg flex items-center justify-center">
+                      <img id="logo" src="/riders-wm.png" alt="Site Logo" className="max-h-[60px] object-contain" />
+                    </div>
+                    <input
+                      type="file"
+                      accept=".png,.jpg,.svg"
+                      onChange={(e) => handleLogoUpload(e, 'main')}
+                      className="hidden"
+                      id="mainLogoInput"
+                    />
+                    <label
+                      htmlFor="mainLogoInput"
+                      className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500 cursor-pointer"
+                    >
+                      Upload Logo
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Side Logo (Vertical)</label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 bg-gray-700 rounded-lg flex items-center justify-center">
+                      <img id="side-logo" src="/side-logo-vertical.png" alt="Side Logo Vertical" className="max-w-[60px] object-contain" />
+                    </div>
+                    <input
+                      type="file"
+                      accept=".png,.jpg,.svg"
+                      onChange={(e) => handleLogoUpload(e, 'vertical')}
+                      className="hidden"
+                      id="verticalLogoInput"
+                    />
+                    <label
+                      htmlFor="verticalLogoInput"
+                      className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500 cursor-pointer"
+                    >
+                      Upload Logo
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Side Logo (Horizontal)</label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 bg-gray-700 rounded-lg flex items-center justify-center">
+                      <img id="side-logo" src="/side-logo-horiz.png" alt="Side Logo Horizontal" className="max-h-[60px] object-contain" />
+                    </div>
+                    <input
+                      type="file"
+                      accept=".png,.jpg,.svg"
+                      onChange={(e) => handleLogoUpload(e, 'horizontal')}
+                      className="hidden"
+                      id="horizontalLogoInput"
+                    />
+                    <label
+                      htmlFor="horizontalLogoInput"
+                      className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500 cursor-pointer"
+                    >
+                      Upload Logo
+                    </label>
+                  </div>
+                </div>
+
+                {logoUploadStatus.status !== 'idle' && (
+                  <div className={`p-4 rounded ${
+                    logoUploadStatus.status === 'success' ? 'bg-green-900 text-white' : 'bg-red-900 text-white'
+                  }`}>
+                    {logoUploadStatus.message}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
