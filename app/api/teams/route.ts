@@ -1,17 +1,73 @@
 import { NextResponse } from 'next/server';
-import { pool } from '@/lib/db';
+import { executeQuery, withTransaction } from '@/lib/db';
+import { validationSchemas } from '@/lib/auth';
+import { z } from 'zod';
 
-export async function GET() {
+// Type definitions
+interface Team {
+  id: number;
+  name: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface PaginationParams {
+  page: number;
+  limit: number;
+}
+
+// Validation schemas
+const teamSchema = validationSchemas.team;
+const paginationSchema = z.object({
+  page: z.number().min(1).default(1),
+  limit: z.number().min(1).max(100).default(10),
+});
+
+export async function GET(request: Request) {
   try {
-    console.log('Fetching teams from database...');
-    const result = await pool.query(
-      'SELECT id, name FROM teams ORDER BY name'
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+
+    // Validate pagination parameters
+    const { page: validatedPage, limit: validatedLimit } = paginationSchema.parse({
+      page,
+      limit,
+    });
+
+    const offset = (validatedPage - 1) * validatedLimit;
+
+    // Get total count for pagination
+    const { rows: countRows } = await executeQuery<{ count: string }>(
+      'SELECT COUNT(*) as count FROM teams'
     );
-    
-    console.log('Teams fetched successfully:', result.rows);
-    return NextResponse.json(result.rows);
+    const totalCount = parseInt(countRows[0].count);
+
+    // Get paginated teams
+    const { rows } = await executeQuery<Team>(
+      'SELECT id, name, description, is_active, created_at, updated_at FROM teams ORDER BY name LIMIT $1 OFFSET $2',
+      [validatedLimit, offset]
+    );
+
+    return NextResponse.json({
+      data: rows,
+      pagination: {
+        total: totalCount,
+        page: validatedPage,
+        limit: validatedLimit,
+        totalPages: Math.ceil(totalCount / validatedLimit),
+      },
+    });
   } catch (error) {
     console.error('Error fetching teams:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid pagination parameters', details: error.errors },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
       { error: 'Failed to fetch teams' },
       { status: 500 }
@@ -21,38 +77,48 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { teamName } = await request.json();
+    const data = await request.json();
+    
+    // Validate team data
+    const validatedData = teamSchema.parse(data);
 
-    if (!teamName) {
+    await withTransaction(async (client) => {
+      // Check for existing team name
+      const { rows } = await executeQuery<{ id: number }>(
+        'SELECT id FROM teams WHERE name = $1',
+        [validatedData.name],
+        client
+      );
+
+      if (rows.length > 0) {
+        throw new Error('Team name already exists');
+      }
+
+      // Create new team
+      await executeQuery(
+        'INSERT INTO teams (name, description) VALUES ($1, $2)',
+        [validatedData.name, validatedData.description],
+        client
+      );
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error creating team:', error);
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Team name is required' },
+        { error: 'Invalid team data', details: error.errors },
         { status: 400 }
       );
     }
-
-    const client = await pool.connect();
-
-    try {
-      await client.query('BEGIN');
-
-      // Delete team and all associated items (cascade delete)
-      await client.query(
-        'DELETE FROM teams WHERE name = $1',
-        [teamName]
+    if (error instanceof Error && error.message === 'Team name already exists') {
+      return NextResponse.json(
+        { error: 'Team name already exists' },
+        { status: 409 }
       );
-
-      await client.query('COMMIT');
-      return NextResponse.json({ success: true });
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
     }
-  } catch (error) {
-    console.error('Error deleting team:', error);
     return NextResponse.json(
-      { error: 'Failed to delete team' },
+      { error: 'Failed to create team' },
       { status: 500 }
     );
   }
@@ -70,49 +136,39 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const client = await pool.connect();
-    try {
-      // Start a transaction
-      await client.query('BEGIN');
-
+    await withTransaction(async (client) => {
       // First, get the team_id
-      const teamResult = await client.query(
+      const { rows } = await executeQuery<{ id: number }>(
         'SELECT id FROM teams WHERE name = $1',
-        [teamName]
+        [teamName],
+        client
       );
 
-      if (teamResult.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return NextResponse.json(
-          { error: 'Team not found' },
-          { status: 404 }
-        );
+      if (rows.length === 0) {
+        throw new Error('Team not found');
       }
 
-      const teamId = teamResult.rows[0].id;
+      const teamId = rows[0].id;
 
-      // Delete all associated items (this will cascade delete from uploaded_items)
-      await client.query(
+      // Delete the team (this will cascade delete all associated items)
+      await executeQuery(
         'DELETE FROM teams WHERE id = $1',
-        [teamId]
+        [teamId],
+        client
       );
+    });
 
-      // Commit the transaction
-      await client.query('COMMIT');
-
-      return NextResponse.json(
-        { message: 'Team and all associated items deleted successfully' },
-        { status: 200 }
-      );
-    } catch (error) {
-      // Rollback the transaction on error
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting team:', error);
+    
+    if (error instanceof Error && error.message === 'Team not found') {
+      return NextResponse.json(
+        { error: 'Team not found' },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Failed to delete team' },
       { status: 500 }

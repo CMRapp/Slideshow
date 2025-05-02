@@ -1,102 +1,129 @@
 import { NextResponse } from 'next/server';
-import { pool } from '@/lib/db';
+import { executeQuery, withTransaction } from '@/lib/db';
 import { uploadToBlob } from '@/lib/blob';
+import { validationSchemas, MAX_FILE_SIZE, ALLOWED_MIME_TYPES } from '@/lib/auth';
+import { z } from 'zod';
+
+// Validation schema for upload
+const uploadSchema = z.object({
+  team: z.string().min(1),
+  file: z.instanceof(File),
+  itemType: z.enum(['photo', 'video']),
+  itemNumber: z.number().min(1),
+});
 
 export async function POST(request: Request) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    console.log('Upload: Starting new upload process');
     
     const formData = await request.formData();
     const teamName = formData.get('team') as string;
     const file = formData.get('file') as File;
     const itemType = formData.get('itemType') as string;
-    const itemNumber = formData.get('itemNumber') as string;
+    const itemNumber = parseInt(formData.get('itemNumber') as string);
 
-    console.log('Upload: Received form data:', {
-      teamName,
-      fileName: file?.name,
-      itemType,
-      itemNumber,
-      fileType: file?.type,
-      fileSize: file?.size
-    });
+    // Validate input
+    try {
+      uploadSchema.parse({
+        team: teamName,
+        file,
+        itemType,
+        itemNumber,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json(
+          { error: 'Invalid input', details: error.errors },
+          { status: 400 }
+        );
+      }
+      throw error;
+    }
 
-    if (!teamName || !file || !itemType) {
-      console.error('Upload: Missing required fields:', { teamName, file, itemType });
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'File size exceeds limit' },
         { status: 400 }
       );
     }
 
-    console.log('Upload: Uploading to Vercel Blob:', { teamName, fileName: file.name });
-    const uploadResult = await uploadToBlob(file, teamName);
-    
-    if (!uploadResult.success) {
-      console.error('Upload: Blob upload failed:', uploadResult.error);
+    // Validate MIME type
+    const allowedTypes = itemType === 'photo' ? ALLOWED_MIME_TYPES.images : ALLOWED_MIME_TYPES.videos;
+    if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Failed to upload file to storage' },
-        { status: 500 }
+        { error: 'Invalid file type' },
+        { status: 400 }
       );
     }
-    console.log('Upload: Blob upload successful:', uploadResult.url);
 
     // Get team_id
-    const teamResult = await client.query(
+    const { rows: teamRows } = await executeQuery<{ id: number }>(
       'SELECT id FROM teams WHERE name = $1',
-      [teamName]
+      [teamName],
+      client
     );
-    console.log('Upload: Team query result:', teamResult.rows);
 
-    if (teamResult.rows.length === 0) {
-      console.error('Upload: Team not found:', teamName);
-      await client.query('ROLLBACK');
+    if (teamRows.length === 0) {
       return NextResponse.json(
         { error: 'Team not found' },
         { status: 404 }
       );
     }
 
-    const teamId = teamResult.rows[0].id;
+    const teamId = teamRows[0].id;
 
-    console.log('Upload: Inserting into database:', {
-      teamId,
-      itemType,
-      itemNumber,
-      fileName: file.name,
-      url: uploadResult.url
-    });
+    // Check if item number is already used
+    const { rows: existingRows } = await executeQuery<{ id: number }>(
+      'SELECT id FROM media_items WHERE team_id = $1 AND item_type = $2 AND item_number = $3',
+      [teamId, itemType, itemNumber],
+      client
+    );
 
-    // Insert with Blob Store URL
-    const result = await client.query(
-      `INSERT INTO uploaded_items (
-        team_id, item_type, item_number, file_name,
-        file_path, file_size, mime_type, upload_status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *`,
+    if (existingRows.length > 0) {
+      return NextResponse.json(
+        { error: 'Item number already exists for this team' },
+        { status: 409 }
+      );
+    }
+
+    // Upload to blob storage
+    const uploadResult = await uploadToBlob(file, teamName);
+    if (!uploadResult.success) {
+      throw new Error('Failed to upload file to storage');
+    }
+
+    // Save to database
+    await executeQuery(
+      `INSERT INTO media_items 
+       (team_id, item_type, item_number, file_name, file_path, file_size, mime_type, is_processed)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [
         teamId,
         itemType,
-        parseInt(itemNumber),
+        itemNumber,
         file.name,
         uploadResult.url,
         file.size,
         file.type,
-        'completed'
-      ]
+        false,
+      ],
+      client
     );
 
     await client.query('COMMIT');
-    console.log('Upload: Database insert successful:', result.rows[0]);
 
-    return NextResponse.json(result.rows[0]);
+    return NextResponse.json({
+      success: true,
+      url: uploadResult.url,
+      message: 'File uploaded successfully',
+    });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Upload: Error during upload process:', error);
+    console.error('Upload failed:', error);
     return NextResponse.json(
-      { error: 'Failed to upload media' },
+      { error: 'Failed to upload file' },
       { status: 500 }
     );
   } finally {

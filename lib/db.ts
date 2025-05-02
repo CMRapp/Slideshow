@@ -8,28 +8,63 @@ if (missingEnvVars.length > 0) {
   throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
 }
 
-// Create connection pool with Neon configuration
+// Create connection pool with Neon configuration optimized for serverless
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
-  }
+  },
+  // Optimize for serverless
+  max: 1, // Limit connections per function instance
+  idleTimeoutMillis: 1000, // Close idle connections quickly
+  connectionTimeoutMillis: 5000, // Timeout for connection attempts
+  maxUses: 7500, // Close connections after a certain number of uses
 });
 
-// Test the connection
-pool.connect()
-  .then(client => {
-    console.log('Database connection successful');
-    client.release();
-  })
-  .catch(error => {
-    console.error('Database connection failed:', {
-      code: error.code,
-      message: error.message,
-      stack: error.stack
+// Helper function to execute queries with proper error handling
+export async function executeQuery<T = any>(
+  query: string,
+  params: any[] = [],
+  client?: PoolClient
+): Promise<{ rows: T[]; rowCount: number }> {
+  const useClient = client || await pool.connect();
+  try {
+    const result = await useClient.query(query, params);
+    return {
+      rows: result.rows,
+      rowCount: result.rowCount || 0
+    };
+  } catch (error) {
+    console.error('Database query error:', {
+      query,
+      params,
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
     throw error;
-  });
+  } finally {
+    if (!client) {
+      useClient.release();
+    }
+  }
+}
+
+// Helper function for transactions
+export async function withTransaction<T>(
+  callback: (client: PoolClient) => Promise<T>
+): Promise<T> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
 
 async function columnExists(client: PoolClient, tableName: string, columnName: string): Promise<boolean> {
   const result = await client.query(

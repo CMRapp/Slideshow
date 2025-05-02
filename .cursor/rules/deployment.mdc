@@ -1,0 +1,10 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Deployment Context
+
+- This project uses Neon as its database provider.
+- The project is deployed on Vercel.
+- When adding features that require file storage or background jobs, ensure compatibility with Vercel's serverless environment and Neon DB's managed Postgres setup.
