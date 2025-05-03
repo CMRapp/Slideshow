@@ -78,7 +78,7 @@ export default function AdminLogin() {
           </div>
 
           {error && (
-            <div className="p-3 bg-red-500/20 border border-red-500/50 text-red-300 rounded text-sm">
+            <div className="p-3 bg-red-500/20 border border-red-500/50 text-red-300 rounded text-sm confirmation-msg">
               {error}
             </div>
           )}

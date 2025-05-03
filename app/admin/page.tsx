@@ -2,8 +2,34 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiLogOut, FiX, FiTrash2 } from 'react-icons/fi';
+import { FiLogOut, FiX, FiTrash2, FiCheckCircle } from 'react-icons/fi';
 import TabbedContainer from '../components/admin/TabbedContainer';
+
+const SuccessPopup = ({ message, onClose }: { message: string; onClose: () => void }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50">
+      <div className="glass-effect p-4 rounded-lg border border-white/10 shadow-[0_0_15px_rgba(234,179,8,0.15)] hover:shadow-[0_0_20px_rgba(234,179,8,0.20)] transition-shadow duration-300 confirmation-msg">
+        <div className="flex items-center gap-3">
+          <FiCheckCircle className="text-green-400" size={24} />
+          <span className="text-white">{message}</span>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white ml-2"
+          >
+            <FiX size={20} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function AdminPage() {
   const router = useRouter();
@@ -272,9 +298,7 @@ export default function AdminPage() {
         )}
 
         {success && (
-          <div className="mb-4 p-4 bg-green-900 text-white rounded-lg">
-            {success}
-          </div>
+          <SuccessPopup message={success} onClose={() => setSuccess(null)} />
         )}
 
         <TabbedContainer>

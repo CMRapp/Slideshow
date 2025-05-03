@@ -322,7 +322,7 @@ export default function UploadPage() {
           {progress && <UploadProgress progress={progress} />}
 
           {uploadStatus && (
-            <div className={`mt-4 p-4 rounded ${
+            <div className={`mt-4 p-4 rounded confirmation-msg ${
               uploadStatus.status === 'success' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'
             }`}>
               {uploadStatus.message}
