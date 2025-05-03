@@ -76,30 +76,32 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
           No media items found for this team.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {mediaItems.map((item) => (
             <div
               key={item.id}
-              className="relative aspect-square rounded-lg overflow-hidden bg-gray-800"
+              className="flex flex-col gap-2"
             >
-              {item.type === 'photo' ? (
-                <Image
-                  src={item.url}
-                  alt={`${teamName} ${item.type} ${item.number}`}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <video
-                  src={item.url}
-                  className="w-full h-full object-cover"
-                  controls
-                />
-              )}
-              <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-2">
-                <span className="text-sm text-white">
-                  {item.type ? `${item.type.charAt(0).toUpperCase() + item.type.slice(1)} ${item.number}` : 'Media'}
-                </span>
+              <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-800">
+                {item.type === 'photo' ? (
+                  <Image
+                    src={item.url}
+                    alt={`${teamName} ${item.type} ${item.number}`}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <video
+                    src={item.url}
+                    className="w-full h-full object-cover"
+                    muted
+                    loop
+                    playsInline
+                  />
+                )}
+              </div>
+              <div className="text-center text-sm text-gray-300">
+                {item.type ? `${item.type.charAt(0).toUpperCase() + item.type.slice(1)} ${item.number}` : 'Media'}
               </div>
             </div>
           ))}
