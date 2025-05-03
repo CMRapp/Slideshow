@@ -13,8 +13,11 @@ interface Team {
   updated_at: string;
 }
 
-// Validation schemas
-const teamSchema = validationSchemas.team;
+// Create a proper Zod schema from the validation schemas
+const teamSchema = z.object({
+  name: validationSchemas.team.name,
+  description: validationSchemas.team.description,
+});
 
 export async function GET(request: Request) {
   try {
