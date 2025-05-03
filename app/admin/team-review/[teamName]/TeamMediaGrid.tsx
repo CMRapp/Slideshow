@@ -89,6 +89,13 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
                     alt={`${teamName} ${item.type} ${item.number}`}
                     fill
                     className="object-cover"
+                    unoptimized
+                    priority
+                    onError={(e) => {
+                      console.error('Image failed to load:', item.url);
+                      const img = e.target as HTMLImageElement;
+                      img.style.display = 'none';
+                    }}
                   />
                 ) : (
                   <video
