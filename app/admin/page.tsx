@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiLogOut, FiX, FiTrash2, FiCheckCircle } from 'react-icons/fi';
+import Link from 'next/link';
 import TabbedContainer from '../components/admin/TabbedContainer';
 
 const SuccessPopup = ({ message, onClose }: { message: string; onClose: () => void }) => {
@@ -434,15 +435,13 @@ export default function AdminPage() {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {teams.map((team) => (
-                    <button
+                    <Link
                       key={team.id}
-                      className="flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-600 rounded-lg transition-colors"
-                      onClick={() => {
-                        console.log(`Reviewing team: ${team.name}`);
-                      }}
+                      href={`/admin/team-review/${encodeURIComponent(team.name)}`}
+                      className="flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
                     >
                       <span className="text-white">{team.name}</span>
-                    </button>
+                    </Link>
                   ))}
                 </div>
               )}
