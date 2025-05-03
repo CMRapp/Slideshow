@@ -2,18 +2,18 @@ import { Suspense } from 'react';
 import TeamMediaGrid from './TeamMediaGrid';
 import { Metadata } from 'next';
 
-type Props = {
+type PageProps = {
   params: { teamName: string };
   searchParams: { [key: string]: string | string[] | undefined };
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   return {
     title: `${params.teamName} Media Review`,
   };
 }
 
-export default async function TeamReviewPage({ params }: Props) {
+export default async function TeamReviewPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-7xl mx-auto">
