@@ -250,23 +250,49 @@ export default function SlideshowPage() {
           {mediaItems.length > 0 && (
             <>
               <div className="relative w-full h-full flex items-center justify-center p-4">
-                {currentItem.file_type === 'image' ? (
-                  <Image
-                    src={currentItem.file_path}
-                    alt={currentItem.file_name}
-                    fill
-                    className="object-contain"
-                    priority
-                  />
+                {currentItem.file_type.startsWith('image/') ? (
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <div className="relative w-full h-full max-w-[90dvw] max-h-[calc(100dvh-6rem)]">
+                      <Image
+                        src={currentItem.file_path}
+                        alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
+                        fill
+                        sizes="90vw"
+                        className="object-contain w-full"
+                        priority
+                        quality={100}
+                        unoptimized={false}
+                        crossOrigin="anonymous"
+                        onError={(e) => {
+                          console.error('Image failed to load:', currentItem.file_path);
+                          const img = e.target as HTMLImageElement;
+                          img.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
                 ) : (
-                  <video
-                    src={currentItem.file_path}
-                    className="w-full h-full object-contain"
-                    controls
-                    autoPlay
-                    muted
-                    loop
-                  />
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <video
+                      src={currentItem.file_path}
+                      className="max-w-[90dvw] max-h-[calc(100dvh-6rem)] object-contain w-full"
+                      autoPlay
+                      loop
+                      playsInline
+                      controls
+                      controlsList="nodownload noremoteplayback"
+                      crossOrigin="anonymous"
+                      onLoadedMetadata={(e) => {
+                        const video = e.target as HTMLVideoElement;
+                        video.volume = 0.05;
+                      }}
+                      onError={(e) => {
+                        console.error('Video failed to load:', currentItem.file_path);
+                        const video = e.target as HTMLVideoElement;
+                        video.style.display = 'none';
+                      }}
+                    />
+                  </div>
                 )}
                 <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-4 text-white">
                   <div className="text-xl font-semibold">{currentItem.team_name}</div>
