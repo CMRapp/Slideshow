@@ -1,12 +1,8 @@
 import { Pool, PoolClient } from '@neondatabase/serverless';
-import { Pool as PgPool } from 'pg';
 
 // Check for required environment variables
-const requiredEnvVars = ['DATABASE_URL'];
-const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
-
-if (missingEnvVars.length > 0) {
-  throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is required');
 }
 
 // Create connection pool with Neon configuration optimized for serverless
@@ -19,14 +15,6 @@ export const pool = new Pool({
   idleTimeoutMillis: 1000, // Close idle connections after 1 second
   connectionTimeoutMillis: 5000, // Timeout after 5 seconds
   maxUses: 7500, // Close connections after a certain number of uses
-});
-
-// Database connection pool
-const pgPool = new PgPool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
 });
 
 // Query result type
@@ -212,14 +200,5 @@ async function initializeDatabase() {
   }
 }
 
-// Export the initialization function
-export { initializeDatabase };
-
-// Call initializeDatabase when the module is imported
-initializeDatabase().catch(console.error);
-
 // Initialize database on startup
-initializeDatabase().catch(error => {
-  console.error('Failed to initialize database:', error);
-  process.exit(1);
-}); 
+initializeDatabase().catch(console.error); 

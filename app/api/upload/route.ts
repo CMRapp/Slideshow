@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { executeQuery } from '@/lib/db';
-import { validationSchemas, MAX_FILE_SIZE, ALLOWED_MIME_TYPES } from '@/lib/auth';
+import { MAX_FILE_SIZE, ALLOWED_MIME_TYPES } from '@/lib/auth';
 import { z } from 'zod';
 
 // Validation schema for upload
@@ -72,8 +72,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Upload file to blob storage and save metadata to database
-    const buffer = await file.arrayBuffer();
+    // Generate file path
     const filePath = `${teamId}/${validatedData.itemType}/${validatedData.itemNumber}.${file.type.split('/')[1]}`;
 
     // Save to database

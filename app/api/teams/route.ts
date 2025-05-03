@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { executeQuery, withTransaction } from '@/lib/db';
+import { executeQuery } from '@/lib/db';
 import { validationSchemas } from '@/lib/auth';
 import { z } from 'zod';
 
@@ -22,14 +22,14 @@ export async function GET(request: Request) {
     const teamName = searchParams.get('name');
 
     if (teamName) {
-      const result = await executeQuery(
+      const result = await executeQuery<Team>(
         'SELECT * FROM teams WHERE name = $1',
         [teamName]
       );
       return NextResponse.json(result.rows[0] || null);
     }
 
-    const result = await executeQuery('SELECT * FROM teams ORDER BY name');
+    const result = await executeQuery<Team>('SELECT * FROM teams ORDER BY name');
     return NextResponse.json(result.rows);
   } catch (error) {
     console.error('Error fetching teams:', error);
@@ -47,39 +47,32 @@ export async function POST(request: Request) {
     // Validate team data
     const validatedData = teamSchema.parse(data);
 
-    await withTransaction(async (client) => {
-      // Check for existing team name
-      const { rows } = await executeQuery<{ id: number }>(
-        'SELECT id FROM teams WHERE name = $1',
-        [validatedData.name],
-        client
+    // Check for existing team name
+    const { rows: existingTeams } = await executeQuery<Team>(
+      'SELECT id FROM teams WHERE name = $1',
+      [validatedData.name]
+    );
+
+    if (existingTeams.length > 0) {
+      return NextResponse.json(
+        { error: 'Team name already exists' },
+        { status: 409 }
       );
+    }
 
-      if (rows.length > 0) {
-        throw new Error('Team name already exists');
-      }
+    // Create new team
+    const { rows: newTeam } = await executeQuery<Team>(
+      'INSERT INTO teams (name, description) VALUES ($1, $2) RETURNING *',
+      [validatedData.name, validatedData.description]
+    );
 
-      // Create new team
-      await executeQuery(
-        'INSERT INTO teams (name, description) VALUES ($1, $2)',
-        [validatedData.name, validatedData.description],
-        client
-      );
-    });
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json(newTeam[0]);
   } catch (error) {
     console.error('Error creating team:', error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid team data', details: error.errors },
         { status: 400 }
-      );
-    }
-    if (error instanceof Error && error.message === 'Team name already exists') {
-      return NextResponse.json(
-        { error: 'Team name already exists' },
-        { status: 409 }
       );
     }
     return NextResponse.json(
@@ -101,39 +94,30 @@ export async function DELETE(request: Request) {
       );
     }
 
-    await withTransaction(async (client) => {
-      // First, get the team_id
-      const { rows } = await executeQuery<{ id: number }>(
-        'SELECT id FROM teams WHERE name = $1',
-        [teamName],
-        client
-      );
+    // First, get the team_id
+    const { rows: teamRows } = await executeQuery<Team>(
+      'SELECT id FROM teams WHERE name = $1',
+      [teamName]
+    );
 
-      if (rows.length === 0) {
-        throw new Error('Team not found');
-      }
-
-      const teamId = rows[0].id;
-
-      // Delete the team (this will cascade delete all associated items)
-      await executeQuery(
-        'DELETE FROM teams WHERE id = $1',
-        [teamId],
-        client
-      );
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting team:', error);
-    
-    if (error instanceof Error && error.message === 'Team not found') {
+    if (teamRows.length === 0) {
       return NextResponse.json(
         { error: 'Team not found' },
         { status: 404 }
       );
     }
 
+    const teamId = teamRows[0].id;
+
+    // Delete the team (this will cascade delete all associated items)
+    await executeQuery(
+      'DELETE FROM teams WHERE id = $1',
+      [teamId]
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting team:', error);
     return NextResponse.json(
       { error: 'Failed to delete team' },
       { status: 500 }
