@@ -1,18 +1,10 @@
 import { jwtVerify } from 'jose';
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 
 // JWT Configuration
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
 const JWT_ALGORITHM = 'HS256';
-
-// Rate Limiting Configuration
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(10, '10 s'),
-});
 
 // File Upload Configuration
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -21,6 +13,10 @@ export const ALLOWED_MIME_TYPES = {
   videos: ['video/mp4', 'video/webm'],
   logos: ['image/svg+xml', 'image/png', 'image/jpeg']
 };
+
+// Simple in-memory rate limiting (for development)
+// In production, consider using Vercel KV or similar
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
 // JWT Token Generation
 export async function generateToken(payload: any): Promise<string> {
@@ -42,11 +38,32 @@ export async function verifyToken(token: string): Promise<any> {
   }
 }
 
-// Rate Limiting Check
+// Simple rate limiting check
 export async function checkRateLimit(request: Request): Promise<boolean> {
   const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
-  const { success } = await ratelimit.limit(ip);
-  return success;
+  const now = Date.now();
+  const windowMs = 10000; // 10 seconds
+  const maxRequests = 10;
+
+  // Clean up old entries
+  for (const [key, value] of rateLimitMap.entries()) {
+    if (value.resetTime < now) {
+      rateLimitMap.delete(key);
+    }
+  }
+
+  const entry = rateLimitMap.get(ip);
+  if (!entry) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
+    return true;
+  }
+
+  if (entry.count >= maxRequests) {
+    return false;
+  }
+
+  entry.count += 1;
+  return true;
 }
 
 // Session Management
