@@ -82,7 +82,7 @@ interface Session {
 }
 
 export async function getSession(): Promise<Session> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const session = cookieStore.get('session');
   
   if (!session) {
