@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2024-03-21
+
+### Added
+- Team management functionality
+- File upload system with validation
+- Authentication system with JWT
+- Database integration with Neon DB
+- Admin dashboard interface
+- Branding customization features
+
+### Changed
+- Updated to Next.js 15.3.1
+- Improved error handling across API routes
+- Enhanced security measures
+- Optimized database queries
+
+### Fixed
+- Authentication token handling
+- CORS configuration
+- File upload validation
+- Database connection issues
+
+## [1.0.0] - 2024-03-20
+
+### Added
+- Initial project setup
+- Basic Next.js application structure
+- Database schema implementation
+- Core API routes
+- Basic UI components
+
+[2.0.0]: https://github.com/yourusername/slideshow/compare/v1.0.0...v2.0.0
+[1.0.0]: https://github.com/yourusername/slideshow/releases/tag/v1.0.0
+
 ## [2.0.0] - 2025-04-25
 
 ### Added
