@@ -11,6 +11,18 @@ const uploadSchema = z.object({
   itemNumber: z.number().min(1),
 });
 
+interface Team {
+  id: number;
+  name: string;
+}
+
+interface MediaItem {
+  id: number;
+  team_id: number;
+  item_type: 'photo' | 'video';
+  item_number: number;
+}
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -45,7 +57,7 @@ export async function POST(request: Request) {
     }
 
     // Get team ID
-    const { rows: teamRows } = await executeQuery(
+    const { rows: teamRows } = await executeQuery<Team>(
       'SELECT id FROM teams WHERE name = $1',
       [validatedData.teamName]
     );
@@ -60,7 +72,7 @@ export async function POST(request: Request) {
     const teamId = teamRows[0].id;
 
     // Check if item number already exists
-    const { rows: existingRows } = await executeQuery(
+    const { rows: existingRows } = await executeQuery<MediaItem>(
       'SELECT id FROM media WHERE team_id = $1 AND item_type = $2 AND item_number = $3',
       [teamId, validatedData.itemType, validatedData.itemNumber]
     );
