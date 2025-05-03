@@ -12,7 +12,14 @@ interface MediaItem {
   number: number;
 }
 
-export default function TeamReviewPage({ params }: { params: { teamName: string } }) {
+interface PageProps {
+  params: {
+    teamName: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default function TeamReviewPage({ params }: PageProps) {
   const router = useRouter();
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
