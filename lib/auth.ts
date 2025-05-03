@@ -24,6 +24,7 @@ interface JWTPayload {
   role: 'admin' | 'user';
   exp?: number;
   iat?: number;
+  [key: string]: unknown; // Allow additional properties
 }
 
 // JWT Token Generation
