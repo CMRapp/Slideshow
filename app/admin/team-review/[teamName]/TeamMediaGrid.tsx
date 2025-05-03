@@ -60,14 +60,15 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
 
   return (
     <>
-      <div className="flex items-center gap-4 mb-8">
-        <button
+    <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
         >
           <FiArrowLeft />
           Back
         </button>
+      <div className="flex items-center gap-4 mb-8">
+        
         <h1 className="text-3xl font-bold">{teamName} Media</h1>
       </div>
 
