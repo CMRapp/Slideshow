@@ -1,4 +1,4 @@
-import { jwtVerify } from 'jose';
+import { jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 
@@ -28,7 +28,7 @@ interface JWTPayload {
 
 // JWT Token Generation
 export async function generateToken(payload: JWTPayload): Promise<string> {
-  const token = await new jose.SignJWT(payload)
+  const token = await new SignJWT(payload)
     .setProtectedHeader({ alg: JWT_ALGORITHM })
     .setIssuedAt()
     .setExpirationTime('24h')
