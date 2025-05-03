@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 
 type PageProps = {
   params: Promise<{ teamName: string }>;
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export const metadata: Metadata = {
