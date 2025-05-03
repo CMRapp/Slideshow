@@ -1,4 +1,4 @@
-import { Pool, PoolClient } from '@neondatabase/serverless';
+import { Pool, PoolClient, QueryResultRow } from '@neondatabase/serverless';
 
 // Check for required environment variables
 if (!process.env.DATABASE_URL) {
@@ -18,13 +18,13 @@ export const pool = new Pool({
 });
 
 // Query result type
-interface QueryResult<T = unknown> {
+interface QueryResult<T extends QueryResultRow = QueryResultRow> {
   rows: T[];
   rowCount: number;
 }
 
 // Helper function to execute queries with proper error handling
-export async function executeQuery<T = unknown>(
+export async function executeQuery<T extends QueryResultRow = QueryResultRow>(
   query: string,
   params: unknown[] = [],
   client?: PoolClient
