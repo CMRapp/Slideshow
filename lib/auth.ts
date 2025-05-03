@@ -18,8 +18,16 @@ export const ALLOWED_MIME_TYPES = {
 // In production, consider using Vercel KV or similar
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
+// JWT Payload Type
+interface JWTPayload {
+  sub: string;
+  role: 'admin' | 'user';
+  exp?: number;
+  iat?: number;
+}
+
 // JWT Token Generation
-export async function generateToken(payload: any): Promise<string> {
+export async function generateToken(payload: JWTPayload): Promise<string> {
   const token = await new jose.SignJWT(payload)
     .setProtectedHeader({ alg: JWT_ALGORITHM })
     .setIssuedAt()
@@ -29,11 +37,11 @@ export async function generateToken(payload: any): Promise<string> {
 }
 
 // JWT Token Verification
-export async function verifyToken(token: string): Promise<any> {
+export async function verifyToken(token: string): Promise<JWTPayload> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload;
-  } catch (error) {
+    return payload as JWTPayload;
+  } catch {
     throw new Error('Invalid token');
   }
 }
@@ -67,7 +75,12 @@ export async function checkRateLimit(request: Request): Promise<boolean> {
 }
 
 // Session Management
-export async function getSession(): Promise<{ authenticated: boolean; user?: any }> {
+interface Session {
+  authenticated: boolean;
+  user?: JWTPayload;
+}
+
+export async function getSession(): Promise<Session> {
   const cookieStore = cookies();
   const session = cookieStore.get('session');
   
@@ -78,7 +91,7 @@ export async function getSession(): Promise<{ authenticated: boolean; user?: any
   try {
     const user = await verifyToken(session.value);
     return { authenticated: true, user };
-  } catch (error) {
+  } catch {
     return { authenticated: false };
   }
 }

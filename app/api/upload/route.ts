@@ -1,47 +1,33 @@
 import { NextResponse } from 'next/server';
-import { executeQuery, withTransaction } from '@/lib/db';
-import { uploadToBlob } from '@/lib/blob';
+import { executeQuery } from '@/lib/db';
 import { validationSchemas, MAX_FILE_SIZE, ALLOWED_MIME_TYPES } from '@/lib/auth';
 import { z } from 'zod';
 
 // Validation schema for upload
 const uploadSchema = z.object({
-  team: z.string().min(1),
+  teamName: z.string().min(3).max(50),
   file: z.instanceof(File),
   itemType: z.enum(['photo', 'video']),
   itemNumber: z.number().min(1),
 });
 
 export async function POST(request: Request) {
-  const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-    
     const formData = await request.formData();
-    const teamName = formData.get('team') as string;
+    const teamName = formData.get('teamName') as string;
     const file = formData.get('file') as File;
-    const itemType = formData.get('itemType') as string;
+    const itemType = formData.get('itemType') as 'photo' | 'video';
     const itemNumber = parseInt(formData.get('itemNumber') as string);
 
     // Validate input
-    try {
-      uploadSchema.parse({
-        team: teamName,
-        file,
-        itemType,
-        itemNumber,
-      });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { error: 'Invalid input', details: error.errors },
-          { status: 400 }
-        );
-      }
-      throw error;
-    }
+    const validatedData = uploadSchema.parse({
+      teamName,
+      file,
+      itemType,
+      itemNumber,
+    });
 
-    // Validate file size
+    // Check file size
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: 'File size exceeds limit' },
@@ -49,7 +35,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate MIME type
+    // Check MIME type
     const allowedTypes = itemType === 'photo' ? ALLOWED_MIME_TYPES.images : ALLOWED_MIME_TYPES.videos;
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
@@ -58,11 +44,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get team_id
-    const { rows: teamRows } = await executeQuery<{ id: number }>(
+    // Get team ID
+    const { rows: teamRows } = await executeQuery(
       'SELECT id FROM teams WHERE name = $1',
-      [teamName],
-      client
+      [validatedData.teamName]
     );
 
     if (teamRows.length === 0) {
@@ -74,11 +59,10 @@ export async function POST(request: Request) {
 
     const teamId = teamRows[0].id;
 
-    // Check if item number is already used
-    const { rows: existingRows } = await executeQuery<{ id: number }>(
-      'SELECT id FROM media_items WHERE team_id = $1 AND item_type = $2 AND item_number = $3',
-      [teamId, itemType, itemNumber],
-      client
+    // Check if item number already exists
+    const { rows: existingRows } = await executeQuery(
+      'SELECT id FROM media WHERE team_id = $1 AND item_type = $2 AND item_number = $3',
+      [teamId, validatedData.itemType, validatedData.itemNumber]
     );
 
     if (existingRows.length > 0) {
@@ -88,45 +72,35 @@ export async function POST(request: Request) {
       );
     }
 
-    // Upload to blob storage
-    const uploadResult = await uploadToBlob(file, teamName);
-    if (!uploadResult.success) {
-      throw new Error('Failed to upload file to storage');
-    }
+    // Upload file to blob storage and save metadata to database
+    const buffer = await file.arrayBuffer();
+    const filePath = `${teamId}/${validatedData.itemType}/${validatedData.itemNumber}.${file.type.split('/')[1]}`;
 
     // Save to database
     await executeQuery(
-      `INSERT INTO media_items 
-       (team_id, item_type, item_number, file_name, file_path, file_size, mime_type, is_processed)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      'INSERT INTO media (team_id, item_type, item_number, file_path, mime_type, file_size) VALUES ($1, $2, $3, $4, $5, $6)',
       [
         teamId,
-        itemType,
-        itemNumber,
-        file.name,
-        uploadResult.url,
-        file.size,
+        validatedData.itemType,
+        validatedData.itemNumber,
+        filePath,
         file.type,
-        false,
-      ],
-      client
+        file.size,
+      ]
     );
 
-    await client.query('COMMIT');
-
-    return NextResponse.json({
-      success: true,
-      url: uploadResult.url,
-      message: 'File uploaded successfully',
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Upload failed:', error);
+    console.error('Error uploading file:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid input data', details: error.errors },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
       { error: 'Failed to upload file' },
       { status: 500 }
     );
-  } finally {
-    client.release();
   }
 } 

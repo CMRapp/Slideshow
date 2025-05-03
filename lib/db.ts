@@ -1,4 +1,5 @@
 import { Pool, PoolClient } from '@neondatabase/serverless';
+import { Pool as PgPool } from 'pg';
 
 // Check for required environment variables
 const requiredEnvVars = ['DATABASE_URL'];
@@ -14,22 +15,35 @@ export const pool = new Pool({
   ssl: {
     rejectUnauthorized: false
   },
-  // Optimize for serverless
-  max: 1, // Limit connections per function instance
-  idleTimeoutMillis: 1000, // Close idle connections quickly
-  connectionTimeoutMillis: 5000, // Timeout for connection attempts
+  max: 1, // Maximum number of connections in the pool
+  idleTimeoutMillis: 1000, // Close idle connections after 1 second
+  connectionTimeoutMillis: 5000, // Timeout after 5 seconds
   maxUses: 7500, // Close connections after a certain number of uses
 });
 
+// Database connection pool
+const pgPool = new PgPool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+// Query result type
+interface QueryResult<T = unknown> {
+  rows: T[];
+  rowCount: number;
+}
+
 // Helper function to execute queries with proper error handling
-export async function executeQuery<T = any>(
+export async function executeQuery<T = unknown>(
   query: string,
-  params: any[] = [],
+  params: unknown[] = [],
   client?: PoolClient
-): Promise<{ rows: T[]; rowCount: number }> {
+): Promise<QueryResult<T>> {
   const useClient = client || await pool.connect();
   try {
-    const result = await useClient.query(query, params);
+    const result = await useClient.query<T>(query, params);
     return {
       rows: result.rows,
       rowCount: result.rowCount || 0

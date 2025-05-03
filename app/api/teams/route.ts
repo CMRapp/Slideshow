@@ -13,61 +13,26 @@ interface Team {
   updated_at: string;
 }
 
-interface PaginationParams {
-  page: number;
-  limit: number;
-}
-
 // Validation schemas
 const teamSchema = validationSchemas.team;
-const paginationSchema = z.object({
-  page: z.number().min(1).default(1),
-  limit: z.number().min(1).max(100).default(10),
-});
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const teamName = searchParams.get('name');
 
-    // Validate pagination parameters
-    const { page: validatedPage, limit: validatedLimit } = paginationSchema.parse({
-      page,
-      limit,
-    });
+    if (teamName) {
+      const result = await executeQuery(
+        'SELECT * FROM teams WHERE name = $1',
+        [teamName]
+      );
+      return NextResponse.json(result.rows[0] || null);
+    }
 
-    const offset = (validatedPage - 1) * validatedLimit;
-
-    // Get total count for pagination
-    const { rows: countRows } = await executeQuery<{ count: string }>(
-      'SELECT COUNT(*) as count FROM teams'
-    );
-    const totalCount = parseInt(countRows[0].count);
-
-    // Get paginated teams
-    const { rows } = await executeQuery<Team>(
-      'SELECT id, name, description, is_active, created_at, updated_at FROM teams ORDER BY name LIMIT $1 OFFSET $2',
-      [validatedLimit, offset]
-    );
-
-    return NextResponse.json({
-      data: rows,
-      pagination: {
-        total: totalCount,
-        page: validatedPage,
-        limit: validatedLimit,
-        totalPages: Math.ceil(totalCount / validatedLimit),
-      },
-    });
+    const result = await executeQuery('SELECT * FROM teams ORDER BY name');
+    return NextResponse.json(result.rows);
   } catch (error) {
     console.error('Error fetching teams:', error);
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid pagination parameters', details: error.errors },
-        { status: 400 }
-      );
-    }
     return NextResponse.json(
       { error: 'Failed to fetch teams' },
       { status: 500 }
