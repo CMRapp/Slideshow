@@ -19,7 +19,6 @@ interface TeamMediaGridProps {
 export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
   const router = useRouter();
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,8 +32,6 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
         setMediaItems(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load team media');
-      } finally {
-        setIsLoading(false);
       }
     };
 
