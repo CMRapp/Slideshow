@@ -43,8 +43,8 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
       <>
         <div className="flex items-center gap-4 mb-8">
           <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            onClick={() => router.push('/admin?tab=review')}
+            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors review-back-button"
           >
             <FiArrowLeft />
             Back
@@ -60,15 +60,14 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
 
   return (
     <>
-    <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-        >
-          <FiArrowLeft />
-          Back
-        </button>
+      <button
+        onClick={() => router.push('/admin?tab=review')}
+        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors review-back-button"
+      >
+        <FiArrowLeft />
+        Back
+      </button>
       <div className="flex items-center gap-4 mb-8">
-        
         <h1 className="text-3xl font-bold">{teamName} Media</h1>
       </div>
 
