@@ -303,6 +303,28 @@ export default function AdminPage() {
         )}
 
         <TabbedContainer>
+          {/* Review Tab */}
+          <div className="space-y-6">
+            <div className="p-4">
+              <h3 className="text-sm font-medium mb-2">Team Review</h3>
+              {teams.length === 0 ? (
+                <p className="text-gray-400">No teams found</p>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {teams.map((team) => (
+                    <Link
+                      key={team.id}
+                      href={`/admin/team-review/${encodeURIComponent(team.name)}`}
+                      className="flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <span className="text-white">{team.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Slideshow Config Tab */}
           <div className="space-y-6" id="team-info">
             <div className="flex gap-2">
@@ -423,28 +445,6 @@ export default function AdminPage() {
               >
                 Reset Database
               </button>
-            </div>
-          </div>
-
-          {/* Review Tab */}
-          <div className="space-y-6">
-            <div className="p-4">
-              <h3 className="text-sm font-medium mb-2">Team Review</h3>
-              {teams.length === 0 ? (
-                <p className="text-gray-400">No teams found</p>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {teams.map((team) => (
-                    <Link
-                      key={team.id}
-                      href={`/admin/team-review/${encodeURIComponent(team.name)}`}
-                      className="flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-                    >
-                      <span className="text-white">{team.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </TabbedContainer>
