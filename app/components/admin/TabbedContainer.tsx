@@ -11,10 +11,10 @@ export default function TabbedContainer({ children }: TabbedContainerProps) {
   const [activeTab, setActiveTab] = useState(0);
 
   const tabs = [
+    { name: 'Review', icon: <FiEye /> },
     { name: 'Slideshow Config', icon: <FiSliders /> },
     { name: 'Branding', icon: <FiImage /> },
     { name: 'Database Management', icon: <FiDatabase /> },
-    { name: 'Review', icon: <FiEye /> },
   ];
 
   return (
