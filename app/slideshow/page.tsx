@@ -259,7 +259,7 @@ export default function SlideshowPage() {
                       width={800}
                       height={600}
                       sizes="100vw"
-                      className="object-contain w-full max-w-[100vw] h-auto mx-auto m-0 p-0"
+                      className="object-contain w-full max-w-[100vw] md:max-w-4xl md:max-h-[80vh] h-auto mx-auto m-0 p-0"
                       priority
                       quality={100}
                       unoptimized={false}
@@ -275,7 +275,7 @@ export default function SlideshowPage() {
                   <div className="w-full flex items-center justify-center m-0 p-0">
                     <video
                       src={currentItem.file_path}
-                      className="object-contain w-full max-w-[100vw] max-h-[90vh] m-0 p-0 mx-auto"
+                      className="object-contain w-full max-w-[100vw] md:max-w-4xl md:max-h-[80vh] m-0 p-0 mx-auto"
                       autoPlay
                       loop
                       playsInline
