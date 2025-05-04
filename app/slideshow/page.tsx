@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FiImage, FiPlay, FiPause, FiSkipBack, FiSkipForward } from 'react-icons/fi';
 import Image from 'next/image';
 import SidebarLayout from '@/app/components/SidebarLayout';
@@ -21,10 +21,10 @@ export default function SlideshowPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchMediaItems = async () => {
+  const fetchMediaItems = useCallback(async () => {
     try {
       setIsLoading(true);
       setError('');
@@ -95,11 +95,18 @@ export default function SlideshowPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    // Initial fetch
     fetchMediaItems();
-  }, []);
+
+    // Set up polling
+    const pollInterval = setInterval(fetchMediaItems, 30000); // 30 seconds
+
+    // Clean up interval on unmount
+    return () => clearInterval(pollInterval);
+  }, [fetchMediaItems]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
