@@ -97,7 +97,7 @@ export async function POST(request: Request) {
     // Check if item number already exists
     console.log('Checking for existing item:', { teamId, itemType, itemNumber });
     const { rows: existingRows } = await executeQuery<MediaItem>(
-      'SELECT id FROM media WHERE team_id = $1 AND item_type = $2 AND item_number = $3',
+      'SELECT id FROM uploaded_items WHERE team_id = $1 AND item_type = $2 AND item_number = $3',
       [teamId, validatedData.itemType, validatedData.itemNumber]
     );
 
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
     // Save to database
     console.log('Saving to database...');
     await executeQuery(
-      'INSERT INTO media (team_id, item_type, item_number, file_path, mime_type, file_size) VALUES ($1, $2, $3, $4, $5, $6)',
+      'INSERT INTO uploaded_items (team_id, item_type, item_number, file_path, mime_type, file_size, upload_status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
       [
         teamId,
         validatedData.itemType,
@@ -131,6 +131,7 @@ export async function POST(request: Request) {
         blobResult.url,
         file.type,
         file.size,
+        'completed'
       ]
     );
 
