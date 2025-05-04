@@ -132,35 +132,42 @@ export default function UploadPage() {
         percent: 0
       });
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setProgress(prev => prev ? {
-              ...prev,
-              percent
-            } : null);
-          }
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload');
+      
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded * 100) / event.total);
+          setProgress(prev => prev ? {
+            ...prev,
+            percent
+          } : null);
         }
-      });
+      };
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new UploadError(errorData.error || 'Upload failed');
-      }
+      xhr.onload = async () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setProgress({
+            stage: 'processing',
+            currentFile: 'finalizing',
+            currentNumber: files.length,
+            totalFiles: files.length,
+            totalSize: totalSize,
+            percent: 100
+          });
 
-      setProgress({
-        stage: 'processing',
-        currentFile: 'finalizing',
-        currentNumber: files.length,
-        totalFiles: files.length,
-        totalSize: totalSize,
-        percent: 100
-      });
+          setUploadStatus({ status: 'success', message: 'Upload completed successfully' });
+        } else {
+          const errorData = JSON.parse(xhr.responseText);
+          throw new UploadError(errorData.error || 'Upload failed');
+        }
+      };
 
-      setUploadStatus({ status: 'success', message: 'Upload completed successfully' });
+      xhr.onerror = () => {
+        throw new UploadError('Network error occurred during upload');
+      };
+
+      xhr.send(formData);
     } catch (err) {
       console.error('Upload error:', err);
       setUploadStatus({ 
