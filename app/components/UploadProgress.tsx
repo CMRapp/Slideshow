@@ -5,12 +5,20 @@ interface UploadProgressProps {
 }
 
 export function UploadProgress({ progress }: UploadProgressProps) {
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+  };
+
   const getProgressText = () => {
     switch (progress.stage) {
       case 'compressing':
-        return `Compressing ${progress.currentFile} (${progress.currentNumber}/${progress.totalFiles})`;
+        return `Compressing ${progress.currentFile} (${progress.currentNumber}/${progress.totalFiles}) - ${formatFileSize(progress.currentSize || 0)}`;
       case 'uploading':
-        return 'Uploading files to server...';
+        return `Uploading files to server... ${progress.percent ? `${progress.percent}%` : ''}`;
       case 'processing':
         return 'Processing upload...';
       default:
@@ -40,10 +48,15 @@ export function UploadProgress({ progress }: UploadProgressProps) {
             <div 
               className="h-full bg-current transition-all duration-300 ease-in-out rounded-full"
               style={{ 
-                width: `${(progress.currentNumber / progress.totalFiles) * 100}%`
+                width: `${progress.percent || (progress.currentNumber / progress.totalFiles) * 100}%`
               }}
             />
           </div>
+          {progress.totalSize && (
+            <div className="mt-1 text-xs text-gray-400">
+              Total size: {formatFileSize(progress.totalSize)}
+            </div>
+          )}
         </div>
       </div>
     </div>

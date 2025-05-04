@@ -95,6 +95,12 @@ export default function UploadPage() {
         formData.append('itemNumber', selectedVideoNumber);
       }
 
+      // Calculate total size
+      let totalSize = 0;
+      for (let i = 0; i < files.length; i++) {
+        totalSize += files[i].size;
+      }
+
       // Process and compress each file
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -104,6 +110,8 @@ export default function UploadPage() {
           currentFile: file.name,
           currentNumber: i + 1,
           totalFiles: files.length,
+          currentSize: file.size,
+          totalSize: totalSize
         });
         
         try {
@@ -120,11 +128,22 @@ export default function UploadPage() {
         currentFile: 'all files',
         currentNumber: files.length,
         totalFiles: files.length,
+        totalSize: totalSize,
+        percent: 0
       });
 
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setProgress(prev => prev ? {
+              ...prev,
+              percent
+            } : null);
+          }
+        }
       });
 
       if (!response.ok) {
@@ -137,6 +156,8 @@ export default function UploadPage() {
         currentFile: 'finalizing',
         currentNumber: files.length,
         totalFiles: files.length,
+        totalSize: totalSize,
+        percent: 100
       });
 
       setUploadStatus({ status: 'success', message: 'Upload completed successfully' });

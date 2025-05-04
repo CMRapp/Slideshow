@@ -14,4 +14,6 @@ export interface ProgressStatus {
   currentNumber: number;
   totalFiles: number;
   percent?: number;
+  currentSize?: number;
+  totalSize?: number;
 } 
