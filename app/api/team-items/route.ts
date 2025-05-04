@@ -18,8 +18,8 @@ export async function GET(request: Request) {
     const result = await pool.query(
       `SELECT 
         ui.id,
-        ui.item_type as type,
-        ui.item_number as number,
+        ui.item_type,
+        ui.item_number,
         ui.file_path as url
        FROM uploaded_items ui
        JOIN teams t ON ui.team_id = t.id
