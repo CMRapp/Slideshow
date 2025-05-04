@@ -85,7 +85,7 @@ export default function UploadPage() {
 
     try {
       const formData = new FormData();
-      formData.append('team', selectedTeam);
+      formData.append('teamName', selectedTeam);
       
       if (selectedPhotoNumber) {
         formData.append('itemType', 'photo');
