@@ -244,13 +244,13 @@ export default function SlideshowPage() {
       <div className="relative flex flex-col h-[100dvh] overflow-hidden">
         <div 
           id="slideshow-item"
-          className="flex-1 flex items-center justify-center bg-black/40 md:items-center"
+          className="flex-1 flex items-center justify-center bg-black/40 portrait:items-start portrait:pt-4 landscape:items-center"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
           {mediaItems.length > 0 && (
             <>
-              <div className="relative w-full h-full flex flex-col md:items-center justify-start md:justify-center p-4">
+              <div className="relative w-full h-full flex flex-col portrait:items-start landscape:items-center justify-start md:justify-center p-4">
                 {currentItem.file_type.startsWith('image/') ? (
                   <div className="relative w-full h-full flex items-center justify-center">
                     <div className="relative w-full h-full max-w-[90dvw] max-h-[calc(100dvh-6rem)]">
