@@ -349,6 +349,9 @@ export default function UploadPage() {
               <p className="text-sm text-gray-400">
                 Supported formats: Images (JPEG, PNG, GIF) and Videos (MP4, WebM, MOV, HEVC)
               </p>
+              <p className="text-sm text-gray-400">
+                Maximum file size: 4.5MB
+              </p>
             </div>
           </div>
 
