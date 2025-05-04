@@ -84,13 +84,11 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
             >
               <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-800">
                 {item.type === 'photo' ? (
-                  <Image
+                  <img
                     src={item.url}
                     alt={`${teamName} ${item.type} ${item.number}`}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                    priority
+                    className="w-full h-full object-cover"
+                    crossOrigin="anonymous"
                     onError={(e) => {
                       console.error('Image failed to load:', item.url);
                       const img = e.target as HTMLImageElement;
@@ -104,6 +102,7 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
                     muted
                     loop
                     playsInline
+                    crossOrigin="anonymous"
                   />
                 )}
               </div>

@@ -4,5 +4,24 @@
   "regions": ["iad1"],
   "env": {
     "DATABASE_URL": "postgresql://neondb_owner:npg_5tqZBVczS1oX@ep-late-tooth-a4ok1ec0-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"
-  }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "credentialless"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "cross-origin"
+        }
+      ]
+    }
+  ]
 } 
