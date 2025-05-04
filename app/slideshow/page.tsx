@@ -274,10 +274,10 @@ export default function SlideshowPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="w-full flex items-center justify-center m-0 p-0 overflow-x-auto">
+                  <div className="w-full flex items-center justify-center m-0 p-0 overflow-x-auto max-w-[90vw]">
                     <video
                       src={currentItem.file_path}
-                      className="w-full max-w-[90vw] max-h-[90vh] object-contain m-0 p-0 mx-auto"
+                      className="w-full min-w-[320px] max-w-none max-h-[90vh] object-contain m-0 p-0 mx-auto"
                       autoPlay
                       loop
                       playsInline
