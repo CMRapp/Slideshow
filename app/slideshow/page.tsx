@@ -243,6 +243,7 @@ export default function SlideshowPage() {
       
       <div className="relative flex flex-col h-[100dvh] overflow-hidden">
         <div 
+          id="slideshow-item"
           className="flex-1 flex items-center justify-center bg-black/40 md:items-center"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}

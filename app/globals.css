@@ -77,3 +77,18 @@ h3 {
 .nav-item.active {
   @apply text-yellow-400 bg-yellow-400/20;
 }
+
+/* Slideshow Mobile Styles */
+@media (max-width: 768px) and (orientation: portrait) {
+  #slideshow-item {
+    align-items: flex-start;
+    padding-top: 1rem;
+  }
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+  #slideshow-item {
+    align-items: center;
+    justify-content: center;
+  }
+}
