@@ -252,15 +252,15 @@ export default function SlideshowPage() {
             <>
               <div className="w-full flex flex-col items-start justify-start m-0 p-0">
                 {currentItem.file_type.startsWith('image/') ? (
-                  <div className="w-full flex items-center justify-center m-0 p-0 overflow-hidden">
-                    <div className="w-full max-w-[90vw] md:max-w-3xl md:max-h-[80vh] m-0 p-0 flex justify-center mx-auto">
+                  <div className="w-full flex items-center justify-center m-0 p-0 overflow-x-auto">
+                    <div className="w-full max-w-[90vw] max-h-[90vh] m-0 p-0 flex justify-center mx-auto">
                       <Image
                         src={currentItem.file_path}
                         alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
                         width={800}
                         height={600}
                         sizes="90vw"
-                        className="object-contain w-full h-auto m-0 p-0"
+                        className="object-contain w-full h-auto mx-auto m-0 p-0"
                         priority
                         quality={100}
                         unoptimized={false}
@@ -274,10 +274,10 @@ export default function SlideshowPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="w-full flex items-center justify-center m-0 p-0 overflow-hidden">
+                  <div className="w-full flex items-center justify-center m-0 p-0 overflow-x-auto">
                     <video
                       src={currentItem.file_path}
-                      className="w-full max-w-full max-w-[90vw] md:max-w-3xl md:max-h-[80vh] object-contain m-0 p-0 mx-auto"
+                      className="w-full max-w-[90vw] max-h-[90vh] object-contain m-0 p-0 mx-auto"
                       autoPlay
                       loop
                       playsInline
