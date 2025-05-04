@@ -241,7 +241,7 @@ export default function SlideshowPage() {
         }}
       />
       
-      <div className="relative flex flex-col min-h-0 overflow-hidden">
+      <div className="relative flex flex-col min-h-0 max-w-screen overflow-x-hidden">
         <div 
           id="slideshow-item"
           className="w-full flex flex-col items-start justify-start m-0 p-0"
@@ -252,32 +252,30 @@ export default function SlideshowPage() {
             <>
               <div className="w-full flex flex-col items-start justify-start m-0 p-0">
                 {currentItem.file_type.startsWith('image/') ? (
-                  <div className="w-full flex items-center justify-center m-0 p-0 overflow-hidden">
-                    <div className="w-full max-w-full max-h-[90vh] m-0 p-0 flex justify-center mx-auto">
-                      <Image
-                        src={currentItem.file_path}
-                        alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
-                        width={800}
-                        height={600}
-                        sizes="90vw"
-                        className="object-contain w-full h-auto max-w-full max-h-[90vh] mx-auto m-0 p-0"
-                        priority
-                        quality={100}
-                        unoptimized={false}
-                        crossOrigin="anonymous"
-                        onError={(e) => {
-                          console.error('Image failed to load:', currentItem.file_path);
-                          const img = e.target as HTMLImageElement;
-                          img.style.display = 'none';
-                        }}
-                      />
-                    </div>
+                  <div className="w-full flex items-center justify-center m-0 p-0">
+                    <Image
+                      src={currentItem.file_path}
+                      alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
+                      width={800}
+                      height={600}
+                      sizes="100vw"
+                      className="object-contain w-full max-w-[100vw] h-auto mx-auto m-0 p-0"
+                      priority
+                      quality={100}
+                      unoptimized={false}
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        console.error('Image failed to load:', currentItem.file_path);
+                        const img = e.target as HTMLImageElement;
+                        img.style.display = 'none';
+                      }}
+                    />
                   </div>
                 ) : (
-                  <div className="w-full flex items-center justify-center m-0 p-0 overflow-hidden">
+                  <div className="w-full flex items-center justify-center m-0 p-0">
                     <video
                       src={currentItem.file_path}
-                      className="w-full max-w-full max-h-[90vh] object-contain m-0 p-0 mx-auto"
+                      className="object-contain w-full max-w-[100vw] max-h-[90vh] m-0 p-0 mx-auto"
                       autoPlay
                       loop
                       playsInline
