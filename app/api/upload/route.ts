@@ -123,11 +123,12 @@ export async function POST(request: Request) {
     // Save to database
     console.log('Saving to database...');
     await executeQuery(
-      'INSERT INTO uploaded_items (team_id, item_type, item_number, file_path, mime_type, file_size, upload_status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      'INSERT INTO uploaded_items (team_id, item_type, item_number, file_name, file_path, mime_type, file_size, upload_status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
       [
         teamId,
         validatedData.itemType,
         validatedData.itemNumber,
+        file.name,
         blobResult.url,
         file.type,
         file.size,
