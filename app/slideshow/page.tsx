@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { FiImage, FiPlay, FiPause, FiSkipBack, FiSkipForward } from 'react-icons/fi';
 import Image from 'next/image';
 import SidebarLayout from '@/app/components/SidebarLayout';
@@ -23,90 +23,69 @@ export default function SlideshowPage() {
   const [isPaused, setIsPaused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
+  const pollIntervalRef = useRef<NodeJS.Timeout>();
+  const isVisibleRef = useRef(true);
 
   const fetchMediaItems = useCallback(async () => {
     try {
       setIsLoading(true);
-      setError('');
-      console.log('Slideshow: Starting to fetch media items...');
-      
+      setError(null);
       const response = await fetch('/api/media');
-      console.log('Slideshow: Media API response status:', response.status);
-      
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Slideshow: Media API error:', errorData);
-        throw new Error(errorData.error || 'Failed to fetch media items');
+        throw new Error('Failed to fetch media items');
       }
-      
       const data = await response.json();
-      console.log('Slideshow: Raw API response:', data);
-      
-      if (!data.mediaItems || data.mediaItems.length === 0) {
-        console.log('Slideshow: No media items found in API response');
-        setMediaItems([]);
-        return;
-      }
-
-      // Validate URLs
-      const validItems = data.mediaItems.filter((item: MediaItem) => {
-        const isValid = item.file_path && (
-          item.file_path.startsWith('https://') || 
-          item.file_path.startsWith('http://')
-        );
-        
-        if (!isValid) {
-          console.warn('Slideshow: Invalid file path found:', {
-            id: item.id,
-            team_name: item.team_name,
-            file_path: item.file_path
-          });
-        }
-        
-        return isValid;
-      });
-
-      console.log('Slideshow: Valid media items:', {
-        total: validItems.length,
-        items: validItems
-      });
-
-      if (validItems.length === 0) {
-        throw new Error('No valid media items found');
-      }
-
-      // Shuffle the items
-      const shuffledItems = [...validItems];
-      for (let i = shuffledItems.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
-      }
-
-      console.log('Slideshow: Setting media items:', {
-        count: shuffledItems.length,
-        firstItem: shuffledItems[0]
-      });
-
-      setMediaItems(shuffledItems);
+      setMediaItems(data.mediaItems);
+      setRetryCount(0); // Reset retry count on success
     } catch (err) {
-      console.error('Slideshow: Error in fetchMediaItems:', err);
+      console.error('Error fetching media items:', err);
       setError(err instanceof Error ? err.message : 'Failed to load media items');
-      setMediaItems([]);
+      setRetryCount(prev => prev + 1);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  const startPolling = useCallback(() => {
+    // Clear any existing interval
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+    }
+
+    // Calculate interval based on visibility and retry count
+    const baseInterval = 30000; // 30 seconds
+    const backoffMultiplier = Math.min(2 ** retryCount, 8); // Cap at 8x
+    const visibilityMultiplier = isVisibleRef.current ? 1 : 4; // 4x slower when hidden
+    
+    const interval = baseInterval * backoffMultiplier * visibilityMultiplier;
+    
+    pollIntervalRef.current = setInterval(fetchMediaItems, interval);
+  }, [fetchMediaItems, retryCount]);
+
   useEffect(() => {
     // Initial fetch
     fetchMediaItems();
 
-    // Set up polling
-    const pollInterval = setInterval(fetchMediaItems, 30000); // 30 seconds
+    // Set up visibility change listener
+    const handleVisibilityChange = () => {
+      isVisibleRef.current = document.visibilityState === 'visible';
+      startPolling();
+    };
 
-    // Clean up interval on unmount
-    return () => clearInterval(pollInterval);
-  }, [fetchMediaItems]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Start polling
+    startPolling();
+
+    // Clean up
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchMediaItems, startPolling]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -248,10 +227,10 @@ export default function SlideshowPage() {
         }}
       />
       
-      <div className="relative flex flex-col min-h-0 max-w-screen overflow-x-hidden">
+      <div className="relative flex flex-col min-h-0 max-w-screen overflow-x-hidden border border-gray-600 shadow-[0_0_10px_rgba(255,255,255,0.1)]">
         <div 
           id="slideshow-item"
-          className="w-full h-screen flex items-center justify-center m-0 p-0 "
+          className="w-full h-screen flex items-center justify-center m-0 p-0"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
