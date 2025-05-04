@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2024-03-22
+
+### Added
+- Modal view for full-size media display
+- Instructional text for user interaction
+- Separate sections for photos and videos in team review
+
+### Changed
+- Reorganized team media grid layout to 5 columns
+- Improved media organization with categorized sections
+- Enhanced user interface with clear section headers
+- Updated heading to include "Team" prefix
+
 ## [2.0.0] - 2024-03-21
 
 ### Added

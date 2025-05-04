@@ -71,6 +71,7 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
       <div className="flex items-center gap-4 mb-8">
         <h1 className="text-3xl font-bold">Team {teamName} Media</h1>
       </div>
+      <p className="text-gray-400 mb-8">Click any item for a larger view</p>
 
       {mediaItems.length === 0 ? (
         <div className="text-center text-gray-400 py-8">
