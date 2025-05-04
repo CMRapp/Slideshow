@@ -243,13 +243,13 @@ export default function SlideshowPage() {
       
       <div className="relative flex flex-col h-[100dvh] overflow-hidden">
         <div 
-          className="flex-1 flex items-center justify-center bg-black/40"
+          className="flex-1 flex items-center justify-center bg-black/40 md:items-center"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
           {mediaItems.length > 0 && (
             <>
-              <div className="relative w-full h-full flex items-center justify-center p-4">
+              <div className="relative w-full h-full flex flex-col md:items-center justify-start md:justify-center p-4">
                 {currentItem.file_type.startsWith('image/') ? (
                   <div className="relative w-full h-full flex items-center justify-center">
                     <div className="relative w-full h-full max-w-[90dvw] max-h-[calc(100dvh-6rem)]">
@@ -294,7 +294,7 @@ export default function SlideshowPage() {
                     />
                   </div>
                 )}
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-white text-center">
+                <div className="w-full p-4 text-white text-center md:absolute md:bottom-0 md:left-0 md:right-0">
                   <h2 className="inline-block mr-2">Team {currentItem.team_name}</h2>
                   <h2 className="inline-block opacity-80">
                     {currentItem.item_type ? `${currentItem.item_type.charAt(0).toUpperCase() + currentItem.item_type.slice(1)} ${currentItem.item_number}` : currentItem.file_name}
