@@ -244,22 +244,22 @@ export default function SlideshowPage() {
       <div className="relative flex flex-col h-[100dvh] overflow-hidden">
         <div 
           id="slideshow-item"
-          className="flex-1 flex items-start justify-center pt-4"
+          className="flex-1 flex items-start justify-center"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
           {mediaItems.length > 0 && (
             <>
-              <div className="relative w-full h-full flex flex-col items-start justify-start p-4">
+              <div className="relative w-full h-full flex flex-col items-start justify-start p-0 m-0">
                 {currentItem.file_type.startsWith('image/') ? (
-                  <div className="relative w-full h-full flex items-center justify-center">
-                    <div className="relative w-full h-full max-w-[90dvw] max-h-[calc(100dvh-6rem)]">
+                  <div className="relative w-full h-full flex items-center justify-center m-0 p-0">
+                    <div className="relative w-full h-full max-w-[90dvw] max-h-[calc(100dvh-6rem)] m-0 p-0">
                       <Image
                         src={currentItem.file_path}
                         alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
                         fill
                         sizes="90vw"
-                        className="object-contain w-full"
+                        className="object-contain w-full m-0 p-0"
                         priority
                         quality={100}
                         unoptimized={false}
@@ -273,10 +273,10 @@ export default function SlideshowPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="relative w-full h-full flex items-center justify-center">
+                  <div className="relative w-full h-full flex items-center justify-center m-0 p-0">
                     <video
                       src={currentItem.file_path}
-                      className="max-w-[90dvw] max-h-[calc(100dvh-6rem)] object-contain w-full"
+                      className="max-w-[90dvw] max-h-[calc(100dvh-6rem)] object-contain w-full m-0 p-0"
                       autoPlay
                       loop
                       playsInline
@@ -295,7 +295,7 @@ export default function SlideshowPage() {
                     />
                   </div>
                 )}
-                <div className="w-full p-4 text-white text-center md:absolute md:bottom-0 md:left-0 md:right-0">
+                <div className="w-full text-white text-center m-0 p-0">
                   <h2 className="inline-block mr-2">Team {currentItem.team_name}</h2>
                   <h2 className="inline-block opacity-80">
                     {currentItem.item_type ? `${currentItem.item_type.charAt(0).toUpperCase() + currentItem.item_type.slice(1)} ${currentItem.item_number}` : currentItem.file_name}
