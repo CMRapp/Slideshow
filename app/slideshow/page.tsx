@@ -241,19 +241,19 @@ export default function SlideshowPage() {
         }}
       />
       
-      <div className="relative flex flex-col h-[100dvh] overflow-hidden">
+      <div className="relative flex flex-col min-h-0 overflow-hidden">
         <div 
           id="slideshow-item"
-          className="flex-1 flex items-start justify-center"
+          className="w-full flex flex-col items-start justify-start m-0 p-0"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
           {mediaItems.length > 0 && (
             <>
-              <div className="relative w-full h-full flex flex-col items-start justify-start p-0 m-0">
+              <div className="w-full flex flex-col items-start justify-start m-0 p-0">
                 {currentItem.file_type.startsWith('image/') ? (
-                  <div className="relative w-full h-full flex items-center justify-center m-0 p-0">
-                    <div className="relative w-full h-full max-w-[90dvw] max-h-[calc(100dvh-6rem)] m-0 p-0">
+                  <div className="w-full flex items-center justify-center m-0 p-0">
+                    <div className="w-full max-w-[90dvw] max-h-[calc(100dvh-6rem)] m-0 p-0">
                       <Image
                         src={currentItem.file_path}
                         alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
@@ -273,7 +273,7 @@ export default function SlideshowPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="relative w-full h-full flex items-center justify-center m-0 p-0">
+                  <div className="w-full flex items-center justify-center m-0 p-0">
                     <video
                       src={currentItem.file_path}
                       className="max-w-[90dvw] max-h-[calc(100dvh-6rem)] object-contain w-full m-0 p-0"
