@@ -253,13 +253,14 @@ export default function SlideshowPage() {
               <div className="w-full flex flex-col items-start justify-start m-0 p-0">
                 {currentItem.file_type.startsWith('image/') ? (
                   <div className="w-full flex items-center justify-center m-0 p-0">
-                    <div className="w-full max-w-[90dvw] max-h-[calc(100dvh-6rem)] m-0 p-0">
+                    <div className="w-full max-w-[90vw] m-0 p-0 flex justify-center">
                       <Image
                         src={currentItem.file_path}
                         alt={`${currentItem.team_name} - ${currentItem.item_type} ${currentItem.item_number}`}
-                        fill
+                        width={800}
+                        height={600}
                         sizes="90vw"
-                        className="object-contain w-full m-0 p-0"
+                        className="object-contain w-full h-auto m-0 p-0"
                         priority
                         quality={100}
                         unoptimized={false}
