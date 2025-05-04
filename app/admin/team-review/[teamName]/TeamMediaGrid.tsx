@@ -69,7 +69,7 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
         Back
       </button>
       <div className="flex items-center gap-4 mb-8">
-        <h1 className="text-3xl font-bold">{teamName} Media</h1>
+        <h1 className="text-3xl font-bold">Team {teamName} Media</h1>
       </div>
 
       {mediaItems.length === 0 ? (
@@ -77,45 +77,72 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
           No media items found for this team.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {mediaItems.map((item) => (
-            <div
-              key={item.id}
-              className="flex flex-col gap-2 cursor-pointer"
-              onClick={() => setSelectedMedia(item)}
-            >
-              <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-800">
-                {item.type === 'photo' ? (
-                  <Image
-                    src={item.url}
-                    alt={`${teamName} ${item.type} ${item.number}`}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                    priority
-                    crossOrigin="anonymous"
-                    onError={(e) => {
-                      console.error('Image failed to load:', item.url);
-                      const img = e.target as HTMLImageElement;
-                      img.style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <video
-                    src={item.url}
-                    className="w-full h-full object-cover"
-                    muted
-                    loop
-                    playsInline
-                    crossOrigin="anonymous"
-                  />
-                )}
-              </div>
-              <div className="text-center text-sm text-gray-300">
-                {item.type.charAt(0).toUpperCase() + item.type.slice(1)} {item.number}
-              </div>
+        <div className="space-y-12">
+          {/* Photos Section */}
+          <div>
+            <h2 className="text-2xl font-semibold mb-6">Photos</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {mediaItems
+                .filter(item => item.type === 'photo')
+                .map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex flex-col gap-2 cursor-pointer"
+                    onClick={() => setSelectedMedia(item)}
+                  >
+                    <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-800">
+                      <Image
+                        src={item.url}
+                        alt={`${teamName} ${item.type} ${item.number}`}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                        priority
+                        crossOrigin="anonymous"
+                        onError={(e) => {
+                          console.error('Image failed to load:', item.url);
+                          const img = e.target as HTMLImageElement;
+                          img.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                    <div className="text-center text-sm text-gray-300">
+                      Photo {item.number}
+                    </div>
+                  </div>
+                ))}
             </div>
-          ))}
+          </div>
+
+          {/* Videos Section */}
+          <div>
+            <h2 className="text-2xl font-semibold mb-6">Videos</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {mediaItems
+                .filter(item => item.type === 'video')
+                .map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex flex-col gap-2 cursor-pointer"
+                    onClick={() => setSelectedMedia(item)}
+                  >
+                    <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-800">
+                      <video
+                        src={item.url}
+                        className="w-full h-full object-cover"
+                        muted
+                        loop
+                        playsInline
+                        crossOrigin="anonymous"
+                      />
+                    </div>
+                    <div className="text-center text-sm text-gray-300">
+                      Video {item.number}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
         </div>
       )}
 
