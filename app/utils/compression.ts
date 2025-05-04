@@ -4,12 +4,17 @@ import { fetchFile } from '@ffmpeg/util';
 
 const MAX_IMAGE_SIZE_MB = 4;
 
-export async function compressImage(file: File): Promise<File> {
+export async function compressImage(file: File, onProgress?: (progress: number) => void): Promise<File> {
   const options = {
     maxSizeMB: MAX_IMAGE_SIZE_MB,
     maxWidthOrHeight: 1920,
     useWebWorker: true,
     fileType: file.type,
+    onProgress: (percentage: number) => {
+      if (onProgress) {
+        onProgress(percentage);
+      }
+    }
   };
 
   try {
@@ -21,11 +26,18 @@ export async function compressImage(file: File): Promise<File> {
   }
 }
 
-export async function compressVideo(file: File): Promise<File> {
+export async function compressVideo(file: File, onProgress?: (progress: number) => void): Promise<File> {
   const ffmpeg = new FFmpeg();
   
   try {
     await ffmpeg.load();
+    
+    // Set up progress callback
+    ffmpeg.on('progress', ({ progress }) => {
+      if (onProgress) {
+        onProgress(progress * 100);
+      }
+    });
     
     // Write the input file to FFmpeg's virtual file system
     ffmpeg.writeFile('input.mp4', await fetchFile(file));
@@ -62,11 +74,11 @@ export async function compressVideo(file: File): Promise<File> {
   }
 }
 
-export async function compressFile(file: File): Promise<File> {
+export async function compressFile(file: File, onProgress?: (progress: number) => void): Promise<File> {
   if (file.type.startsWith('image/')) {
-    return compressImage(file);
+    return compressImage(file, onProgress);
   } else if (file.type.startsWith('video/')) {
-    return compressVideo(file);
+    return compressVideo(file, onProgress);
   }
   throw new Error('Unsupported file type');
 } 

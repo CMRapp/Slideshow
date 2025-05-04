@@ -115,7 +115,12 @@ export default function UploadPage() {
         });
         
         try {
-          const compressedFile = await compressFile(file);
+          const compressedFile = await compressFile(file, (progress) => {
+            setProgress(prev => prev ? {
+              ...prev,
+              percent: progress
+            } : null);
+          });
           console.log(`Compressed ${file.name}: ${(file.size / (1024 * 1024)).toFixed(2)}MB -> ${(compressedFile.size / (1024 * 1024)).toFixed(2)}MB`);
           formData.append('file', compressedFile);
         } catch {
