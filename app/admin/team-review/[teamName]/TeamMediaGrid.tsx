@@ -108,7 +108,7 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
                 )}
               </div>
               <div className="text-center text-sm text-gray-300">
-                {item.type ? `${item.type.charAt(0).toUpperCase() + item.type.slice(1)} ${item.number}` : 'Media'}
+                {item.type.charAt(0).toUpperCase() + item.type.slice(1)} {item.number}
               </div>
             </div>
           ))}
