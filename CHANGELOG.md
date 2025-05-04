@@ -290,4 +290,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic slideshow functionality
 - Media upload system
 - Admin panel for configuration
-- Team-based media organization 
+- Team-based media organization
+
+## [3.1.0] - 2025-05-04
+
+### Changed
+- Improved slideshow media responsiveness and layout for all devices
+- Ensured images and videos are always contained within the viewport
+- Centered media items vertically and horizontally on desktop
+- Fixed video controls overflowing on mobile landscape
+- Unified and modernized caption and team name display
+- Updated versioning system to ensure sidebar always shows the correct version
+
+### Fixed
+- Addressed gaps and overflow issues between navigation, media, and captions
+- Resolved issues with media sizing on both mobile and desktop
+- Fixed version number not updating automatically in the sidebar 
