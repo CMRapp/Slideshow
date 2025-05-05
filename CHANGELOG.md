@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.1] - 2024-04-27
+
+### Fixed
+- Dropdown disables for already uploaded photo/video numbers now work reliably on /upload
+- TypeScript type for UploadedItem now matches API response (type, number)
+- Dropdown disables are checked on initial page load and after upload
+- Improved reliability of upload page with Vercel Blob and Neon DB integration
+
 ## [3.2.0] - 2024-04-27
 
 ### Added
