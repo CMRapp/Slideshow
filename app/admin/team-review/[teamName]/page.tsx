@@ -4,7 +4,6 @@ import TeamMediaGrid from './TeamMediaGrid';
 
 type Props = {
   params: { teamName: string }
-  searchParams: { [key: string]: string | string[] | undefined }
 }
 
 export const metadata: Metadata = {
