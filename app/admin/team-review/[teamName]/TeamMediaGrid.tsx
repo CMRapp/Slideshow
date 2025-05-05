@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiArrowLeft, FiX } from 'react-icons/fi';
+import { FiArrowLeft, FiX, FiImage, FiVideo } from 'react-icons/fi';
 import Image from 'next/image';
 
 interface MediaItem {
@@ -21,10 +21,13 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTeamMedia = async () => {
       try {
+        setIsLoading(true);
+        setError(null);
         const response = await fetch(`/api/team-items?team=${encodeURIComponent(teamName)}`);
         if (!response.ok) {
           throw new Error('Failed to fetch team media');
@@ -33,6 +36,8 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
         setMediaItems(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load team media');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -54,6 +59,26 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
         </div>
         <div className="p-4 bg-red-900 text-white rounded-lg">
           {error}
+        </div>
+      </>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <>
+        <div className="flex items-center gap-4 mb-8">
+          <button
+            onClick={() => router.push('/admin?tab=review')}
+            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+          >
+            <FiArrowLeft />
+            Back
+          </button>
+          <h1 className="text-3xl font-bold">Loading...</h1>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
       </>
     );
@@ -88,9 +113,12 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
                 .map(item => (
                   <div
                     key={item.id}
-                    className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                    className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity group"
                     onClick={() => setSelectedMedia(item)}
                   >
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <FiImage className="w-12 h-12 text-gray-600 group-hover:text-gray-400 transition-colors" />
+                    </div>
                     <Image
                       src={item.url}
                       alt={`Photo ${item.number}`}
@@ -122,9 +150,12 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
                 .map(item => (
                   <div
                     key={item.id}
-                    className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                    className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity group"
                     onClick={() => setSelectedMedia(item)}
                   >
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <FiVideo className="w-12 h-12 text-gray-600 group-hover:text-gray-400 transition-colors" />
+                    </div>
                     <video
                       src={item.url}
                       className="w-full h-full object-cover"

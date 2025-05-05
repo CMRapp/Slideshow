@@ -18,9 +18,10 @@ export async function GET(request: Request) {
     const result = await pool.query(
       `SELECT 
         ui.id,
-        ui.item_type,
-        ui.item_number,
-        ui.file_path as url
+        ui.item_type as type,
+        ui.item_number as number,
+        ui.file_path as url,
+        ui.mime_type
        FROM uploaded_items ui
        JOIN teams t ON ui.team_id = t.id
        WHERE t.name = $1
@@ -47,7 +48,12 @@ export async function GET(request: Request) {
         item.url = `${BLOB_STORE_URL}/${teamName}/${fileName}`;
       }
       
-      return item;
+      return {
+        id: item.id,
+        type: item.type,
+        number: item.number,
+        url: item.url
+      };
     });
 
     return NextResponse.json(processedItems);
