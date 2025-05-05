@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiArrowLeft, FiX, FiImage, FiVideo } from 'react-icons/fi';
+import { FiArrowLeft, FiX, FiImage, FiVideo, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import Image from 'next/image';
 
 interface MediaItem {
@@ -43,6 +43,38 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
 
     fetchTeamMedia();
   }, [teamName]);
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    if (!selectedMedia) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        handlePrevious();
+      } else if (e.key === 'ArrowRight') {
+        handleNext();
+      } else if (e.key === 'Escape') {
+        setSelectedMedia(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedMedia]);
+
+  const handlePrevious = () => {
+    if (!selectedMedia) return;
+    const currentIndex = mediaItems.findIndex(item => item.id === selectedMedia.id);
+    const previousIndex = currentIndex > 0 ? currentIndex - 1 : mediaItems.length - 1;
+    setSelectedMedia(mediaItems[previousIndex]);
+  };
+
+  const handleNext = () => {
+    if (!selectedMedia) return;
+    const currentIndex = mediaItems.findIndex(item => item.id === selectedMedia.id);
+    const nextIndex = currentIndex < mediaItems.length - 1 ? currentIndex + 1 : 0;
+    setSelectedMedia(mediaItems[nextIndex]);
+  };
 
   if (error) {
     return (
@@ -181,14 +213,44 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
 
       {/* Media Preview Modal */}
       {selectedMedia && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+        <div 
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedMedia(null)}
+        >
           <button
             onClick={() => setSelectedMedia(null)}
-            className="absolute top-4 right-4 text-white hover:text-gray-300"
+            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
           >
             <FiX size={24} />
           </button>
-          <div className="max-w-4xl w-full max-h-[90vh]">
+
+          {/* Navigation Buttons */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrevious();
+            }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
+            aria-label="Previous"
+          >
+            <FiChevronLeft size={32} />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNext();
+            }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
+            aria-label="Next"
+          >
+            <FiChevronRight size={32} />
+          </button>
+
+          <div 
+            className="max-w-4xl w-full max-h-[90vh] relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             {selectedMedia.type === 'photo' ? (
               <Image
                 src={selectedMedia.url}
@@ -219,6 +281,9 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
                 }}
               />
             )}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 px-4 py-2 rounded-full text-white text-sm">
+              {selectedMedia.type === 'photo' ? 'Photo' : 'Video'} {selectedMedia.number} of {mediaItems.length}
+            </div>
           </div>
         </div>
       )}
