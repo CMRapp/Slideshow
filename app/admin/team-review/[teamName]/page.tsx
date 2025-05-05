@@ -6,26 +6,28 @@ export const metadata: Metadata = {
   title: 'Team Media Review',
 };
 
-type PageParams = {
-  teamName: string;
-}
+type Props = {
+  params: {
+    teamName: string;
+  };
+};
 
-export default async function TeamReviewPage({
-  params,
-}: {
-  params: PageParams;
-}) {
+export default async function TeamReviewPage({ params }: Props) {
+  const { teamName } = params;
+
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-7xl mx-auto">
-        <Suspense fallback={
-          <div className="flex items-center gap-4 mb-8">
-            <h1 className="text-3xl font-bold">Loading...</h1>
-          </div>
-        }>
-          <TeamMediaGrid teamName={params.teamName} />
+        <Suspense
+          fallback={
+            <div className="flex items-center gap-4 mb-8">
+              <h1 className="text-3xl font-bold">Loading...</h1>
+            </div>
+          }
+        >
+          <TeamMediaGrid teamName={teamName} />
         </Suspense>
       </div>
     </div>
   );
-} 
+}
