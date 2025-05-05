@@ -6,12 +6,13 @@ export const metadata: Metadata = {
   title: 'Team Media Review',
 };
 
-// ✅ Directly type the props using inline interface
 export default async function TeamReviewPage({
   params,
 }: {
-  params: { teamName: string };
+  params: Promise<{ teamName: string }>;
 }) {
+  const resolvedParams = await params;
+  
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-7xl mx-auto">
@@ -22,7 +23,7 @@ export default async function TeamReviewPage({
             </div>
           }
         >
-          <TeamMediaGrid teamName={params.teamName} />
+          <TeamMediaGrid teamName={resolvedParams.teamName} />
         </Suspense>
       </div>
     </div>
