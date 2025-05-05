@@ -6,14 +6,15 @@ export const metadata: Metadata = {
   title: 'Team Media Review',
 };
 
+type PageParams = {
+  teamName: string;
+}
+
 export default async function TeamReviewPage({
   params,
 }: {
-  params: { teamName: string }
+  params: PageParams;
 }) {
-  // Ensure params is resolved
-  const teamName = await Promise.resolve(params.teamName);
-
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-7xl mx-auto">
@@ -22,7 +23,7 @@ export default async function TeamReviewPage({
             <h1 className="text-3xl font-bold">Loading...</h1>
           </div>
         }>
-          <TeamMediaGrid teamName={teamName} />
+          <TeamMediaGrid teamName={params.teamName} />
         </Suspense>
       </div>
     </div>
