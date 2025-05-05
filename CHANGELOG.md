@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2024-04-27
+
+### Added
+- Previous/Next navigation controls to media modal in team review
+- Keyboard navigation for modal (left/right arrows, Escape to close)
+- Instructional text for team review page
+- Click-outside-to-close functionality for modal
+
+### Changed
+- Navigation controls now appear just outside the displayed media, not overlapping
+- Improved modal layout and accessibility
+- Responsive and visually enhanced navigation controls
+- Improved grid layout and dropdown alignment on upload page
+
+### Fixed
+- Disabled dropdown options for already uploaded items on upload page
+- Media counter in modal now displays correct values
+- Navigation controls no longer overlap media content
+
 ## [3.0.0] - 2024-03-22
 
 ### Added
