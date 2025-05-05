@@ -6,15 +6,14 @@ export const metadata: Metadata = {
   title: 'Team Media Review',
 };
 
-type Props = {
+// ✅ This is the correct way to type the props Next.js provides to route segments
+interface TeamReviewPageProps {
   params: {
     teamName: string;
   };
-};
+}
 
-export default async function TeamReviewPage({ params }: Props) {
-  const { teamName } = params;
-
+export default async function TeamReviewPage({ params }: TeamReviewPageProps) {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-7xl mx-auto">
@@ -25,7 +24,7 @@ export default async function TeamReviewPage({ params }: Props) {
             </div>
           }
         >
-          <TeamMediaGrid teamName={teamName} />
+          <TeamMediaGrid teamName={params.teamName} />
         </Suspense>
       </div>
     </div>
