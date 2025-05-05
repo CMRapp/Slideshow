@@ -307,6 +307,12 @@ export default function AdminPage() {
           <div className="space-y-6">
             <div className="p-4">
               <h3 className="text-sm font-medium mb-2">Team Review</h3>
+              <Link
+                href="/admin/team-review"
+                className="inline-block mb-4 px-4 py-2 bg-yellow-400 text-black rounded-lg hover:bg-yellow-300 transition-colors"
+              >
+                View All Teams
+              </Link>
               {teams.length === 0 ? (
                 <p className="text-gray-400">No teams found</p>
               ) : (

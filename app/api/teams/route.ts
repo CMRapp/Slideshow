@@ -11,6 +11,8 @@ interface Team {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  photo_count: number;
+  video_count: number;
 }
 
 // Create a proper Zod schema from the validation schemas
@@ -26,13 +28,29 @@ export async function GET(request: Request) {
 
     if (teamName) {
       const result = await executeQuery<Team>(
-        'SELECT * FROM teams WHERE name = $1',
+        `SELECT 
+          t.*,
+          COUNT(CASE WHEN ui.item_type = 'photo' THEN 1 END) as photo_count,
+          COUNT(CASE WHEN ui.item_type = 'video' THEN 1 END) as video_count
+         FROM teams t
+         LEFT JOIN uploaded_items ui ON t.id = ui.team_id
+         WHERE t.name = $1
+         GROUP BY t.id`,
         [teamName]
       );
       return NextResponse.json(result.rows[0] || null);
     }
 
-    const result = await executeQuery<Team>('SELECT * FROM teams ORDER BY name');
+    const result = await executeQuery<Team>(
+      `SELECT 
+        t.*,
+        COUNT(CASE WHEN ui.item_type = 'photo' THEN 1 END) as photo_count,
+        COUNT(CASE WHEN ui.item_type = 'video' THEN 1 END) as video_count
+       FROM teams t
+       LEFT JOIN uploaded_items ui ON t.id = ui.team_id
+       GROUP BY t.id
+       ORDER BY t.name`
+    );
     return NextResponse.json(result.rows);
   } catch (error) {
     console.error('Error fetching teams:', error);
