@@ -231,6 +231,7 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
               handlePrevious();
             }}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
+            style={{ left: 'calc(50% - 20px - 4rem)' }}
             aria-label="Previous"
           >
             <FiChevronLeft size={32} />
@@ -242,6 +243,7 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
               handleNext();
             }}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
+            style={{ right: 'calc(50% - 20px - 4rem)' }}
             aria-label="Next"
           >
             <FiChevronRight size={32} />

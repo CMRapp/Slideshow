@@ -254,7 +254,7 @@ export default function UploadPage() {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold text-white mb-8">Upload Media</h1>
           
-          <div id="upload-info" className="grid grid-cols-3 gap-6 mb-8">
+          <div id="upload-info" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="col-span-1">
               <label htmlFor="teamSelect" className="block text-white mb-2">
                 Team Name
@@ -274,6 +274,7 @@ export default function UploadPage() {
                 ))}
               </select>
             </div>
+            
             <div className="col-span-1">
               <label htmlFor="photoNumberSelect" className="block text-white mb-2">
                 Photo Number
@@ -298,6 +299,7 @@ export default function UploadPage() {
                 ))}
               </select>
             </div>
+            
             <div className="col-span-1">
               <label htmlFor="videoNumberSelect" className="block text-white mb-2">
                 Video Number
