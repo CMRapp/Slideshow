@@ -247,7 +247,7 @@ export default function SlideshowPage() {
                       width={800}
                       height={600}
                       sizes="100vw"
-                      className="object-contain w-full max-w-[100vw] md:max-w-4xl md:max-h-[80vh] h-auto mx-auto m-0 p-0 border border-solid border-yellow-600"
+                      className="object-contain w-full max-w-[100vw] md:max-w-4xl md:max-h-[80vh] h-auto mx-auto m-0 p-0"
                       priority
                       quality={100}
                       unoptimized={false}
@@ -282,7 +282,7 @@ export default function SlideshowPage() {
                     />
                   </div>
                 )}
-                <div className="w-full text-white text-center m-0 p-0 bg-black-50 bg-opacity-50">
+                <div className="w-full text-white text-center m-0 p-0 bg-black-500">
                   <h2 className="inline-block mr-2">Team {currentItem.team_name}</h2>
                   <h2 className="inline-block opacity-80">
                     {currentItem.item_type ? `${currentItem.item_type.charAt(0).toUpperCase() + currentItem.item_type.slice(1)} ${currentItem.item_number}` : currentItem.file_name}
