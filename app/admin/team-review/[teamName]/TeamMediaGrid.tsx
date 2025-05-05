@@ -128,6 +128,7 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
 
       <div className="flex items-center gap-4 mb-8">
         <h1 className="text-3xl font-bold">Team {teamName} Media</h1>
+        <p>Click on a photo or video to view it.</p>
       </div>
 
       {mediaItems.length === 0 ? (
@@ -224,65 +225,68 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
             <FiX size={24} />
           </button>
 
-          {/* Navigation Buttons */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handlePrevious();
-            }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
-            style={{ left: 'calc(50% - 20px - 4rem)' }}
-            aria-label="Previous"
-          >
-            <FiChevronLeft size={32} />
-          </button>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleNext();
-            }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
-            style={{ right: 'calc(50% - 20px - 4rem)' }}
-            aria-label="Next"
-          >
-            <FiChevronRight size={32} />
-          </button>
-
           <div 
-            className="max-w-4xl w-full max-h-[90vh] relative"
+            className="max-w-4xl w-full max-h-[90vh] relative flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
-            {selectedMedia.type === 'photo' ? (
-              <Image
-                src={selectedMedia.url}
-                alt={`Photo ${selectedMedia.number}`}
-                width={1200}
-                height={800}
-                className="w-full h-auto max-h-[90vh] object-contain"
-                unoptimized
-                crossOrigin="anonymous"
-                onError={(e) => {
-                  console.error('Image failed to load:', selectedMedia.url);
-                  const img = e.target as HTMLImageElement;
-                  img.style.display = 'none';
-                }}
-              />
-            ) : (
-              <video
-                src={selectedMedia.url}
-                className="w-full max-h-[90vh]"
-                controls
-                autoPlay
-                loop
-                crossOrigin="anonymous"
-                onError={(e) => {
-                  console.error('Video failed to load:', selectedMedia.url);
-                  const video = e.target as HTMLVideoElement;
-                  video.style.display = 'none';
-                }}
-              />
-            )}
+            {/* Navigation Buttons - now outside the media */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrevious();
+              }}
+              className="absolute z-20 text-white hover:text-gray-300 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
+              style={{ left: '-20px', top: '50%', transform: 'translateY(-50%)' }}
+              aria-label="Previous"
+            >
+              <FiChevronLeft size={32} />
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNext();
+              }}
+              className="absolute z-20 text-white hover:text-gray-300 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
+              style={{ right: '-20px', top: '50%', transform: 'translateY(-50%)' }}
+              aria-label="Next"
+            >
+              <FiChevronRight size={32} />
+            </button>
+
+            {/* Media Content */}
+            <div className="w-full h-full flex items-center justify-center">
+              {selectedMedia.type === 'photo' ? (
+                <Image
+                  src={selectedMedia.url}
+                  alt={`Photo ${selectedMedia.number}`}
+                  width={1200}
+                  height={800}
+                  className="w-full h-auto max-h-[90vh] object-contain"
+                  unoptimized
+                  crossOrigin="anonymous"
+                  onError={(e) => {
+                    console.error('Image failed to load:', selectedMedia.url);
+                    const img = e.target as HTMLImageElement;
+                    img.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <video
+                  src={selectedMedia.url}
+                  className="w-full max-h-[90vh]"
+                  controls
+                  autoPlay
+                  loop
+                  crossOrigin="anonymous"
+                  onError={(e) => {
+                    console.error('Video failed to load:', selectedMedia.url);
+                    const video = e.target as HTMLVideoElement;
+                    video.style.display = 'none';
+                  }}
+                />
+              )}
+            </div>
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 px-4 py-2 rounded-full text-white text-sm">
               {selectedMedia.type === 'photo' ? 'Photo' : 'Video'} {selectedMedia.number} of {mediaItems.length}
             </div>
