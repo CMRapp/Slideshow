@@ -6,14 +6,13 @@ export const metadata: Metadata = {
   title: 'Team Media Review',
 };
 
-interface Props {
-  params: {
-    teamName: string;
-  };
-}
-
-export default function TeamReviewPage({ params }: Props) {
-  const { teamName } = params;
+export default async function TeamReviewPage({
+  params,
+}: {
+  params: { teamName: string }
+}) {
+  // Ensure params is resolved
+  const teamName = await Promise.resolve(params.teamName);
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
