@@ -74,6 +74,24 @@ export default function UploadPage() {
     fetchData();
   }, []);
 
+  // Fetch uploaded items on initial load if selectedTeam is set
+  useEffect(() => {
+    if (selectedTeam) {
+      const fetchUploadedItems = async () => {
+        try {
+          const response = await fetch(`/api/team-items?team=${encodeURIComponent(selectedTeam)}`);
+          if (response.ok) {
+            const data = await response.json();
+            setUploadedItems(data);
+          }
+        } catch (error) {
+          console.error('Failed to fetch team items:', error);
+        }
+      };
+      fetchUploadedItems();
+    }
+  }, [selectedTeam]);
+
   const handleUpload = useCallback(async (files: FileList) => {
     if (!selectedTeam) {
       throw new UploadError('Please select a team');
@@ -257,7 +275,7 @@ export default function UploadPage() {
 
   const isItemUploaded = (type: 'photo' | 'video', number: number) => {
     return uploadedItems.some(
-      item => item.item_type === type && item.item_number === number
+      item => item.type === type && item.number === number
     );
   };
 
