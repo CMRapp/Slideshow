@@ -231,10 +231,10 @@ export default function SlideshowPage() {
         }}
       />
       
-      <div className="relative flex flex-col min-h-0 max-w-screen overflow-x-hidden border border-gray-600 shadow-[0_0_10px_rgba(255,255,255,0.1)]">
+      <div className="relative flex flex-col min-h-0 max-w-screen overflow-x-hidden">
         <div 
           id="slideshow-item"
-          className="w-full h-screen flex items-center justify-center m-0 p-0"
+          className="w-full h-screen flex items-center justify-center m-0 p-0 border border-gray-600 shadow-[0_0_10px_rgba(255,255,255,0.1)]"
         >
           {mediaItems.length > 0 && (
             <>
