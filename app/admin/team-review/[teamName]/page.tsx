@@ -2,15 +2,15 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import TeamMediaGrid from './TeamMediaGrid';
 
-type Props = {
-  params: { teamName: string }
-}
-
 export const metadata: Metadata = {
   title: 'Team Media Review',
 };
 
-export default function TeamReviewPage({ params }: Props) {
+export default async function TeamReviewPage({
+  params,
+}: {
+  params: { teamName: string }
+}) {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-7xl mx-auto">
