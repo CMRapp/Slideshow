@@ -6,14 +6,15 @@ export const metadata: Metadata = {
   title: 'Team Media Review',
 };
 
-type PageProps = {
-  params: Promise<{ teamName: string }>;
-  searchParams: { [key: string]: string | string[] | undefined };
+interface Props {
+  params: {
+    teamName: string;
+  };
 }
 
-export default async function TeamReviewPage(props: PageProps) {
-  const params = await props.params;
-  
+export default function TeamReviewPage({ params }: Props) {
+  const { teamName } = params;
+
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-7xl mx-auto">
@@ -22,7 +23,7 @@ export default async function TeamReviewPage(props: PageProps) {
             <h1 className="text-3xl font-bold">Loading...</h1>
           </div>
         }>
-          <TeamMediaGrid teamName={params.teamName} />
+          <TeamMediaGrid teamName={teamName} />
         </Suspense>
       </div>
     </div>
