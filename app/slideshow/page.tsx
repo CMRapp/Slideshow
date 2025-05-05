@@ -105,10 +105,14 @@ export default function SlideshowPage() {
         });
       }, 5000);
     }
-    return () => clearInterval(interval);
-  }, [isPlaying, isPaused, mediaItems.length]);
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isPlaying, isPaused, mediaItems.length, shuffleMediaItems]);
 
-  const shuffleMediaItems = () => {
+  const shuffleMediaItems = useCallback(() => {
     setMediaItems(prevItems => {
       const newItems = [...prevItems];
       for (let i = newItems.length - 1; i > 0; i--) {
@@ -117,7 +121,7 @@ export default function SlideshowPage() {
       }
       return newItems;
     });
-  };
+  }, []);
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => {
