@@ -21,7 +21,7 @@ export default function SlideshowPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const pollIntervalRef = useRef<NodeJS.Timeout>();
@@ -30,7 +30,7 @@ export default function SlideshowPage() {
   const fetchMediaItems = useCallback(async () => {
     try {
       setIsLoading(true);
-      setError(null);
+      setError('');
       const response = await fetch('/api/media');
       if (!response.ok) {
         throw new Error('Failed to fetch media items');
@@ -145,7 +145,7 @@ export default function SlideshowPage() {
               onClick={fetchMediaItems}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-              Try Again.
+              Try Again
             </button>
           </div>
         </div>

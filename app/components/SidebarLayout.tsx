@@ -58,8 +58,10 @@ export default function SidebarLayout({ children, slideshowControls }: SidebarLa
             {/* Navigation Links */}
             <div className="flex lg:flex-col items-center space-x-4 lg:space-x-0 lg:space-y-5">
               <Link
-                href="/slideshow"
-                className={`nav-item ${pathname === '/slideshow' ? 'active' : ''}`}
+                href={pathname === '/upload' ? '#' : '/slideshow'}
+                className={`nav-item ${pathname === '/slideshow' ? 'active' : ''} ${pathname === '/upload' ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                aria-disabled={pathname === '/upload'}
+                title={pathname === '/upload' ? 'Slideshow is disabled during upload' : 'View Slideshow'}
               >
                 <FiFilm size={24} />
               </Link>
