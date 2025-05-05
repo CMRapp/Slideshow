@@ -162,6 +162,19 @@ export default function UploadPage() {
           });
 
           setUploadStatus({ status: 'success', message: 'Upload completed successfully' });
+
+          // Refresh uploaded items after successful upload
+          if (selectedTeam) {
+            try {
+              const response = await fetch(`/api/team-items?team=${encodeURIComponent(selectedTeam)}`);
+              if (response.ok) {
+                const data = await response.json();
+                setUploadedItems(data);
+              }
+            } catch (error) {
+              console.error('Failed to refresh uploaded items:', error);
+            }
+          }
         } else {
           const errorData = JSON.parse(xhr.responseText);
           throw new UploadError(errorData.error || 'Upload failed');
