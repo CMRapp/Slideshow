@@ -97,6 +97,13 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
                       fill
                       className="object-cover"
                       sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+                      unoptimized
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        console.error('Image failed to load:', item.url);
+                        const img = e.target as HTMLImageElement;
+                        img.style.display = 'none';
+                      }}
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-2 text-center text-white text-sm">
                       Photo {item.number}
@@ -124,6 +131,12 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
                       muted
                       loop
                       playsInline
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        console.error('Video failed to load:', item.url);
+                        const video = e.target as HTMLVideoElement;
+                        video.style.display = 'none';
+                      }}
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-2 text-center text-white text-sm">
                       Video {item.number}
@@ -152,6 +165,13 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
                 width={1200}
                 height={800}
                 className="w-full h-auto max-h-[90vh] object-contain"
+                unoptimized
+                crossOrigin="anonymous"
+                onError={(e) => {
+                  console.error('Image failed to load:', selectedMedia.url);
+                  const img = e.target as HTMLImageElement;
+                  img.style.display = 'none';
+                }}
               />
             ) : (
               <video
@@ -160,6 +180,12 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
                 controls
                 autoPlay
                 loop
+                crossOrigin="anonymous"
+                onError={(e) => {
+                  console.error('Video failed to load:', selectedMedia.url);
+                  const video = e.target as HTMLVideoElement;
+                  video.style.display = 'none';
+                }}
               />
             )}
           </div>
