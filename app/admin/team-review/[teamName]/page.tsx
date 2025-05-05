@@ -6,13 +6,14 @@ interface PageProps {
   params: {
     teamName: string;
   };
+  searchParams: { [key: string]: string | string[] | undefined };
 }
 
 export const metadata: Metadata = {
   title: 'Team Media Review',
 };
 
-export default function TeamReviewPage({ params }: PageProps) {
+export default async function TeamReviewPage({ params, searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-7xl mx-auto">
