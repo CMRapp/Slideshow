@@ -14,8 +14,8 @@ class UploadError extends Error {
 }
 
 interface UploadedItem {
-  item_type: 'photo' | 'video';
-  item_number: number;
+  type: 'photo' | 'video';
+  number: number;
 }
 
 export default function UploadPage() {
