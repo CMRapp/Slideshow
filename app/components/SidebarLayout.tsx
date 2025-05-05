@@ -12,7 +12,7 @@ interface SidebarLayoutProps {
 }
 
 export default function SidebarLayout({ children, slideshowControls }: SidebarLayoutProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() || '/';
   const [version, setVersion] = useState('');
 
   useEffect(() => {
