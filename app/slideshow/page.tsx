@@ -20,7 +20,6 @@ export default function SlideshowPage() {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isPaused, setIsPaused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
@@ -102,7 +101,7 @@ export default function SlideshowPage() {
     let interval: NodeJS.Timeout | undefined;
     let cycleCount = 0;
     
-    if (isPlaying && !isPaused && mediaItems.length > 0) {
+    if (isPlaying && mediaItems.length > 0) {
       interval = setInterval(() => {
         setCurrentIndex((prev) => {
           const nextIndex = (prev + 1) % mediaItems.length;
@@ -122,7 +121,7 @@ export default function SlideshowPage() {
         clearInterval(interval);
       }
     };
-  }, [isPlaying, isPaused, mediaItems.length, shuffleMediaItems]);
+  }, [isPlaying, mediaItems.length, shuffleMediaItems]);
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => {
@@ -236,8 +235,6 @@ export default function SlideshowPage() {
         <div 
           id="slideshow-item"
           className="w-full h-screen flex items-center justify-center m-0 p-0"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
         >
           {mediaItems.length > 0 && (
             <>
