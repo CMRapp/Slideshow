@@ -24,7 +24,7 @@ export default function SlideshowPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
-  const pollIntervalRef = useRef<NodeJS.Timeout>();
+  const pollIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const isVisibleRef = useRef(true);
 
   const fetchMediaItems = useCallback(async () => {
