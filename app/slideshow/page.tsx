@@ -88,7 +88,7 @@ export default function SlideshowPage() {
   }, [fetchMediaItems, startPolling]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: NodeJS.Timeout | undefined;
     let cycleCount = 0;
     
     if (isPlaying && !isPaused && mediaItems.length > 0) {
@@ -105,8 +105,9 @@ export default function SlideshowPage() {
         });
       }, 5000);
     }
+
     return () => {
-      if (interval) {
+      if (interval !== undefined) {
         clearInterval(interval);
       }
     };
