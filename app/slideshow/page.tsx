@@ -247,7 +247,7 @@ export default function SlideshowPage() {
                       width={800}
                       height={600}
                       sizes="100vw"
-                      className="object-contain w-full max-w-[100vw] md:max-w-4xl md:max-h-[80vh] h-auto mx-auto m-0 p-0"
+                      className="object-contain w-full max-w-[100vw] md:max-w-4xl md:max-h-[80vh] h-auto mx-auto m-0 p-0 border border-solid border-yellow-600"
                       priority
                       quality={100}
                       unoptimized={false}
