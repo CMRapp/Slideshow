@@ -282,7 +282,7 @@ export default function SlideshowPage() {
                     />
                   </div>
                 )}
-                <div className="w-full text-white text-center m-0 p-0 bg-black-500">
+                <div className="w-full text-white text-center m-0 p-0 bg-black-500 media-caption">
                   <h2 className="inline-block mr-2">Team {currentItem.team_name}</h2>
                   <h2 className="inline-block opacity-80">
                     {currentItem.item_type ? `${currentItem.item_type.charAt(0).toUpperCase() + currentItem.item_type.slice(1)} ${currentItem.item_number}` : currentItem.file_name}
