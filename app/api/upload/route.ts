@@ -3,10 +3,6 @@ import { executeQuery } from '@/lib/db';
 import { MAX_FILE_SIZE, ALLOWED_MIME_TYPES } from '@/lib/auth';
 import { z } from 'zod';
 import { uploadToBlob } from '@/lib/blob';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { v4 as uuidv4 } from 'uuid';
-import { pool } from '@/app/lib/db';
 
 // Validation schema for upload
 const uploadSchema = z.object({

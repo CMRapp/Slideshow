@@ -68,17 +68,6 @@ export default function SlideshowPage() {
     pollIntervalRef.current = setInterval(fetchMediaItems, interval);
   }, [fetchMediaItems, retryCount]);
 
-  const shuffleMediaItems = useCallback(() => {
-    setMediaItems(prevItems => {
-      const newItems = [...prevItems];
-      for (let i = newItems.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newItems[i], newItems[j]] = [newItems[j], newItems[i]];
-      }
-      return newItems;
-    });
-  }, []);
-
   useEffect(() => {
     // Initial fetch
     fetchMediaItems();
