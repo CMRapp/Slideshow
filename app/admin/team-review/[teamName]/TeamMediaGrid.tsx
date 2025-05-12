@@ -60,7 +60,7 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedMedia]);
+  }, [selectedMedia, handleNext, handlePrevious]);
 
   const handlePrevious = () => {
     if (!selectedMedia) return;

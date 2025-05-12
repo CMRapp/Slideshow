@@ -26,7 +26,6 @@ export default function UploadPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [photoCount, setPhotoCount] = useState(0);
   const [videoCount, setVideoCount] = useState(0);
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>({ status: 'idle', message: '' });
   const [progress, setProgress] = useState<ProgressStatus | null>(null);
   const [uploadedItems, setUploadedItems] = useState<UploadedItem[]>([]);
 
@@ -64,9 +63,12 @@ export default function UploadPage() {
         setVideoCount(parseInt(videoData.count || '0', 10));
       } catch (err) {
         console.error('Failed to fetch initial data:', err);
-        setUploadStatus({ 
-          status: 'error', 
-          message: err instanceof Error ? err.message : 'Failed to load initial data' 
+        setProgress({
+          stage: 'error',
+          currentFile: 'error',
+          currentNumber: 0,
+          totalFiles: 0,
+          error: err instanceof Error ? err.message : 'Failed to load initial data'
         });
       }
     };
