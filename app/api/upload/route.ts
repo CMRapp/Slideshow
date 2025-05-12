@@ -1,8 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { executeQuery } from '@/lib/db';
 import { MAX_FILE_SIZE, ALLOWED_MIME_TYPES } from '@/lib/auth';
 import { z } from 'zod';
 import { uploadToBlob } from '@/lib/blob';
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { pool } from '@/app/lib/db';
 
 // Validation schema for upload
 const uploadSchema = z.object({
@@ -24,7 +28,17 @@ interface MediaItem {
   item_number: number;
 }
 
-export async function POST(request: Request) {
+// Keep track of connected clients
+const clients = new Set<ReadableStreamDefaultController>();
+
+// Function to notify all clients of a new upload
+function notifyClients() {
+  clients.forEach(client => {
+    client.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ type: 'upload' })}\n\n`));
+  });
+}
+
+export async function POST(request: NextRequest) {
   try {
     console.log('Starting file upload process...');
     
@@ -136,6 +150,9 @@ export async function POST(request: Request) {
       ]
     );
 
+    // Notify all connected clients
+    notifyClients();
+
     console.log('Upload completed successfully');
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -151,4 +168,7 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-} 
+}
+
+// Export the clients set for the SSE endpoint to use
+export { clients }; 

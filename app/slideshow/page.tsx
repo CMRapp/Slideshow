@@ -25,6 +25,7 @@ export default function SlideshowPage() {
   const [retryCount, setRetryCount] = useState(0);
   const pollIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const isVisibleRef = useRef(true);
+  const eventSourceRef = useRef<EventSource | null>(null);
 
   const fetchMediaItems = useCallback(async () => {
     try {
@@ -35,7 +36,12 @@ export default function SlideshowPage() {
         throw new Error('Failed to fetch media items');
       }
       const data = await response.json();
-      setMediaItems(data.mediaItems);
+      const shuffledItems = [...data.mediaItems];
+      for (let i = shuffledItems.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
+      }
+      setMediaItems(shuffledItems);
       setRetryCount(0); // Reset retry count on success
     } catch (err) {
       console.error('Error fetching media items:', err);
@@ -99,20 +105,10 @@ export default function SlideshowPage() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
-    let cycleCount = 0;
     
     if (isPlaying && mediaItems.length > 0) {
       interval = setInterval(() => {
-        setCurrentIndex((prev) => {
-          const nextIndex = (prev + 1) % mediaItems.length;
-          cycleCount++;
-          
-          if (cycleCount % (mediaItems.length * 5) === 0) {
-            shuffleMediaItems();
-          }
-          
-          return nextIndex;
-        });
+        setCurrentIndex((prev) => (prev + 1) % mediaItems.length);
       }, 5000);
     }
 
@@ -121,7 +117,42 @@ export default function SlideshowPage() {
         clearInterval(interval);
       }
     };
-  }, [isPlaying, mediaItems.length, shuffleMediaItems]);
+  }, [isPlaying, mediaItems.length]);
+
+  // Set up SSE connection
+  useEffect(() => {
+    const eventSource = new EventSource('/api/upload-events');
+    eventSourceRef.current = eventSource;
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'upload') {
+          // Refresh media items when a new upload is detected
+          fetchMediaItems();
+        }
+      } catch (err) {
+        console.error('Error parsing SSE message:', err);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      console.error('SSE error:', err);
+      eventSource.close();
+      // Attempt to reconnect after a delay
+      setTimeout(() => {
+        if (eventSourceRef.current) {
+          eventSourceRef.current = new EventSource('/api/upload-events');
+        }
+      }, 5000);
+    };
+
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, [fetchMediaItems]);
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => {
