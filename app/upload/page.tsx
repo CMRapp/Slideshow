@@ -172,26 +172,35 @@ export default function UploadPage() {
 
       xhr.onload = async () => {
         if (xhr.status >= 200 && xhr.status < 300) {
-          setProgress({
-            stage: 'success',
-            currentFile: 'finalizing',
-            currentNumber: files.length,
-            totalFiles: files.length,
-            totalSize: totalSize,
-            percent: 100
-          });
-
-          // Refresh uploaded items after successful upload
-          if (selectedTeam) {
-            try {
+          try {
+            // Refresh uploaded items after successful upload
+            if (selectedTeam) {
               const response = await fetch(`/api/team-items?team=${encodeURIComponent(selectedTeam)}`);
               if (response.ok) {
                 const data = await response.json();
                 setUploadedItems(data);
               }
-            } catch (error) {
-              console.error('Failed to refresh uploaded items:', error);
             }
+            
+            // Set success state after everything is done
+            setProgress({
+              stage: 'success',
+              currentFile: 'finalizing',
+              currentNumber: files.length,
+              totalFiles: files.length,
+              totalSize: totalSize,
+              percent: 100
+            });
+          } catch (error) {
+            console.error('Failed to refresh uploaded items:', error);
+            setProgress({
+              stage: 'error',
+              currentFile: 'error',
+              currentNumber: files.length,
+              totalFiles: files.length,
+              totalSize: totalSize,
+              error: 'Upload completed but failed to refresh items'
+            });
           }
         } else {
           const errorData = JSON.parse(xhr.responseText);
