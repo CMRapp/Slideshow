@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import SidebarLayout from '@/app/components/SidebarLayout';
 import { compressFile } from '@/app/utils/compression';
-import { Team, UploadStatus, ProgressStatus } from '@/app/types/upload';
+import { Team, ProgressStatus } from '@/app/types/upload';
 import { UploadProgress } from '@/app/components/UploadProgress';
 
 class UploadError extends Error {

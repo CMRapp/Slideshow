@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiArrowLeft, FiX, FiImage, FiVideo, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import Image from 'next/image';
@@ -62,19 +62,19 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedMedia, handleNext, handlePrevious]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (!selectedMedia) return;
     const currentIndex = mediaItems.findIndex(item => item.id === selectedMedia.id);
     const previousIndex = currentIndex > 0 ? currentIndex - 1 : mediaItems.length - 1;
     setSelectedMedia(mediaItems[previousIndex]);
-  };
+  }, [selectedMedia, mediaItems]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (!selectedMedia) return;
     const currentIndex = mediaItems.findIndex(item => item.id === selectedMedia.id);
     const nextIndex = currentIndex < mediaItems.length - 1 ? currentIndex + 1 : 0;
     setSelectedMedia(mediaItems[nextIndex]);
-  };
+  }, [selectedMedia, mediaItems]);
 
   if (error) {
     return (
