@@ -39,6 +39,8 @@ export default function UploadPage() {
     [videoCount]
   );
 
+  const MAX_FILE_SIZE = 4.5 * 1024 * 1024; // 4.5MB, must match backend
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -101,6 +103,20 @@ export default function UploadPage() {
 
     if (!selectedPhotoNumber && !selectedVideoNumber) {
       throw new UploadError('Please select a photo or video number');
+    }
+
+    // Check file sizes before uploading
+    for (let i = 0; i < files.length; i++) {
+      if (files[i].size > MAX_FILE_SIZE) {
+        setProgress({
+          stage: 'error',
+          currentFile: files[i].name,
+          currentNumber: i + 1,
+          totalFiles: files.length,
+          error: `File "${files[i].name}" is too large. Maximum allowed size is 4.5MB.`
+        });
+        return;
+      }
     }
 
     try {
