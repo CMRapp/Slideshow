@@ -44,6 +44,20 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
     fetchTeamMedia();
   }, [teamName]);
 
+  const handlePrevious = useCallback(() => {
+    if (!selectedMedia) return;
+    const currentIndex = mediaItems.findIndex(item => item.id === selectedMedia.id);
+    const previousIndex = currentIndex > 0 ? currentIndex - 1 : mediaItems.length - 1;
+    setSelectedMedia(mediaItems[previousIndex]);
+  }, [selectedMedia, mediaItems]);
+
+  const handleNext = useCallback(() => {
+    if (!selectedMedia) return;
+    const currentIndex = mediaItems.findIndex(item => item.id === selectedMedia.id);
+    const nextIndex = currentIndex < mediaItems.length - 1 ? currentIndex + 1 : 0;
+    setSelectedMedia(mediaItems[nextIndex]);
+  }, [selectedMedia, mediaItems]);
+
   // Handle keyboard navigation
   useEffect(() => {
     if (!selectedMedia) return;
@@ -61,20 +75,6 @@ export default function TeamMediaGrid({ teamName }: TeamMediaGridProps) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedMedia, handleNext, handlePrevious]);
-
-  const handlePrevious = useCallback(() => {
-    if (!selectedMedia) return;
-    const currentIndex = mediaItems.findIndex(item => item.id === selectedMedia.id);
-    const previousIndex = currentIndex > 0 ? currentIndex - 1 : mediaItems.length - 1;
-    setSelectedMedia(mediaItems[previousIndex]);
-  }, [selectedMedia, mediaItems]);
-
-  const handleNext = useCallback(() => {
-    if (!selectedMedia) return;
-    const currentIndex = mediaItems.findIndex(item => item.id === selectedMedia.id);
-    const nextIndex = currentIndex < mediaItems.length - 1 ? currentIndex + 1 : 0;
-    setSelectedMedia(mediaItems[nextIndex]);
-  }, [selectedMedia, mediaItems]);
 
   if (error) {
     return (
