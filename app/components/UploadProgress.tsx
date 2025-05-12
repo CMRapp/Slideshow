@@ -40,11 +40,11 @@ export function UploadProgress({ progress }: UploadProgressProps) {
   };
 
   return (
-    <div className={`mt-4 p-4 rounded ${getProgressColor()}`}>
-      <div className="flex items-center">
-        <div className="flex-1">
-          <div className="text-sm font-medium">{getProgressText()}</div>
-          <div className="mt-2 h-2 w-full bg-black/20 rounded-full overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className={`p-6 rounded-lg shadow-xl max-w-md w-full mx-4 ${getProgressColor()}`}>
+        <div className="flex flex-col items-center">
+          <div className="text-lg font-medium mb-4">{getProgressText()}</div>
+          <div className="w-full h-3 bg-black/20 rounded-full overflow-hidden mb-2">
             <div 
               className="h-full bg-current transition-all duration-300 ease-in-out rounded-full"
               style={{ 
@@ -53,7 +53,7 @@ export function UploadProgress({ progress }: UploadProgressProps) {
             />
           </div>
           {progress.totalSize && (
-            <div className="mt-1 text-xs text-gray-400">
+            <div className="text-sm text-gray-400">
               Total size: {formatFileSize(progress.totalSize)}
             </div>
           )}
