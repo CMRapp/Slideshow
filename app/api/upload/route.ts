@@ -3,6 +3,7 @@ import { executeQuery } from '@/lib/db';
 import { MAX_FILE_SIZE, ALLOWED_MIME_TYPES } from '@/lib/auth';
 import { z } from 'zod';
 import { uploadToBlob } from '@/lib/blob';
+import { notifyClients } from '@/app/lib/sse-clients';
 
 // Validation schema for upload
 const uploadSchema = z.object({
@@ -22,16 +23,6 @@ interface MediaItem {
   team_id: number;
   item_type: string;
   item_number: number;
-}
-
-// Keep track of connected clients
-const clients = new Set<ReadableStreamDefaultController>();
-
-// Function to notify all clients of a new upload
-function notifyClients() {
-  clients.forEach(client => {
-    client.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ type: 'upload' })}\n\n`));
-  });
 }
 
 export async function POST(request: NextRequest) {
@@ -164,7 +155,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// Export the clients set for the SSE endpoint to use
-export { clients }; 
+} 

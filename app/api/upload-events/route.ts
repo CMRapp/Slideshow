@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
+import { clients } from '@/app/lib/sse-clients';
 
 export async function GET() {
   const encoder = new TextEncoder();
   const customReadable = new ReadableStream({
     start(controller) {
+      // Add this client to the set
+      clients.add(controller);
+
       // Keep the connection alive
       const keepAlive = setInterval(() => {
         controller.enqueue(encoder.encode(':\n\n'));
@@ -12,6 +16,7 @@ export async function GET() {
       // Clean up on close
       return () => {
         clearInterval(keepAlive);
+        clients.delete(controller);
       };
     },
   });
