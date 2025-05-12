@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.2.2] - 2024-03-21
+## [3.2.2] - 2025-03-21
 
 ### Changed
 - Moved SSE clients to a shared module for better code organization
@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SSE client management and cleanup
 - Version number display in sidebar
 
-## [3.2.1] - 2024-04-27
+## [3.2.1] - 2025-04-27
 
 ### Fixed
 - Dropdown disables for already uploaded photo/video numbers now work reliably on /upload
@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dropdown disables are checked on initial page load and after upload
 - Improved reliability of upload page with Vercel Blob and Neon DB integration
 
-## [3.2.0] - 2024-04-27
+## [3.2.0] - 2025-04-27
 
 ### Added
 - Previous/Next navigation controls to media modal in team review
@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Media counter in modal now displays correct values
 - Navigation controls no longer overlap media content
 
-## [3.0.0] - 2024-03-22
+## [3.0.0] - 2025-03-22
 
 ### Added
 - Modal view for full-size media display
@@ -57,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced user interface with clear section headers
 - Updated heading to include "Team" prefix
 
-## [2.0.0] - 2024-03-21
+## [2.0.0] - 2025-03-21
 
 ### Added
 - Team management functionality
@@ -79,7 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - File upload validation
 - Database connection issues
 
-## [1.0.0] - 2024-03-20
+## [1.0.0] - 2025-03-20
 
 ### Added
 - Initial project setup
@@ -119,7 +119,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved SSL configuration for database connections
 - Enhanced error handling to prevent information leakage
 
-## [1.8.2] - 2024-04-24
+## [1.8.2] - 2025-04-24
 
 ### Changed
 - Improved database reset functionality with proper table ordering
@@ -133,7 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Table dependency handling during reset operations
 - Error logging and reporting in database management
 
-## [1.7.0] - 2024-04-24
+## [1.7.0] - 2025-04-24
 
 ### Changed
 - Reverted repository to commit `3e8120e` to address stability issues
@@ -148,21 +148,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Maintains core functionality with enhanced dependencies
 - Preserves TypeScript execution capabilities
 
-## [1.6.3] - 2024-03-21
+## [1.6.3] - 2025-03-21
 
 ### Changed
 - Version bump to trigger Vercel deployment
 - Updated database connection handling
 - Improved environment variable configuration
 
-## [1.6.2] - 2024-03-21
+## [1.6.2] - 2025-03-21
 
 ### Fixed
 - Database URL parsing issues
 - Environment variable configuration
 - Deployment pipeline improvements
 
-## [1.6.1] - 2024-03-21
+## [1.6.1] - 2025-03-21
 
 ### Added
 - Automatic version management system
@@ -194,7 +194,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved build information display
   - Enhanced error handling
 
-## [1.6.0] - 2024-03-20
+## [1.6.0] - 2025-03-20
 
 ### Added
 - Team-based functionality
@@ -221,7 +221,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Media upload errors
 - Database connection problems
 
-## [1.5.0] - 2024-03-19
+## [1.5.0] - 2025-03-19
 
 ### Added
 - Initial release
@@ -235,7 +235,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.6.0]: https://github.com/yourusername/slideshow/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/yourusername/slideshow/releases/tag/v1.5.0
 
-## [1.4.0] - 2024-03-21
+## [1.4.0] - 2025-03-21
 
 ### Added
 - Background image upload functionality with automatic resizing to 1920x1080
@@ -266,7 +266,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.1] - Previous Version
 - Initial release with basic functionality
 
-## [1.3.3] - 2024-03-20
+## [1.3.3] - 2025-03-20
 
 ### Added
 - Admin panel with secure login
@@ -315,7 +315,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sidebar layout consistency across devices
 - Menu-branding container positioning
 
-## [1.1.0] - 2024-03-21
+## [1.1.0] - 2025-03-21
 ### Added
 - Added version number display in sidebar
 - Implemented version API endpoint
@@ -323,7 +323,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added uploaded items tracking to prevent duplicate uploads
 - Enhanced slideshow overlay with team name and item information
 
-## [0.1.0] - 2024-03-20
+## [0.1.0] - 2025-03-20
 ### Added
 - Initial release
 - Basic slideshow functionality
