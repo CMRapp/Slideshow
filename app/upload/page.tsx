@@ -209,14 +209,24 @@ export default function UploadPage() {
             }
           }
         } else {
-          const errorData = JSON.parse(xhr.responseText);
+          let errorMsg = 'Upload failed';
+          try {
+            const errorData = JSON.parse(xhr.responseText);
+            errorMsg = errorData.error || errorMsg;
+          } catch {
+            if (xhr.status === 413) {
+              errorMsg = 'File too large. The server rejected the upload.';
+            } else if (xhr.responseText) {
+              errorMsg = xhr.responseText;
+            }
+          }
           setProgress({
             stage: 'error',
             currentFile: 'error',
             currentNumber: files.length,
             totalFiles: files.length,
             totalSize: totalSize,
-            error: errorData.error || 'Upload failed'
+            error: errorMsg
           });
         }
       };
