@@ -171,15 +171,13 @@ export default function UploadPage() {
       xhr.onload = async () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           setProgress({
-            stage: 'processing',
+            stage: 'success',
             currentFile: 'finalizing',
             currentNumber: files.length,
             totalFiles: files.length,
             totalSize: totalSize,
             percent: 100
           });
-
-          setUploadStatus({ status: 'success', message: 'Upload completed successfully' });
 
           // Refresh uploaded items after successful upload
           if (selectedTeam) {
@@ -195,25 +193,44 @@ export default function UploadPage() {
           }
         } else {
           const errorData = JSON.parse(xhr.responseText);
-          throw new UploadError(errorData.error || 'Upload failed');
+          setProgress({
+            stage: 'error',
+            currentFile: 'error',
+            currentNumber: files.length,
+            totalFiles: files.length,
+            totalSize: totalSize,
+            error: errorData.error || 'Upload failed'
+          });
         }
       };
 
       xhr.onerror = () => {
-        throw new UploadError('Network error occurred during upload');
+        setProgress({
+          stage: 'error',
+          currentFile: 'error',
+          currentNumber: files.length,
+          totalFiles: files.length,
+          totalSize: totalSize,
+          error: 'Network error occurred during upload'
+        });
       };
 
       xhr.send(formData);
     } catch (err) {
       console.error('Upload error:', err);
-      setUploadStatus({ 
-        status: 'error', 
-        message: err instanceof Error ? err.message : 'Failed to upload files. Please try again.' 
+      setProgress({
+        stage: 'error',
+        currentFile: 'error',
+        currentNumber: 0,
+        totalFiles: 0,
+        error: err instanceof Error ? err.message : 'Failed to upload files. Please try again.'
       });
-    } finally {
-      setProgress(null);
     }
   }, [selectedTeam, selectedPhotoNumber, selectedVideoNumber]);
+
+  const handleDismissProgress = useCallback(() => {
+    setProgress(null);
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -388,15 +405,7 @@ export default function UploadPage() {
             </div>
           </div>
 
-          {progress && <UploadProgress progress={progress} />}
-
-          {uploadStatus && (
-            <div className={`mt-4 p-4 rounded confirmation-msg ${
-              uploadStatus.status === 'success' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'
-            }`}>
-              {uploadStatus.message}
-            </div>
-          )}
+          {progress && <UploadProgress progress={progress} onDismiss={handleDismissProgress} />}
         </div>
       </div>
     </SidebarLayout>

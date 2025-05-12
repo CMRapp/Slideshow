@@ -9,11 +9,12 @@ export interface UploadStatus {
 }
 
 export interface ProgressStatus {
-  stage: 'compressing' | 'uploading' | 'processing';
+  stage: 'compressing' | 'uploading' | 'processing' | 'success' | 'error';
   currentFile: string;
   currentNumber: number;
   totalFiles: number;
   percent?: number;
   currentSize?: number;
   totalSize?: number;
+  error?: string;
 } 
